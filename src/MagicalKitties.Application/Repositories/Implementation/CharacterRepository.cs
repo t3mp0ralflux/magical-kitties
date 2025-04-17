@@ -46,7 +46,7 @@ public class CharacterRepository : ICharacterRepository
         if (result > 0)
         {
             result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         insert into characterstats(id, character_id)
+                                                                         insert into characterstat(id, character_id)
                                                                          values(@Id, @CharacterId)
                                                                          """, new
                                                                               {

@@ -56,7 +56,7 @@ create table if not exists character(
     talent_id numeric references talent(id) null
 );
 
-create table if not exists characterstats(
+create table if not exists characterstat(
     id UUID primary key,
     character_id UUID references character(id),
     level numeric not null default 1,
@@ -96,7 +96,7 @@ create table if not exists email(
     response_log varchar null
 );
 
-create table if not exists globalsettings (
+create table if not exists globalsetting (
     id UUID primary key,
     name varchar not null,
     value varchar not null

@@ -3,6 +3,7 @@ using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Models.System;
+using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
 namespace Testing.Common;
 
@@ -58,37 +59,27 @@ public static class Fakes
     
     public static Character GenerateNewCharacter(Account account)
     {
-        Faker<Characteristic> characteristicsFaker = new Faker<Characteristic>()
-                                                      .RuleFor(x=>x.Age, _=> "")
-                                                      .RuleFor(x=>x.Eyes, _ => "")
-                                                      .RuleFor(x=>x.Faith, _ => "")
-                                                      .RuleFor(x=>x.Gender, _ => "") 
-                                                      .RuleFor(x=>x.Hair, _ => "")
-                                                      .RuleFor(x=>x.Height, _ => "")
-                                                      .RuleFor(x=>x.Skin, _ => "")
-                                                      .RuleFor(x=>x.Weight, _ => "");
+        Faker<Attribute> attributesFaker = new Faker<Attribute>()
+                                                .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                                .RuleFor(x => x.Name, f => f.Commerce.ProductName())
+                                                .RuleFor(x => x.Value, f => f.Random.Int(1,3));
         
         Faker<Character>? fakeCharacter = new Faker<Character>()
                                           .RuleFor(x=>x.Id, _ => Guid.NewGuid())
                                           .RuleFor(x=>x.AccountId, _ => account.Id)
                                           .RuleFor(x=>x.Username, _ => account.Username)
                                           .RuleFor(x=>x.Name, f => f.Person.FullName)
-                                          .RuleFor(x=>x.Characteristics, _ => characteristicsFaker.Generate(1).First());
+                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3));
 
         return fakeCharacter;
     }
 
     public static Character GenerateCharacter(Account account)
     {
-        Faker<Characteristic> characteristicsFaker = new Faker<Characteristic>()
-                                                       .RuleFor(x=>x.Age, f=> f.Random.Number(1,99).ToString())
-                                                       .RuleFor(x=>x.Eyes, f => f.Commerce.Color())
-                                                       .RuleFor(x=>x.Faith, _ => "") // this is NOT a slight against any religion, just checking that it accepts an empty value.
-                                                       .RuleFor(x=>x.Gender, f => f.Random.Word()) // this is NOT a slight against anyone, just checking that it accepts all text.
-                                                       .RuleFor(x=>x.Hair, f => f.Commerce.Color())
-                                                       .RuleFor(x=>x.Height, _ => "69cm or 420' 0\"") // checking for rando stuff people could put in there.
-                                                       .RuleFor(x=>x.Skin, f => f.Commerce.Color())
-                                                       .RuleFor(x=>x.Weight, f => f.Random.Number(69, 420).ToString());
+        Faker<Attribute> attributesFaker = new Faker<Attribute>()
+                                           .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                           .RuleFor(x => x.Name, f => f.Commerce.ProductName())
+                                           .RuleFor(x => x.Value, f => f.Random.Int(1,3));
         
         Faker<Character>? fakeCharacter = new Faker<Character>()
                                           .RuleFor(x=>x.Id, _ => Guid.NewGuid())
@@ -97,7 +88,7 @@ public static class Fakes
                                           .RuleFor(x=>x.Name, f => f.Person.FullName)
                                           .RuleFor(x=>x.CreatedUtc, _=>DateTime.UtcNow)
                                           .RuleFor(x=>x.UpdatedUtc, _=>DateTime.UtcNow)
-                                          .RuleFor(x=>x.Characteristics, _ => characteristicsFaker.Generate(1).First());
+                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3));
 
         return fakeCharacter;
     }

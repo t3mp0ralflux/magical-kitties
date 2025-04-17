@@ -20,7 +20,7 @@ public class GlobalSettingsRepository : IGlobalSettingsRepository
     {
         using IDbConnection connection = await _connectionFactory.CreateConnectionAsync(token);
         int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         insert into globalsettings(id, name, value)
+                                                                         insert into globalsetting(id, name, value)
                                                                          values(@id, @name, @value)
                                                                          """, setting, cancellationToken: token));
 
@@ -31,7 +31,7 @@ public class GlobalSettingsRepository : IGlobalSettingsRepository
     {
         using IDbConnection connection = await _connectionFactory.CreateConnectionAsync(token);
         return await connection.QuerySingleOrDefaultAsync<GlobalSetting>(new CommandDefinition("""
-                                                                                               select * from globalsettings
+                                                                                               select * from globalsetting
                                                                                                where name = @name
                                                                                                """, new { name }, cancellationToken: token));
     }

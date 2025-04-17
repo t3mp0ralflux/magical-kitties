@@ -10,6 +10,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using Testing.Common;
+using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
 namespace MagicalKitties.API.Tests.Unit;
 
@@ -53,7 +54,32 @@ public class CharacterControllerTests
                                                  AccountId = account.Id,
                                                  Username = account.Username,
                                                  Name = $"{account.Username}'s Unnamed Character",
-                                                 Characteristics = new Characteristic()
+                                                 Attributes = 
+                                                 [
+                                                     new Attribute()
+                                                     {
+                                                         Id = Guid.NewGuid(),
+                                                         Name = "Cute",
+                                                         Value = 0
+                                                     },
+                                                     new Attribute()
+                                                     {
+                                                         Id = Guid.NewGuid(),
+                                                         Name = "Cunning",
+                                                         Value = 0
+                                                     },
+                                                     new Attribute()
+                                                     {
+                                                         Id = Guid.NewGuid(),
+                                                         Name = "Fierce",
+                                                         Value = 0
+                                                     },
+                                                 ],
+                                                 CurrentOwies = 0,
+                                                 CurrentInjuries = 0,
+                                                 CurrentTreats = 0,
+                                                 MaxOwies = 2,
+                                                 StartingTreats = 2
                                              }.ToResponse();
 
         // Act
@@ -62,7 +88,10 @@ public class CharacterControllerTests
         // Assert
         result.StatusCode.Should().Be(201);
         result.ActionName.Should().Be(nameof(_sut.Get));
-        result.Value.Should().BeEquivalentTo(expectedResponse, options => options.Excluding(x => x.Id));
+        result.Value.Should().BeEquivalentTo(expectedResponse, options => options
+                                                                   .Excluding(x => x.Id)
+                                                                   .For(x=>x.Attributes)
+                                                                   .Exclude(y=>y.Id));
     }
 
     [Fact]
