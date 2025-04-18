@@ -108,7 +108,7 @@ public class CharacterRepository : ICharacterRepository
     public async Task<int> GetCountAsync(GetAllCharactersOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        
+
         int result = await connection.QuerySingleAsync<int>(new CommandDefinition("""
                                                                                   select count(c.id)
                                                                                   from character c
@@ -120,7 +120,7 @@ public class CharacterRepository : ICharacterRepository
                                                                                            options.AccountId,
                                                                                            Name = options.Name?.ToLowerInvariant()
                                                                                        }, cancellationToken: token));
-        
+
         return result;
     }
 

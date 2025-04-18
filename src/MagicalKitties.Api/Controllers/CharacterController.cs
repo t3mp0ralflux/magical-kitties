@@ -50,25 +50,27 @@ public class CharacterController : ControllerBase
                                   UpdatedUtc = _dateTimeProvider.GetUtcNow(),
                                   Description = "",
                                   Hometown = "",
-                                  Attributes = [
-                                  new Attribute
-                                  {
-                                      Id = Guid.NewGuid(),
-                                      Name = "Cute",
-                                      Value = 0
-                                  },
-                                  new Attribute
-                                  {
-                                      Id = Guid.NewGuid(),
-                                      Name = "Cunning",
-                                      Value = 0
-                                  },
-                                  new Attribute
-                                  {
-                                      Id = Guid.NewGuid(),
-                                      Name = "Fierce",
-                                      Value = 0
-                                  }],
+                                  Attributes =
+                                  [
+                                      new Attribute
+                                      {
+                                          Id = Guid.NewGuid(),
+                                          Name = "Cute",
+                                          Value = 0
+                                      },
+                                      new Attribute
+                                      {
+                                          Id = Guid.NewGuid(),
+                                          Name = "Cunning",
+                                          Value = 0
+                                      },
+                                      new Attribute
+                                      {
+                                          Id = Guid.NewGuid(),
+                                          Name = "Fierce",
+                                          Value = 0
+                                      }
+                                  ],
                                   Level = 1,
                                   CurrentXp = 0,
                                   MaxOwies = 2,
@@ -86,7 +88,7 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute]Guid id, CancellationToken token)
+    public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail()!, token);
 
@@ -110,7 +112,7 @@ public class CharacterController : ControllerBase
     [HttpGet(ApiEndpoints.Characters.GetAll)]
     [ProducesResponseType<CharactersResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAll([FromQuery]GetAllCharactersRequest request, CancellationToken token)
+    public async Task<IActionResult> GetAll([FromQuery] GetAllCharactersRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail()!, token);
 
@@ -133,7 +135,7 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update([FromBody]CharacterUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> Update([FromBody] CharacterUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail()!, token);
 
@@ -160,7 +162,7 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete([FromRoute]Guid id, CancellationToken token)
+    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -178,13 +180,13 @@ public class CharacterController : ControllerBase
 
         return NoContent();
     }
-    
+
     [HttpPut(ApiEndpoints.Characters.ChangeLevel)]
     [ProducesResponseType<CharacterUpdateResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<BadRequestResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ChangeLevel([FromBody]CharacterLevelUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> ChangeLevel([FromBody] CharacterLevelUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -197,7 +199,7 @@ public class CharacterController : ControllerBase
 
         // will throw validationexception on errors.
         bool success = await _characterService.UpdateLevelAsync(update, token);
-        
+
         if (!success)
         {
             return NotFound();
@@ -213,7 +215,7 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<BadRequestResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ChangeFlaw([FromBody]CharacterFlawUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> ChangeFlaw([FromBody] CharacterFlawUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -235,13 +237,13 @@ public class CharacterController : ControllerBase
 
         return Ok(result);
     }
-    
+
     [HttpPut(ApiEndpoints.Characters.ChangeTalent)]
     [ProducesResponseType<CharacterUpdateResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<BadRequestResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ChangeTalent([FromBody]CharacterTalentUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> ChangeTalent([FromBody] CharacterTalentUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 

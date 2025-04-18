@@ -1,12 +1,12 @@
 ﻿using System.Data;
 using Dapper;
+using FluentAssertions;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services.Implementation;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Testing.Common;
@@ -16,8 +16,8 @@ namespace MagicalKitties.Application.Tests.Integration;
 public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 {
     private readonly AccountRepository _accountRepository;
-    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
@@ -73,7 +73,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);
 
         await _accountRepository.CreateAsync(account);
@@ -84,7 +84,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x=>x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
+        result.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
     }
 
     [SkipIfEnvironmentMissingTheory]
@@ -115,7 +115,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         result.Should().NotBeNull();
         result.Should().BeEmpty();
     }
-    
+
     [SkipIfEnvironmentMissingTheory]
     [MemberData(nameof(GetSingleSearchCharacterNameData))]
     public async Task GetAllAsync_ShouldReturnItems_WhenItemsAreFound(Account account, Character character, string characterName)
@@ -354,18 +354,18 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         deletedCharacter.Should().NotBeNull();
         deletedCharacter.DeletedUtc.Should().NotBeNull();
     }
-    
+
     public static IEnumerable<object[]> GetSingleSearchCharacterNameData()
     {
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        
+
         yield return [account, character, character.Name];
         yield return [account, character, character.Name.ToLowerInvariant()];
         yield return [account, character, character.Name.ToUpperInvariant()];
         yield return [account, character, character.Name.RandomizeCasing()];
     }
-    
+
     public async void Dispose()
     {
         IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();

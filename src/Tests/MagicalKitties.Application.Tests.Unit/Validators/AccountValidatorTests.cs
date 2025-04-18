@@ -1,10 +1,10 @@
-﻿using MagicalKitties.Application.Models.Accounts;
-using MagicalKitties.Application.Repositories;
-using MagicalKitties.Application.Validators.Accounts;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentAssertions.Specialized;
 using FluentValidation;
 using FluentValidation.Results;
+using MagicalKitties.Application.Models.Accounts;
+using MagicalKitties.Application.Repositories;
+using MagicalKitties.Application.Validators.Accounts;
 using NSubstitute;
 using Testing.Common;
 

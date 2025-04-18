@@ -17,7 +17,9 @@ public class Character
     public List<Attribute> Attributes { get; set; } = [];
 
     public Flaw? Flaw { get; set; }
+
     public Talent? Talent { get; set; }
+
     // public List<Endowment> MagicalPowers { get; set; } = [];
     public Human? Human { get; set; }
     public int Level { get; set; } = 1;

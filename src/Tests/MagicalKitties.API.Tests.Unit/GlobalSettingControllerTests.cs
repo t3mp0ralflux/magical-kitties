@@ -1,10 +1,10 @@
-﻿using MagicalKitties.Api.Controllers;
+﻿using FluentAssertions;
+using FluentValidation;
+using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.GlobalSetting;
-using FluentAssertions;
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

@@ -1,15 +1,15 @@
-﻿using MagicalKitties.Api.Controllers;
+﻿using FluentAssertions;
+using FluentValidation;
+using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Responses.Account;
-using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Testing.Common;
-using ValidationException = FluentValidation.ValidationException;
 using ctr = MagicalKitties.Contracts.Models;
 
 namespace MagicalKitties.API.Tests.Unit;

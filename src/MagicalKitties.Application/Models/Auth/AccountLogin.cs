@@ -1,6 +1,4 @@
-﻿using MagicalKitties.Application.Models.Accounts;
-
-namespace MagicalKitties.Application.Models.Auth;
+﻿namespace MagicalKitties.Application.Models.Auth;
 
 public class AccountLogin
 {

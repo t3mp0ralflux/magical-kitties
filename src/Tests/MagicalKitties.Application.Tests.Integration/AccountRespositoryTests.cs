@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using FluentAssertions;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
@@ -9,7 +10,6 @@ using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Account;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Testing.Common;
@@ -30,6 +30,12 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
     }
 
     public IAccountRepository _sut { get; set; }
+
+    public async void Dispose()
+    {
+        IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
+        await connection.ExecuteAsync("delete from account");
+    }
 
 
     [SkipIfEnvironmentMissingFact]
@@ -393,7 +399,7 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
 
                                                            return options;
                                                        });
-        
+
         // cleanup as to not poison other tests
         await _sut.DeleteAsync(updatedRecord.Id);
     }
@@ -603,8 +609,8 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
     public async Task ResetPasswordAsync_ShouldResetPassword_WhenPasswordIsReset()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        
+        Account account = Fakes.GenerateAccount();
+
         PasswordReset passwordReset = new()
                                       {
                                           Email = account.Email,
@@ -652,11 +658,5 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
         yield return [account, account.Email.ToLowerInvariant()];
         yield return [account, account.Email.ToUpperInvariant()];
         yield return [account, account.Email.RandomizeCasing()];
-    }
-
-    public async void Dispose()
-    {
-        IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
-        await connection.ExecuteAsync("delete from account");
     }
 }

@@ -1,5 +1,4 @@
-﻿using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Flaws;
+﻿using MagicalKitties.Application.Models.Flaws;
 
 namespace MagicalKitties.Application.Services;
 

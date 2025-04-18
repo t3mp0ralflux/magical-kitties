@@ -1,4 +1,5 @@
-﻿using MagicalKitties.Api.Controllers;
+﻿using FluentAssertions;
+using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application.Models.Accounts;
@@ -6,7 +7,6 @@ using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Responses.Auth;
-using FluentAssertions;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
@@ -157,14 +157,14 @@ public class AuthControllerTests
         result.StatusCode.Should().Be(200);
         result.Value.Should().Be(expectedToken);
     }
-    
+
     [Fact]
     public async Task RequestPasswordReset_ShouldReturnOk_WhenEmailIsNotFound()
     {
         // Arrange
         const string email = "email@email.com";
         _accountService.RequestPasswordReset(email).Returns(false);
-        
+
         // Act
         OkObjectResult result = (OkObjectResult)await _sut.RequestPasswordReset(email, CancellationToken.None);
 
@@ -172,14 +172,14 @@ public class AuthControllerTests
         result.StatusCode.Should().Be(200);
         result.Value.Should().Be(email);
     }
-    
+
     [Fact]
     public async Task RequestPasswordReset_ShouldReturnOk_WhenEmailIsFound()
     {
         // Arrange
         const string email = "email@email.com";
         _accountService.RequestPasswordReset(email).Returns(true);
-        
+
         // Act
         OkObjectResult result = (OkObjectResult)await _sut.RequestPasswordReset(email, CancellationToken.None);
 
@@ -192,15 +192,15 @@ public class AuthControllerTests
     public async Task PasswordReset_ShouldReturnNotFound_WhenAccountIsNotFound()
     {
         // Arrange
-        var request = new PasswordResetRequest
-                      {
-                          Email = "email@email.com",
-                          Password = "thisisanewpassword",
-                          ResetCode = "069420"
-                      };
+        PasswordResetRequest request = new()
+                                       {
+                                           Email = "email@email.com",
+                                           Password = "thisisanewpassword",
+                                           ResetCode = "069420"
+                                       };
 
         _accountService.ExistsByEmailAsync(request.Email).Returns(false);
-        
+
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.PasswordReset(request, CancellationToken.None);
 
@@ -212,20 +212,18 @@ public class AuthControllerTests
     public async Task PasswordReset_ShouldReturnOk_WhenPasswordIsReset()
     {
         // Arrange
-        var request = new PasswordResetRequest
-                      {
-                          Email = "email@email.com",
-                          Password = "thisisanewpassword",
-                          ResetCode = "069420"
-                      };
-        
-        
+        PasswordResetRequest request = new()
+                                       {
+                                           Email = "email@email.com",
+                                           Password = "thisisanewpassword",
+                                           ResetCode = "069420"
+                                       };
 
         _accountService.ExistsByEmailAsync(request.Email).Returns(true);
         _accountService.ResetPassword(Arg.Any<PasswordReset>()).Returns(true);
 
         PasswordResetResponse expectedResponse = request.ToReset().ToResponse();
-        
+
         // Act
         OkObjectResult result = (OkObjectResult)await _sut.PasswordReset(request, CancellationToken.None);
 

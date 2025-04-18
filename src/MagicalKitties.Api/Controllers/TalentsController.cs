@@ -1,13 +1,10 @@
 ﻿using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
-using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Contracts.Requests.Endowments.Flaws;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
 using MagicalKitties.Contracts.Responses.Characters;
-using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.Talents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

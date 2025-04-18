@@ -1,10 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using FluentAssertions;
+using FluentValidation;
+using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
-using FluentAssertions;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Testing.Common;
@@ -13,31 +13,31 @@ namespace MagicalKitties.Application.Tests.Unit.Services;
 
 public class CharacterServiceTests
 {
+    private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
+    private readonly IValidator<Character> _characterValidator = new CharacterValidator();
+    private readonly IFlawRepository _flawRepository = Substitute.For<IFlawRepository>();
+    private readonly ILogger<CharacterService> _logger = Substitute.For<ILogger<CharacterService>>();
+    private readonly IValidator<GetAllCharactersOptions> _optionsValidator = new GetAllCharactersOptionsValidator();
+    private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
+
     public CharacterServiceTests()
     {
         _sut = new CharacterService(_characterRepository, _characterValidator, _optionsValidator, _logger, _flawRepository, _talentRepository);
     }
 
     public CharacterService _sut { get; set; }
-    
-    private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
-    private readonly IFlawRepository _flawRepository = Substitute.For<IFlawRepository>();
-    private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
-    private readonly ILogger<CharacterService> _logger = Substitute.For<ILogger<CharacterService>>();
-    private readonly IValidator<Character> _characterValidator = new CharacterValidator();
-    private readonly IValidator<GetAllCharactersOptions> _optionsValidator = new GetAllCharactersOptionsValidator();
 
     [Fact]
     public async Task CreateAsync_ThrowsValidationException_WhenValidatorFails()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
+        Account account = Fakes.GenerateAccount();
 
-        var character = Fakes.GenerateCharacter(account);
+        Character character = Fakes.GenerateCharacter(account);
         character.Name = string.Empty;
-        
+
         // Act
-        var action = async () => await _sut.CreateAsync(character);
+        Func<Task<bool>> action = async () => await _sut.CreateAsync(character);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>();
@@ -47,31 +47,31 @@ public class CharacterServiceTests
     public async Task CreateAsync_ShouldReturnFalse_WhenCharacterIsNotCreated()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
+        Account account = Fakes.GenerateAccount();
 
-        var character = Fakes.GenerateCharacter(account);
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.CreateAsync(Arg.Any<Character>()).Returns(false);
 
         // Act
-        var result = await _sut.CreateAsync(character);
+        bool result = await _sut.CreateAsync(character);
 
         // Assert
         result.Should().BeFalse();
     }
-    
+
     [Fact]
     public async Task CreateAsync_ShouldReturnTrue_WhenCharacterIsCreated()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
+        Account account = Fakes.GenerateAccount();
 
-        var character = Fakes.GenerateCharacter(account);
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.CreateAsync(Arg.Any<Character>()).Returns(true);
 
         // Act
-        var result = await _sut.CreateAsync(character);
+        bool result = await _sut.CreateAsync(character);
 
         // Assert
         result.Should().BeTrue();
@@ -82,9 +82,9 @@ public class CharacterServiceTests
     {
         // Arrange
         _characterRepository.GetByIdAsync(Guid.NewGuid()).Returns((Character?)null);
-        
+
         // Act
-        var result = await _sut.GetByIdAsync(Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -94,13 +94,13 @@ public class CharacterServiceTests
     public async Task GetAsync_ShouldReturnCharacter_WhenCharacterIsFound()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.GetByIdAsync(character.Id).Returns(character);
 
         // Act
-        var result = await _sut.GetByIdAsync(character.Id);
+        Character? result = await _sut.GetByIdAsync(character.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -111,15 +111,15 @@ public class CharacterServiceTests
     public async Task GetAllAsync_ShouldThrowValidationException_WhenValidatorFails()
     {
         // Arrange
-        var options = new GetAllCharactersOptions()
-                      {
-                          AccountId = Guid.NewGuid(),
-                          Page = 1,
-                          PageSize = 5,
-                          SortField = "stat"
-                      };
+        GetAllCharactersOptions options = new()
+                                          {
+                                              AccountId = Guid.NewGuid(),
+                                              Page = 1,
+                                              PageSize = 5,
+                                              SortField = "stat"
+                                          };
         // Act
-        var action = async () => await _sut.GetAllAsync(options);
+        Func<Task<IEnumerable<Character>>> action = async () => await _sut.GetAllAsync(options);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>();
@@ -129,17 +129,17 @@ public class CharacterServiceTests
     public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoItemsAreFound()
     {
         // Arrange
-        var options = new GetAllCharactersOptions()
-                      {
-                          AccountId = Guid.NewGuid(),
-                          Page = 1,
-                          PageSize = 5
-                      };
+        GetAllCharactersOptions options = new()
+                                          {
+                                              AccountId = Guid.NewGuid(),
+                                              Page = 1,
+                                              PageSize = 5
+                                          };
 
         _characterRepository.GetAllAsync(Arg.Any<GetAllCharactersOptions>()).Returns([]);
-        
+
         // Act
-        var result = await _sut.GetAllAsync(options);
+        IEnumerable<Character> result = await _sut.GetAllAsync(options);
 
         // Assert
         result.Should().NotBeNull();
@@ -150,25 +150,25 @@ public class CharacterServiceTests
     public async Task GetAllAsync_ShouldReturnItems_WhenItemsAreFound()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        
-        var options = new GetAllCharactersOptions()
-                      {
-                          AccountId = account.Id,
-                          Page = 1,
-                          PageSize = 5
-                      };
+        Account account = Fakes.GenerateAccount();
 
-        var characters = Enumerable.Range(1, 5).Select(x => Fakes.GenerateCharacter(account)).ToList();
+        GetAllCharactersOptions options = new()
+                                          {
+                                              AccountId = account.Id,
+                                              Page = 1,
+                                              PageSize = 5
+                                          };
+
+        List<Character> characters = Enumerable.Range(1, 5).Select(x => Fakes.GenerateCharacter(account)).ToList();
 
         _characterRepository.GetAllAsync(Arg.Any<GetAllCharactersOptions>()).Returns(characters);
 
         // Act
-        var result = await _sut.GetAllAsync(options);
+        IEnumerable<Character> result = await _sut.GetAllAsync(options);
 
         // Assert
-        var resultList = result.ToList();
-        
+        List<Character> resultList = result.ToList();
+
         resultList.Should().NotBeNullOrEmpty();
         resultList.Should().BeEquivalentTo(characters);
     }
@@ -180,17 +180,17 @@ public class CharacterServiceTests
     public async Task GetCountAsync_ShouldReturnCorrectCount_WhenItemsAreFoundOrNot(int count)
     {
         // Arrange
-        var options = new GetAllCharactersOptions()
-                     {
-                         AccountId = Guid.NewGuid(),
-                         Page = 1,
-                         PageSize = 5
-                     };
-        
+        GetAllCharactersOptions options = new()
+                                          {
+                                              AccountId = Guid.NewGuid(),
+                                              Page = 1,
+                                              PageSize = 5
+                                          };
+
         _characterRepository.GetCountAsync(Arg.Any<GetAllCharactersOptions>()).Returns(count);
-        
+
         // Act
-        var result = await _sut.GetCountAsync(options);
+        int result = await _sut.GetCountAsync(options);
 
         // Assert
         result.Should().Be(count);
@@ -200,13 +200,13 @@ public class CharacterServiceTests
     public async Task UpdateAsync_ShouldReturnFalse_WhenAccountIsNotFound()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.ExistsByIdAsync(character.Id).Returns(false);
-        
+
         // Act
-        var result = await _sut.UpdateAsync(character);
+        bool result = await _sut.UpdateAsync(character);
 
         // Assert
         result.Should().BeFalse();
@@ -216,31 +216,31 @@ public class CharacterServiceTests
     public async Task UpdateAsync_ShouldReturnFalse_WhenDatabaseFailsToUpdate()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
-        
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
+
         _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
         _characterRepository.UpdateAsync(Arg.Any<Character>()).Returns(false);
-        
+
         // Act
-        var result = await _sut.UpdateAsync(character);
+        bool result = await _sut.UpdateAsync(character);
 
         // Assert
         result.Should().BeFalse();
     }
-    
+
     [Fact]
     public async Task UpdateAsync_ShouldReturnTrue_WhenCharacterIsUpdated()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
-        
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
+
         _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
         _characterRepository.UpdateAsync(Arg.Any<Character>()).Returns(true);
-        
+
         // Act
-        var result = await _sut.UpdateAsync(character);
+        bool result = await _sut.UpdateAsync(character);
 
         // Assert
         result.Should().BeTrue();
@@ -250,13 +250,13 @@ public class CharacterServiceTests
     public async Task DeleteAsync_ShouldReturnFalse_WhenCharacterIsNotFound()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.ExistsByIdAsync(character.Id).Returns(false);
-        
+
         // Act
-        var result = await _sut.DeleteAsync(character.Id);
+        bool result = await _sut.DeleteAsync(character.Id);
 
         // Assert
         result.Should().BeFalse();
@@ -266,14 +266,14 @@ public class CharacterServiceTests
     public async Task DeleteAsync_ShouldReturnFalse_WhenDatabaseFailsToDelete()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
         _characterRepository.DeleteAsync(character.Id).Returns(false);
-        
+
         // Act
-        var result = await _sut.DeleteAsync(character.Id);
+        bool result = await _sut.DeleteAsync(character.Id);
 
         // Assert
         result.Should().BeFalse();
@@ -283,14 +283,14 @@ public class CharacterServiceTests
     public async Task DeleteAsync_ShouldReturnTrue_WhenDatabaseDeletesCharacter()
     {
         // Arrange
-        var account = Fakes.GenerateAccount();
-        var character = Fakes.GenerateCharacter(account);
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
 
         _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
         _characterRepository.DeleteAsync(character.Id).Returns(true);
-        
+
         // Act
-        var result = await _sut.DeleteAsync(character.Id);
+        bool result = await _sut.DeleteAsync(character.Id);
 
         // Assert
         result.Should().BeTrue();

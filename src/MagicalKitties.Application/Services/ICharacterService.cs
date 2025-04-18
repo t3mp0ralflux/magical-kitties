@@ -1,6 +1,4 @@
-﻿using MagicalKitties.Application.Models;
-using MagicalKitties.Application.Models.Accounts;
-using MagicalKitties.Application.Models.Characters;
+﻿using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 
 namespace MagicalKitties.Application.Services;

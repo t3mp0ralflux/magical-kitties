@@ -1,11 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using MagicalKitties.Api.Auth;
 using MagicalKitties.Application;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Api.Auth;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.IdentityModel.Tokens;
 
 namespace MagicalKitties.Api.Services;

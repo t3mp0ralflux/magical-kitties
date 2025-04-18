@@ -4,5 +4,4 @@ namespace MagicalKitties.Contracts.Responses.Flaws;
 
 public class FlawResponse : EndowmentResponse
 {
-    
 }

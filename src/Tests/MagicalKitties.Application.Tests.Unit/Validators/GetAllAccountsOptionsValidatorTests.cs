@@ -1,11 +1,11 @@
 ﻿using Bogus;
-using MagicalKitties.Application.Models.Accounts;
-using MagicalKitties.Application.Validators.Accounts;
 using FluentAssertions;
 using FluentAssertions.Collections;
 using FluentAssertions.Specialized;
 using FluentValidation;
 using FluentValidation.Results;
+using MagicalKitties.Application.Models.Accounts;
+using MagicalKitties.Application.Validators.Accounts;
 using ValidationException = FluentValidation.ValidationException;
 
 namespace MagicalKitties.Application.Tests.Unit.Validators;

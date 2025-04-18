@@ -1,12 +1,12 @@
-﻿using MagicalKitties.Api.Mapping;
+﻿using FluentValidation;
+using MagicalKitties.Api.Mapping;
+using MagicalKitties.Api.Services;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Errors;
-using FluentValidation;
-using MagicalKitties.Api.Services;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
         {
             return Unauthorized("You must activate your account before you can login");
         }
-        
+
         bool verified = _passwordHasher.Verify(request.Password, account.Password);
 
         if (!verified)
@@ -82,16 +82,16 @@ public class AuthController : ControllerBase
     [HttpPost(ApiEndpoints.Auth.VerifyPasswordResetCode)]
     [ProducesResponseType<OkResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> VerifyPasswordResetCode([FromRoute]string email, [FromBody] PasswordResetVerification verification, CancellationToken token)
+    public async Task<IActionResult> VerifyPasswordResetCode([FromRoute] string email, [FromBody] PasswordResetVerification verification, CancellationToken token)
     {
         if (!string.Equals(email.ToLowerInvariant(), verification.Email.ToLowerInvariant()))
         {
             throw new ValidationException("Email not valid");
         }
-        
+
         // throws ValidationExceptions if not valid
         await _accountService.VerifyPasswordResetCode(verification.Email, verification.Code, token);
-        
+
         return Ok();
     }
 

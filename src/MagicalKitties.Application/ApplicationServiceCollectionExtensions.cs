@@ -1,17 +1,12 @@
-﻿using MagicalKitties.Application.HostedServices;
-using FluentValidation;
+﻿using FluentValidation;
 using MagicalKitties.Application.Database;
-using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
-using EmailService = MagicalKitties.Application.HostedServices.EmailService;
 
 namespace MagicalKitties.Application;
-
-using EmailService = HostedServices.EmailService;
 
 public static class ApplicationServiceCollectionExtensions
 {
@@ -33,7 +28,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IAccountService, AccountService>();
         services.AddSingleton<IAuthService, AuthService>();
         services.AddSingleton<IGlobalSettingsService, GlobalSettingsService>();
-        services.AddSingleton<IEmailService, Services.Implementation.EmailService>();
+        services.AddSingleton<IEmailService, EmailService>();
         services.AddSingleton<ICharacterService, CharacterService>();
         services.AddSingleton<IFlawService, FlawService>();
         services.AddSingleton<ITalentService, TalentService>();
@@ -60,9 +55,9 @@ public static class ApplicationServiceCollectionExtensions
     {
         services.AddSingleton<IDbConnectionFactory>(_ => new NpgsqlConnectionFactory(connectionString));
         services.AddSingleton<DbInitializer>();
-        services.AddSingleton<IEmailService, Services.Implementation.EmailService>();
+        services.AddSingleton<IEmailService, EmailService>();
 
-        services.AddHostedService<EmailService>();
+        services.AddHostedService<HostedServices.EmailService>();
 
         return services;
     }

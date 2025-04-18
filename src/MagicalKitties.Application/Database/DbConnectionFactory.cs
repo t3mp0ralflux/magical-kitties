@@ -18,7 +18,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
     public NpgsqlConnectionFactory(string connectionString)
     {
         _connectionString = connectionString;
-        
+
         SqlMapper.AddTypeHandler(typeof(List<Attribute>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Endowment>), new JsonTypeHandler());
     }

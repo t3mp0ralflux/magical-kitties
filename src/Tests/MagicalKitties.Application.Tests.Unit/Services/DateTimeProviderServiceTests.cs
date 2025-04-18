@@ -1,5 +1,5 @@
-﻿using MagicalKitties.Application.Services.Implementation;
-using FluentAssertions;
+﻿using FluentAssertions;
+using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Tests.Unit.Services;
 

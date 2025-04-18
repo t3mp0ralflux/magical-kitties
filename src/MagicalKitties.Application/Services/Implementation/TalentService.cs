@@ -1,6 +1,4 @@
 ﻿using FluentValidation;
-using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 
@@ -14,7 +12,7 @@ public class TalentService : ITalentService
 
     public TalentService(IValidator<Talent> flawValidator, ITalentRepository talentRepository, IValidator<GetAllTalentsOptions> optionsValidator)
     {
-        this._flawValidator = flawValidator;
+        _flawValidator = flawValidator;
         _talentRepository = talentRepository;
         _optionsValidator = optionsValidator;
     }
@@ -36,7 +34,7 @@ public class TalentService : ITalentService
     public async Task<IEnumerable<Talent>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)
     {
         await _optionsValidator.ValidateAndThrowAsync(options, token);
-        
+
         return await _talentRepository.GetAllAsync(options, token);
     }
 

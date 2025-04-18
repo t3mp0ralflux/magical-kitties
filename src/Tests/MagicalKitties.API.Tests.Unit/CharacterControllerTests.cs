@@ -1,4 +1,5 @@
-﻿using MagicalKitties.Api.Controllers;
+﻿using FluentAssertions;
+using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
@@ -6,7 +7,6 @@ using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Characters;
 using MagicalKitties.Contracts.Responses.Characters;
-using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using Testing.Common;
@@ -54,26 +54,26 @@ public class CharacterControllerTests
                                                  AccountId = account.Id,
                                                  Username = account.Username,
                                                  Name = $"{account.Username}'s Unnamed Character",
-                                                 Attributes = 
+                                                 Attributes =
                                                  [
-                                                     new Attribute()
+                                                     new Attribute
                                                      {
                                                          Id = Guid.NewGuid(),
                                                          Name = "Cute",
                                                          Value = 0
                                                      },
-                                                     new Attribute()
+                                                     new Attribute
                                                      {
                                                          Id = Guid.NewGuid(),
                                                          Name = "Cunning",
                                                          Value = 0
                                                      },
-                                                     new Attribute()
+                                                     new Attribute
                                                      {
                                                          Id = Guid.NewGuid(),
                                                          Name = "Fierce",
                                                          Value = 0
-                                                     },
+                                                     }
                                                  ],
                                                  CurrentOwies = 0,
                                                  CurrentInjuries = 0,
@@ -89,9 +89,9 @@ public class CharacterControllerTests
         result.StatusCode.Should().Be(201);
         result.ActionName.Should().Be(nameof(_sut.Get));
         result.Value.Should().BeEquivalentTo(expectedResponse, options => options
-                                                                   .Excluding(x => x.Id)
-                                                                   .For(x=>x.Attributes)
-                                                                   .Exclude(y=>y.Id));
+                                                                          .Excluding(x => x.Id)
+                                                                          .For(x => x.Attributes)
+                                                                          .Exclude(y => y.Id));
     }
 
     [Fact]

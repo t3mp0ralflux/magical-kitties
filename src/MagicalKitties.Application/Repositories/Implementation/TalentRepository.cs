@@ -2,7 +2,6 @@
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
-using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Talents;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -52,7 +51,6 @@ public class TalentRepository : ITalentRepository
 
     public async Task<bool> ExistsByIdAsync(int id, CancellationToken token = default)
     {
-        
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         int result = await connection.QuerySingleOrDefaultAsync<int>(new CommandDefinition("""

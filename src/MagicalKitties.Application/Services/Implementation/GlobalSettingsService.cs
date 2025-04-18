@@ -7,11 +7,11 @@ namespace MagicalKitties.Application.Services.Implementation;
 
 public class GlobalSettingsService : IGlobalSettingsService
 {
+    private readonly IMemoryCache _cache;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IGlobalSettingsRepository _globalSettingsRepository;
     private readonly IValidator<GlobalSetting> _globalSettingValidator;
     private readonly IValidator<GetAllGlobalSettingsOptions> _optionsValidator;
-    private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly IMemoryCache _cache;
 
     public GlobalSettingsService(IGlobalSettingsRepository globalSettingsRepository, IValidator<GlobalSetting> globalSettingValidator, IValidator<GetAllGlobalSettingsOptions> optionsValidator, IDateTimeProvider dateTimeProvider, IMemoryCache cache)
     {

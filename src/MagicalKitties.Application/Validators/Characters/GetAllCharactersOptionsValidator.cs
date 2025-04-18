@@ -5,14 +5,14 @@ namespace MagicalKitties.Application.Validators.Characters;
 
 public class GetAllCharactersOptionsValidator : AbstractValidator<GetAllCharactersOptions>
 {
-    public static readonly string[] AcceptableSortFields = 
+    public static readonly string[] AcceptableSortFields =
     [
         "name",
         "level",
         "species",
         "class"
     ];
-    
+
     public GetAllCharactersOptionsValidator()
     {
         RuleFor(x => x.AccountId).NotNull().NotEqual(Guid.Empty);

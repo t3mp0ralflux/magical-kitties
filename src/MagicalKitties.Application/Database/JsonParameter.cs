@@ -13,15 +13,14 @@ public class JsonParameter : SqlMapper.ICustomQueryParameter
     {
         _value = value;
     }
-    
+
     public void AddParameter(IDbCommand command, string name)
     {
-        NpgsqlParameter parameter = new NpgsqlParameter(name, NpgsqlDbType.Json)
+        NpgsqlParameter parameter = new(name, NpgsqlDbType.Json)
                                     {
                                         Value = _value
                                     };
 
         command.Parameters.Add(parameter);
     }
-    
 }

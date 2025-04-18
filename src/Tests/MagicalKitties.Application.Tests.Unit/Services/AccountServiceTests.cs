@@ -1,12 +1,12 @@
-﻿using MagicalKitties.Application.Models.Accounts;
+﻿using FluentAssertions;
+using FluentAssertions.Equivalency;
+using FluentValidation;
+using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
-using FluentAssertions;
-using FluentAssertions.Equivalency;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.Core;
@@ -21,17 +21,17 @@ public class AccountServiceTests
     private readonly IValidator<Account> _accountValidator = Substitute.For<IValidator<Account>>();
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly IEmailService _emailService = Substitute.For<IEmailService>();
+
+    private readonly EquivalencyOptions<Account> _equivalencyOptions;
     private readonly IGlobalSettingsService _globalSettingsService = Substitute.For<IGlobalSettingsService>();
     private readonly ILogger<AccountService> _logger = Substitute.For<ILogger<AccountService>>();
     private readonly IValidator<GetAllAccountsOptions> _optionsValidator = Substitute.For<IValidator<GetAllAccountsOptions>>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly IValidator<PasswordReset> _passwordResetValidator = Substitute.For<IValidator<PasswordReset>>();
-    
-    private readonly EquivalencyOptions<Account> _equivalencyOptions;
 
     public AccountServiceTests()
     {
-        _sut = new AccountService(_accountRepository, _accountValidator, _dateTimeProvider, _optionsValidator, _passwordHasher, _globalSettingsService, _emailService, _logger,_passwordResetValidator);
+        _sut = new AccountService(_accountRepository, _accountValidator, _dateTimeProvider, _optionsValidator, _passwordHasher, _globalSettingsService, _emailService, _logger, _passwordResetValidator);
 
         _equivalencyOptions = new EquivalencyOptions<Account>().Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
     }
@@ -72,7 +72,7 @@ public class AccountServiceTests
         _accountRepository.GetByUsernameAsync(serviceAccount.Username).Returns(serviceAccount);
         _passwordHasher.CreateActivationToken().Returns("Test");
         _passwordHasher.Hash(account.Password).Returns("TestHash");
-        
+
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.ACTIVATION_EMAIL_FORMAT, string.Empty).Returns(testEmailFormat);
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.SERVICE_ACCOUNT_USERNAME, string.Empty).Returns(serviceAccount.Username);
 
@@ -251,9 +251,9 @@ public class AccountServiceTests
     {
         // Arrange
         _accountRepository.GetByEmailAsync(string.Empty).Returns((Account?)null);
-        
+
         // Act
-        var result = await _sut.GetByEmailAsync(null);
+        Account? result = await _sut.GetByEmailAsync(null);
 
         // Assert
         result.Should().BeNull();
@@ -580,7 +580,7 @@ public class AccountServiceTests
         _accountRepository.UpdateActivationAsync(Arg.Any<Account>()).Returns(true);
         _accountRepository.GetByUsernameAsync(serviceAccount.Username).Returns(serviceAccount);
         _accountRepository.GetByUsernameAsync(account.Username).Returns(account);
-        
+
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.ACTIVATION_EMAIL_FORMAT, string.Empty).Returns(testEmailFormat);
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.SERVICE_ACCOUNT_USERNAME, string.Empty).Returns(serviceAccount.Username);
 
@@ -659,12 +659,12 @@ public class AccountServiceTests
     public async Task RequestPasswordResetAsync_ShouldReturnFalse_WhenAccountDoesNotExist()
     {
         // Arrange
-        var email = "email@email.com";
+        string email = "email@email.com";
 
         _accountRepository.GetByEmailAsync(email).Returns((Account?)null);
-        
+
         // Act
-        var result = await _sut.RequestPasswordReset(email);
+        bool result = await _sut.RequestPasswordReset(email);
 
         // Assert
         result.Should().BeFalse();
@@ -676,16 +676,16 @@ public class AccountServiceTests
         // Arrange
         DateTime now = DateTime.UtcNow;
         Account account = Fakes.GenerateAccount();
-        
+
         account.PasswordResetRequestedUtc = now;
-        
+
         _dateTimeProvider.GetUtcNow().Returns(now);
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_REQUEST_DURATION_MINS, 5).Returns(5);
 
         _accountRepository.GetByEmailAsync(account.Email).Returns(account);
-        
+
         // Act
-        var result = await _sut.RequestPasswordReset(account.Email);
+        bool result = await _sut.RequestPasswordReset(account.Email);
 
         // Assert
         result.Should().BeTrue();
@@ -698,38 +698,38 @@ public class AccountServiceTests
         // Arrange
         DateTime now = DateTime.UtcNow;
         Account account = Fakes.GenerateAccount();
-        
+
         account.PasswordResetRequestedUtc = now.AddMinutes(-10);
-        
+
         _dateTimeProvider.GetUtcNow().Returns(now);
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_REQUEST_DURATION_MINS, 5).Returns(5);
         _passwordHasher.CreateOneTimeCode().Returns("069420");
 
         _accountRepository.GetByEmailAsync(account.Email).Returns(account);
-        
+
         // Act
-        var result = await _sut.RequestPasswordReset(account.Email);
+        bool result = await _sut.RequestPasswordReset(account.Email);
 
         // Assert
         result.Should().BeTrue();
         await _accountRepository.Received().RequestPasswordResetAsync(account.Email, "069420");
     }
-    
+
     [Fact]
     public async Task RequestPasswordResetAsync_ShouldReturnTrueAndUpdate_WhenNoRequestExists()
     {
         // Arrange
         DateTime now = DateTime.UtcNow;
         Account account = Fakes.GenerateAccount();
-        
+
         _dateTimeProvider.GetUtcNow().Returns(now);
         _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_REQUEST_DURATION_MINS, 5).Returns(5);
         _passwordHasher.CreateOneTimeCode().Returns("069420");
 
         _accountRepository.GetByEmailAsync(account.Email).Returns(account);
-        
+
         // Act
-        var result = await _sut.RequestPasswordReset(account.Email);
+        bool result = await _sut.RequestPasswordReset(account.Email);
 
         // Assert
         result.Should().BeTrue();

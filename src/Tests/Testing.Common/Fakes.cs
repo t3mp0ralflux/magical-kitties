@@ -24,8 +24,8 @@ public static class Fakes
                                      .RuleFor(x => x.UpdatedUtc, f => f.Date.Recent())
                                      .RuleFor(x => x.LastLoginUtc, f => f.Date.Recent())
                                      .RuleFor(x => x.DeletedUtc, _ => isDeleted ? DateTime.UtcNow : null)
-                                     .RuleFor(x=>x.PasswordResetRequestedUtc, _=> isReset ? DateTime.UtcNow : null)
-                                     .RuleFor(x=>x.PasswordResetCode, _ => isReset ? "ResetCode" : null);
+                                     .RuleFor(x => x.PasswordResetRequestedUtc, _ => isReset ? DateTime.UtcNow : null)
+                                     .RuleFor(x => x.PasswordResetCode, _ => isReset ? "ResetCode" : null);
 
         return fakeAccount;
     }
@@ -34,17 +34,17 @@ public static class Fakes
     {
         Faker<EmailData>? fakeSetting = new Faker<EmailData>()
                                         .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                        .RuleFor(x=>x.ShouldSend, _ => true)
-                                        .RuleFor(x=>x.SendAttempts, f=> 0)
-                                        .RuleFor(x=>x.SendAfterUtc, f=> (sendAfterUtc ??= f.Date.Recent() ))
-                                        .RuleFor(x=> x.SenderEmail, f=> f.Person.Email)
-                                        .RuleFor(x=> x.RecipientEmail, f=> f.Person.Email)
-                                        .RuleFor(x=>x.SenderAccountId, _=>Guid.NewGuid())
-                                        .RuleFor(x=>x.ReceiverAccountId, _=>Guid.NewGuid())
-                                        .RuleFor(x=>x.ResponseLog, f=>f.System.FileType())
-                                        .RuleFor(x=>x.Body, f=> f.Internet.ExampleEmail());
+                                        .RuleFor(x => x.ShouldSend, _ => true)
+                                        .RuleFor(x => x.SendAttempts, f => 0)
+                                        .RuleFor(x => x.SendAfterUtc, f => sendAfterUtc ??= f.Date.Recent())
+                                        .RuleFor(x => x.SenderEmail, f => f.Person.Email)
+                                        .RuleFor(x => x.RecipientEmail, f => f.Person.Email)
+                                        .RuleFor(x => x.SenderAccountId, _ => Guid.NewGuid())
+                                        .RuleFor(x => x.ReceiverAccountId, _ => Guid.NewGuid())
+                                        .RuleFor(x => x.ResponseLog, f => f.System.FileType())
+                                        .RuleFor(x => x.Body, f => f.Internet.ExampleEmail());
 
-            return fakeSetting;
+        return fakeSetting;
     }
 
     public static GlobalSetting GenerateGlobalSetting(string? value = null)
@@ -53,25 +53,25 @@ public static class Fakes
                                             .RuleFor(x => x.Id, _ => Guid.NewGuid())
                                             .RuleFor(x => x.Name, f => f.Commerce.ProductName())
                                             .RuleFor(x => x.Value, f => value ??= f.Hacker.Noun());
-        
+
         return fakeSetting;
     }
-    
+
     public static Character GenerateNewCharacter(Account account)
     {
         Faker<Attribute> attributesFaker = new Faker<Attribute>()
-                                                .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                                .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-                                                .RuleFor(x => x.Value, f => f.Random.Int(1,3));
-        
+                                           .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                           .RuleFor(x => x.Name, f => f.Commerce.ProductName())
+                                           .RuleFor(x => x.Value, f => f.Random.Int(1, 3));
+
         Faker<Character>? fakeCharacter = new Faker<Character>()
-                                          .RuleFor(x=>x.Id, _ => Guid.NewGuid())
-                                          .RuleFor(x=>x.AccountId, _ => account.Id)
-                                          .RuleFor(x=>x.Username, _ => account.Username)
-                                          .RuleFor(x=>x.Name, f => f.Person.FullName)
-                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3))
-                                          .RuleFor(x=>x.MaxOwies, _ => 2)
-                                          .RuleFor(x=>x.StartingTreats, _ => 2);
+                                          .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                          .RuleFor(x => x.AccountId, _ => account.Id)
+                                          .RuleFor(x => x.Username, _ => account.Username)
+                                          .RuleFor(x => x.Name, f => f.Person.FullName)
+                                          .RuleFor(x => x.Attributes, _ => attributesFaker.Generate(3))
+                                          .RuleFor(x => x.MaxOwies, _ => 2)
+                                          .RuleFor(x => x.StartingTreats, _ => 2);
 
         return fakeCharacter;
     }
@@ -81,18 +81,18 @@ public static class Fakes
         Faker<Attribute> attributesFaker = new Faker<Attribute>()
                                            .RuleFor(x => x.Id, _ => Guid.NewGuid())
                                            .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-                                           .RuleFor(x => x.Value, f => f.Random.Int(1,3));
-        
+                                           .RuleFor(x => x.Value, f => f.Random.Int(1, 3));
+
         Faker<Character>? fakeCharacter = new Faker<Character>()
-                                          .RuleFor(x=>x.Id, _ => Guid.NewGuid())
-                                          .RuleFor(x=>x.AccountId, _ => account.Id)
-                                          .RuleFor(x=>x.Username, _ => account.Username)
-                                          .RuleFor(x=>x.Name, f => f.Person.FullName)
-                                          .RuleFor(x=>x.CreatedUtc, _=>DateTime.UtcNow)
-                                          .RuleFor(x=>x.UpdatedUtc, _=>DateTime.UtcNow)
-                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3))
-                                          .RuleFor(x=>x.MaxOwies, _ => 2)
-                                          .RuleFor(x=>x.StartingTreats, _ => 2);
+                                          .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                          .RuleFor(x => x.AccountId, _ => account.Id)
+                                          .RuleFor(x => x.Username, _ => account.Username)
+                                          .RuleFor(x => x.Name, f => f.Person.FullName)
+                                          .RuleFor(x => x.CreatedUtc, _ => DateTime.UtcNow)
+                                          .RuleFor(x => x.UpdatedUtc, _ => DateTime.UtcNow)
+                                          .RuleFor(x => x.Attributes, _ => attributesFaker.Generate(3))
+                                          .RuleFor(x => x.MaxOwies, _ => 2)
+                                          .RuleFor(x => x.StartingTreats, _ => 2);
 
         return fakeCharacter;
     }

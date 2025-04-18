@@ -2,7 +2,6 @@
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
-using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Flaws;
 
 namespace MagicalKitties.Application.Repositories.Implementation;

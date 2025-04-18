@@ -2,5 +2,4 @@
 
 public class TalentsResponse : PagedResponse<TalentResponse>
 {
-    
 }

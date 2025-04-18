@@ -222,7 +222,7 @@ public static class ContractMapping
     {
         return problems.Select(x => x.ToResponse()).ToList();
     }
-    
+
     public static AttributeResponse ToResponse(this Attribute attribute)
     {
         return new AttributeResponse
@@ -344,7 +344,7 @@ public static class ContractMapping
                    IsCustom = flaw.IsCustom
                };
     }
-    
+
     public static FlawsResponse ToResponse(this IEnumerable<Flaw> flaws, int page, int pageSize, int total)
     {
         return new FlawsResponse
@@ -365,9 +365,9 @@ public static class ContractMapping
                    SortField = request.SortBy
                };
     }
-    
+
     #endregion
-    
+
     #region Talents
 
     public static Talent ToTalent(this CreateTalentRequest request)
@@ -380,7 +380,7 @@ public static class ContractMapping
                    IsCustom = request.IsCustom
                };
     }
-    
+
     public static Talent ToTalent(this UpdateTalentRequest request)
     {
         return new Talent
@@ -391,7 +391,7 @@ public static class ContractMapping
                    IsCustom = request.IsCustom
                };
     }
-    
+
     public static TalentResponse ToResponse(this Talent talent)
     {
         return new TalentResponse
@@ -402,7 +402,7 @@ public static class ContractMapping
                    IsCustom = talent.IsCustom
                };
     }
-    
+
     public static TalentsResponse ToResponse(this IEnumerable<Talent> talents, int page, int pageSize, int total)
     {
         return new TalentsResponse
@@ -413,7 +413,7 @@ public static class ContractMapping
                    Total = total
                };
     }
-    
+
     public static GetAllTalentsOptions ToOptions(this GetAllTalentsRequest request)
     {
         return new GetAllTalentsOptions
@@ -423,6 +423,7 @@ public static class ContractMapping
                    SortField = request.SortBy
                };
     }
+
     #endregion
 
     #region GlobalSettings

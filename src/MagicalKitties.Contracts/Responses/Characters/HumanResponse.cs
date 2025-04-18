@@ -6,5 +6,4 @@ public class HumanResponse
     public required string Name { get; set; }
     public string Description { get; set; } = "";
     public List<ProblemResponse> Problems { get; set; } = [];
-    
 }

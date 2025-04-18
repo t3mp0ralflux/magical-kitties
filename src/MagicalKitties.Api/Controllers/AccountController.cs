@@ -1,11 +1,11 @@
 ﻿using Asp.Versioning;
+using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Responses.Account;
 using MagicalKitties.Contracts.Responses.Errors;
-using MagicalKitties.Api.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

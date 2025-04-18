@@ -17,7 +17,7 @@ public class EmailService : IHostedService
     private readonly IGlobalSettingsService _globalSettingsService;
     private readonly ILogger<EmailService> _logger;
 
-    private PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromSeconds(9999)); // initial value to prevent running for a while. Overridden in StartAsync.
+    private PeriodicTimer _timer = new(TimeSpan.FromSeconds(9999)); // initial value to prevent running for a while. Overridden in StartAsync.
 
     public EmailService(ILogger<EmailService> logger, IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
     {

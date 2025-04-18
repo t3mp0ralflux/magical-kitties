@@ -1,5 +1,5 @@
-﻿using MagicalKitties.Contracts.Responses.Errors;
-using FluentValidation;
+﻿using FluentValidation;
+using MagicalKitties.Contracts.Responses.Errors;
 
 namespace MagicalKitties.Api.Mapping;
 

@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Repositories;
 
@@ -7,13 +6,13 @@ namespace MagicalKitties.Application.Services.Implementation;
 
 public class FlawService : IFlawService
 {
+    private readonly IFlawRepository _flawRepository;
     private readonly IValidator<Flaw> _flawValidator;
     private readonly IValidator<GetAllFlawsOptions> _optionsValidator;
-    private readonly IFlawRepository _flawRepository;
 
     public FlawService(IValidator<Flaw> flawValidator, IFlawRepository flawRepository, IValidator<GetAllFlawsOptions> optionsValidator)
     {
-        this._flawValidator = flawValidator;
+        _flawValidator = flawValidator;
         _flawRepository = flawRepository;
         _optionsValidator = optionsValidator;
     }
@@ -35,7 +34,7 @@ public class FlawService : IFlawService
     public async Task<IEnumerable<Flaw>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)
     {
         await _optionsValidator.ValidateAndThrowAsync(options, token);
-        
+
         return await _flawRepository.GetAllAsync(options, token);
     }
 

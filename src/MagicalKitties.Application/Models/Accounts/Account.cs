@@ -27,6 +27,8 @@ public class Activation
 {
     public DateTime Expiration { get; set; }
     public string Code { get; set; }
-    
-    public void WithActivation(){}
+
+    public void WithActivation()
+    {
+    }
 }

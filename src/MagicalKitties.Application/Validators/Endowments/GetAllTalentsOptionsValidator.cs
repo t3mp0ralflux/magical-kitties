@@ -5,7 +5,6 @@ namespace MagicalKitties.Application.Validators.Endowments;
 
 public class GetAllFlawsOptionsValidator : AbstractValidator<GetAllFlawsOptions>
 {
-    
     public GetAllFlawsOptionsValidator()
     {
         RuleFor(x => x.Page).GreaterThanOrEqualTo(1);

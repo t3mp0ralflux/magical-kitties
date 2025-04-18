@@ -7,5 +7,4 @@ public class ProblemResponse
     public required string Emotion { get; set; }
     public required int Rank { get; set; }
     public required bool Solved { get; set; }
-    
 }

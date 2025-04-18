@@ -6,5 +6,4 @@ namespace MagicalKitties.Api.Controllers;
 [Route("api/debug")]
 public class DebugController : ControllerBase
 {
-
 }

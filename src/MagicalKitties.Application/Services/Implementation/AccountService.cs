@@ -201,7 +201,7 @@ public class AccountService : IAccountService
         account.PasswordResetCode = _passwordHasher.CreateOneTimeCode();
 
         await _accountRepository.RequestPasswordResetAsync(email, account.PasswordResetCode, token);
-        
+
         try
         {
             await QueuePasswordResetEmail(account, token);
@@ -243,7 +243,7 @@ public class AccountService : IAccountService
         await _passwordResetValidator.ValidateAndThrowAsync(reset, token);
 
         reset.Password = _passwordHasher.Hash(reset.Password); // gotta have it
-        
+
         bool result = await _accountRepository.ResetPasswordAsync(reset, token);
 
         return result;
@@ -259,7 +259,7 @@ public class AccountService : IAccountService
 
         string activationLink = string.Format(ApplicationAssumptions.ACTIVATION_LINK_FORMAT, account.Username, account.ActivationCode);
         string resendLink = string.Format(ApplicationAssumptions.RESEND_ACTIVATION_LINK_FORMAT, account.Username, account.ActivationCode);
-        
+
         EmailData data = new()
                          {
                              Id = Guid.NewGuid(),
@@ -276,7 +276,7 @@ public class AccountService : IAccountService
 
         _emailService.QueueEmailAsync(data, token); // fire and forget, no waiting.
     }
-    
+
     private async Task QueuePasswordResetEmail(Account account, CancellationToken token = default)
     {
         string? serviceUsername = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.SERVICE_ACCOUNT_USERNAME, string.Empty, token);
@@ -284,7 +284,7 @@ public class AccountService : IAccountService
         int expirationMinutes = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_RESET_REQUEST_EXPIRATION_MINS, 5, token);
 
         Account? serviceAccount = await _accountRepository.GetByUsernameAsync(serviceUsername, token);
-        
+
         EmailData data = new()
                          {
                              Id = Guid.NewGuid(),

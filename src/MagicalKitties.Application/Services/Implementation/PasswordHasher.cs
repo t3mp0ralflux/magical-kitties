@@ -3,7 +3,6 @@ using System.Text;
 
 namespace MagicalKitties.Application.Services.Implementation;
 
-
 public class PasswordHasher : IPasswordHasher
 {
     private const int HashSize = 256 / 8;
