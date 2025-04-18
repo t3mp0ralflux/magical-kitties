@@ -2,11 +2,16 @@
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Requests.Characters;
+using MagicalKitties.Contracts.Requests.Flaws;
 using MagicalKitties.Contracts.Requests.GlobalSetting;
+using MagicalKitties.Contracts.Requests.Talents;
 using MagicalKitties.Contracts.Responses.Account;
 using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Characters;
@@ -216,18 +221,6 @@ public static class ContractMapping
         return problems.Select(x => x.ToResponse()).ToList();
     }
 
-    public static EndowmentResponse ToResponse(this Endowment endowment)
-    {
-        return new EndowmentResponse
-               {
-                   Id = endowment.Id,
-                   Name = endowment.Name,
-                   Description = endowment.Description,
-                   BonusFeatures = endowment.BonusFeatures.ToResponse(),
-                   IsCustom = endowment.IsCustom
-               };
-    }
-
     public static List<EndowmentResponse> ToResponse(this List<Endowment> endowments)
     {
         return endowments.Select(x => x.ToResponse()).ToList();
@@ -264,6 +257,130 @@ public static class ContractMapping
                };
     }
 
+    public static LevelUpdate ToUpdate(this CharacterLevelUpdateRequest request)
+    {
+        return new LevelUpdate
+               {
+                   CharacterId = request.CharacterId,
+                   Level = request.Level
+               };
+    }
+
+    public static FlawUpdate ToUpdate(this CharacterFlawUpdateRequest request)
+    {
+        return new FlawUpdate
+               {
+                   CharacterId = request.CharacterId,
+                   FlawId = request.FlawId
+               };
+    }
+
+    public static TalentUpdate ToUpdate(this CharacterTalentUpdateRequest request)
+    {
+        return new TalentUpdate
+               {
+                   CharacterId = request.CharacterId,
+                   TalentId = request.TalentId
+               };
+    }
+
+    public static CharacterUpdateResponse ToResponse(this LevelUpdate update, string message)
+    {
+        return new CharacterUpdateResponse
+               {
+                   CharacterId = update.CharacterId,
+                   Message = message
+               };
+    }
+
+    public static CharacterUpdateResponse ToResponse(this FlawUpdate update, string message)
+    {
+        return new CharacterUpdateResponse
+               {
+                   CharacterId = update.CharacterId,
+                   Message = message
+               };
+    }
+
+    public static CharacterUpdateResponse ToResponse(this TalentUpdate update, string message)
+    {
+        return new CharacterUpdateResponse
+               {
+                   CharacterId = update.CharacterId,
+                   Message = message
+               };
+    }
+
+    #endregion
+
+    #region Endowments
+
+    public static Endowment ToFlaw(this CreateFlawRequest request)
+    {
+        return new Endowment
+               {
+                   Id = request.Id,
+                   Name = request.Name,
+                   Description = request.Description,
+                   IsCustom = request.IsCustom,
+                   BonusFeatures = request.BonusFeatures.Select(ToFlaw).ToList()
+               };
+    }
+
+    public static Endowment ToFlaw(this UpdateFlawRequest request)
+    {
+        return new Endowment
+               {
+                   Id = request.Id,
+                   Name = request.Name,
+                   Description = request.Description,
+                   IsCustom = request.IsCustom,
+                   BonusFeatures = request.BonusFeatures.Select(ToFlaw).ToList()
+               };
+    }
+
+    public static EndowmentResponse ToResponse(this Endowment endowment)
+    {
+        return new EndowmentResponse
+               {
+                   Id = endowment.Id,
+                   Name = endowment.Name,
+                   Description = endowment.Description,
+                   BonusFeatures = endowment.BonusFeatures.ToResponse(),
+                   IsCustom = endowment.IsCustom
+               };
+    }
+    
+    public static EndowmentsResponse ToResponse(this IEnumerable<Endowment> endowments, int page, int pageSize, int total)
+    {
+        return new EndowmentsResponse
+               {
+                   Items = endowments.Select(ToResponse).ToList(),
+                   Page = page,
+                   PageSize = pageSize,
+                   Total = total
+               };
+    }
+
+    public static GetAllFlawsOptions ToOptions(this GetAllFlawsRequest request)
+    {
+        return new GetAllFlawsOptions
+               {
+                   Page = request.Page,
+                   PageSize = request.PageSize,
+                   SortField = request.SortBy
+               };
+    }
+
+    public static GetAllTalentsOptions ToOptions(this GetAllTalentsRequest request)
+    {
+        return new GetAllTalentsOptions
+               {
+                   Page = request.Page,
+                   PageSize = request.PageSize,
+                   SortField = request.SortBy
+               };
+    }
     #endregion
 
     #region GlobalSettings

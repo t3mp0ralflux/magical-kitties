@@ -4,6 +4,7 @@ using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -66,10 +67,11 @@ public class CharacterRepository : ICharacterRepository
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
 
+        // https://stackoverflow.com/questions/56283658/how-do-i-pass-json-as-a-primitive-postgresql-type-to-a-function-using-dapper/57534990#57534990
         IEnumerable<Character> result = await connection.QueryAsync<Character>(new CommandDefinition($"""
                                                                                                       select {CharacterFields}, {StatsFields}
                                                                                                       from character c
-                                                                                                      inner join characterstats cs on c.id = cs.character_id
+                                                                                                      inner join characterstat cs on c.id = cs.character_id
                                                                                                       where c.id = @id
                                                                                                       {shouldIncludeDeleted}
                                                                                                       """, new { id }, cancellationToken: token));
@@ -78,59 +80,48 @@ public class CharacterRepository : ICharacterRepository
 
     public async Task<IEnumerable<Character>> GetAllAsync(GetAllCharactersOptions options, CancellationToken token = default)
     {
-//         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-//
-//         string orderClause = string.Empty;
-//
-//         if (options.SortField is not null)
-//         {
-//             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
-//         }
-//
-//         IEnumerable<Character> results = await connection.QueryAsync<Character, Characteristic, LevelInfo, Character>(new CommandDefinition($"""
-//                                                                                                                                              select {CharacterFields}, {CharacteristicsFields}, {LevelInfoFields}
-//                                                                                                                                              from character c
-//                                                                                                                                                  left join characteristics ch on c.id = ch.character_id
-//                                                                                                                                                  inner join characterlevel cl on cl.character_id = c.id
-//                                                                                                                                                  inner join levelinfo li on cl.level_id = li.id
-//                                                                                                                                              where c.account_id = @AccountId
-//                                                                                                                                              and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
-//                                                                                                                                              and c.deleted_utc is null
-//                                                                                                                                              {orderClause}
-//                                                                                                                                              """, new
-//                                                                                                                                                   {
-//                                                                                                                                                       options.AccountId,
-//                                                                                                                                                       Name = options.Name?.ToLowerInvariant()
-//                                                                                                                                                   }, cancellationToken: token), (character, characteristics, levelInfo) =>
-//                                                                                                                                                                                 {
-//                                                                                                                                                                                     character.Characteristics = characteristics;
-//                                                                                                                                                                                     character.Level = levelInfo.Level;
-//                                                                                                                                                                                     return character;
-//                                                                                                                                                                                 }, SplitFields);
-//         return results;
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        return []; // TODO: DON'T LEAVE IT THIS WAY.
+        string orderClause = string.Empty;
+
+        if (options.SortField is not null)
+        {
+            orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
+        }
+
+        IEnumerable<Character> results = await connection.QueryAsync<Character>(new CommandDefinition($"""
+                                                                                                       select {CharacterFields}, {StatsFields}
+                                                                                                       from character c
+                                                                                                       inner join characterstat cs on c.id = cs.character_id
+                                                                                                       where c.account_id = @AccountId
+                                                                                                       and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
+                                                                                                       and c.deleted_utc is null
+                                                                                                       {orderClause}
+                                                                                                       """, new
+                                                                                                            {
+                                                                                                                options.AccountId,
+                                                                                                                Name = options.Name?.ToLowerInvariant()
+                                                                                                            }, cancellationToken: token));
+        return results;
     }
 
     public async Task<int> GetCountAsync(GetAllCharactersOptions options, CancellationToken token = default)
     {
-        // using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        //
-        // int result = await connection.QuerySingleAsync<int>(new CommandDefinition("""
-        //                                                                           select count(c.id)
-        //                                                                           from character c left join  characteristics ch on c.id = ch.character_id
-        //                                                                           where c.account_id = @AccountId
-        //                                                                           and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
-        //                                                                           and c.deleted_utc is null
-        //                                                                           """, new
-        //                                                                                {
-        //                                                                                    options.AccountId,
-        //                                                                                    Name = options.Name?.ToLowerInvariant()
-        //                                                                                }, cancellationToken: token));
-        //
-        // return result;
-
-        return 0; // TODO: DON'T LEAVE IT THIS WAY.
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        
+        int result = await connection.QuerySingleAsync<int>(new CommandDefinition("""
+                                                                                  select count(c.id)
+                                                                                  from character c
+                                                                                  where c.account_id = @AccountId
+                                                                                  and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
+                                                                                  and c.deleted_utc is null
+                                                                                  """, new
+                                                                                       {
+                                                                                           options.AccountId,
+                                                                                           Name = options.Name?.ToLowerInvariant()
+                                                                                       }, cancellationToken: token));
+        
+        return result;
     }
 
     public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
@@ -148,47 +139,25 @@ public class CharacterRepository : ICharacterRepository
 
     public async Task<bool> UpdateAsync(Character character, CancellationToken token = default)
     {
-        // using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        // using IDbTransaction transaction = connection.BeginTransaction();
-        //
-        // // note: don't update the dead
-        // int result = await connection.ExecuteAsync(new CommandDefinition("""
-        //                                                                  update character
-        //                                                                  set name = @Name, updated_utc = @UpdatedUtc
-        //                                                                  where id = @Id
-        //                                                                  and deleted_utc is null
-        //                                                                  """, new
-        //                                                                       {
-        //                                                                           character.Name,
-        //                                                                           character.Id,
-        //                                                                           character.UpdatedUtc
-        //                                                                       }, cancellationToken: token));
-        //
-        // if (result > 0)
-        // {
-        //     await connection.ExecuteAsync(new CommandDefinition("""
-        //                                                         update characteristics
-        //                                                         set gender = @Gender, age = @Age, hair = @Hair, eyes = @Eyes, skin = @Skin, height = @Height, weight = @Weight, faith = @Faith
-        //                                                         where character_id = @Id
-        //                                                         """, new
-        //                                                              {
-        //                                                                  character.Characteristics.Gender,
-        //                                                                  character.Characteristics.Age,
-        //                                                                  character.Characteristics.Hair,
-        //                                                                  character.Characteristics.Eyes,
-        //                                                                  character.Characteristics.Skin,
-        //                                                                  character.Characteristics.Height,
-        //                                                                  character.Characteristics.Weight,
-        //                                                                  character.Characteristics.Faith,
-        //                                                                  character.Id
-        //                                                              }, cancellationToken: token));
-        // }
-        //
-        // transaction.Commit();
-        //
-        // return result > 0;
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
 
-        return true; // TODO: DON'T LEAVE IT THIS WAY.
+        // note: don't update the dead
+        int result = await connection.ExecuteAsync(new CommandDefinition("""
+                                                                         update character
+                                                                         set name = @Name, updated_utc = @UpdatedUtc
+                                                                         where id = @Id
+                                                                         and deleted_utc is null
+                                                                         """, new
+                                                                              {
+                                                                                  character.Name,
+                                                                                  character.Id,
+                                                                                  character.UpdatedUtc
+                                                                              }, cancellationToken: token));
+
+        transaction.Commit();
+
+        return result > 0;
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
@@ -210,30 +179,63 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateLevelAsync(Character character, Guid levelId, CancellationToken token)
+    public async Task<bool> UpdateLevelAsync(LevelUpdate update, CancellationToken token)
     {
-        // using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        // using IDbTransaction transaction = connection.BeginTransaction();
-        //
-        // int result = await connection.ExecuteAsync(new CommandDefinition("""
-        //                                                                  update character
-        //                                                                  set current_xp = @CurrentXp
-        //                                                                  where id = @Id
-        //                                                                  """, new { character.CurrentXp, character.Id }));
-        //
-        // if (result > 0)
-        // {
-        //     await connection.ExecuteAsync(new CommandDefinition("""
-        //                                                         update characterlevel
-        //                                                         set level_id = @levelId
-        //                                                         where character_id = @Id
-        //                                                         """, new { character.Id, levelId }, cancellationToken: token));
-        // }
-        //
-        // transaction.Commit();
-        //
-        // return result > 0;
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
 
-        return true; // TODO: DON'T LEAVE IT THIS WAY.
+        int result = await connection.ExecuteAsync(new CommandDefinition("""
+                                                                         update characterstat
+                                                                         set level = @Level
+                                                                         where id = @CharacterId
+                                                                         """, new
+                                                                              {
+                                                                                  update.CharacterId,
+                                                                                  update.Level
+                                                                              }));
+
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    public async Task<bool> UpdateFlawAsync(FlawUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsync(new CommandDefinition("""
+                                                                         update character
+                                                                         set flaw_id = @FlawId
+                                                                         where id = @CharacterId
+                                                                         """, new
+                                                                              {
+                                                                                  update.CharacterId,
+                                                                                  update.FlawId
+                                                                              }, cancellationToken: token));
+
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    public async Task<bool> UpdateTalentAsync(TalentUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsync(new CommandDefinition("""
+                                                                         update character
+                                                                         set talent_id = @TalentId
+                                                                         where id = @CharacterId
+                                                                         """, new
+                                                                              {
+                                                                                  update.CharacterId,
+                                                                                  update.TalentId
+                                                                              }, cancellationToken: token));
+
+        transaction.Commit();
+
+        return result > 0;
     }
 }

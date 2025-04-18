@@ -1,4 +1,6 @@
-﻿using MagicalKitties.Api.Mapping;
+﻿using System.Data;
+using Dapper;
+using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
@@ -15,15 +17,16 @@ using ctr = MagicalKitties.Contracts.Models;
 
 namespace MagicalKitties.Application.Tests.Integration;
 
-public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>
+public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDisposable
 {
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public AccountRespositoryTests(ApplicationApiFactory apiFactory)
     {
-        IDbConnectionFactory connectionFactory = apiFactory.Services.GetRequiredService<IDbConnectionFactory>();
+        _dbConnectionFactory = apiFactory.Services.GetRequiredService<IDbConnectionFactory>();
 
-        _sut = new AccountRepository(connectionFactory, _dateTimeProvider);
+        _sut = new AccountRepository(_dbConnectionFactory, _dateTimeProvider);
     }
 
     public IAccountRepository _sut { get; set; }
@@ -118,7 +121,7 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>
     public async Task GetAllAsync_ShouldReturnEmptyList_WhenNothingIsFound(AccountStatus? accountStatus, AccountRole? accountRole, string? userName)
     {
         // Arrange
-        Account account = Fakes.GenerateAccount(); // defaults to Active, Admin
+        Account account = Fakes.GenerateAccount();
 
         GetAllAccountsOptions options = new()
                                         {
@@ -128,7 +131,6 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>
                                             Page = 1,
                                             PageSize = 10
                                         };
-        await _sut.CreateAsync(account);
 
         // Act
         IEnumerable<Account> result = await _sut.GetAllAsync(options);
@@ -391,6 +393,9 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>
 
                                                            return options;
                                                        });
+        
+        // cleanup as to not poison other tests
+        await _sut.DeleteAsync(updatedRecord.Id);
     }
 
     [SkipIfEnvironmentMissingFact]
@@ -647,5 +652,11 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>
         yield return [account, account.Email.ToLowerInvariant()];
         yield return [account, account.Email.ToUpperInvariant()];
         yield return [account, account.Email.RandomizeCasing()];
+    }
+
+    public async void Dispose()
+    {
+        IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
+        await connection.ExecuteAsync("delete from account");
     }
 }

@@ -33,8 +33,39 @@ public static class ApiEndpoints
         public const string Get = $"{Base}/{{id:guid}}";
         public const string GetAll = Base;
         public const string Update = Base;
-        public const string ChangeAdvancementMethod = $"{Base}/{{id:guid}}/advancement/{{advancementMethod}}";
-        public const string ChangeLevel = $"{Base}/{{characterId:guid}}/level/{{level}}";
+        public const string ChangeLevel = $"{Base}/level";
+        public const string ChangeFlaw = $"{Base}/flaw";
+        public const string ChangeTalent = $"{Base}/talent";
+    }
+
+    public static class Flaws
+    {
+        private const string Base = $"{ApiBase}/Flaws";
+        public const string Create = Base;
+        public const string Delete = $"{Base}/{{id:int}}";
+        public const string Get = $"{Base}/{{id:int}}";
+        public const string GetAll = Base;
+        public const string Update = Base;
+    }
+    
+    public static class Talents
+    {
+        private const string Base = $"{ApiBase}/Talents";
+        public const string Create = Base;
+        public const string Delete = $"{Base}/{{id:int}}";
+        public const string Get = $"{Base}/{{id:int}}";
+        public const string GetAll = Base;
+        public const string Update = Base;
+    }
+    
+    public static class MagicalPowers
+    {
+        private const string Base = $"{ApiBase}/MagicalPowers";
+        public const string Create = Base;
+        public const string Delete = $"{Base}/{{id:int}}";
+        public const string Get = $"{Base}/{{id:int}}";
+        public const string GetAll = Base;
+        public const string Update = Base;
     }
 
     public static class GlobalSettings

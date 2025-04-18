@@ -234,15 +234,7 @@ public class CharacterControllerTests
         CharacterUpdateRequest request = new()
                                          {
                                              Id = Guid.NewGuid(),
-                                             Name = string.Empty,
-                                             Gender = string.Empty,
-                                             Age = string.Empty,
-                                             Hair = string.Empty,
-                                             Eyes = string.Empty,
-                                             Skin = string.Empty,
-                                             Height = string.Empty,
-                                             Weight = string.Empty,
-                                             Faith = string.Empty
+                                             Name = string.Empty
                                          };
 
         // Act
@@ -265,15 +257,7 @@ public class CharacterControllerTests
         CharacterUpdateRequest request = new()
                                          {
                                              Id = Guid.NewGuid(),
-                                             Name = string.Empty,
-                                             Gender = string.Empty,
-                                             Age = string.Empty,
-                                             Hair = string.Empty,
-                                             Eyes = string.Empty,
-                                             Skin = string.Empty,
-                                             Height = string.Empty,
-                                             Weight = string.Empty,
-                                             Faith = string.Empty
+                                             Name = string.Empty
                                          };
 
         // Act
@@ -296,15 +280,7 @@ public class CharacterControllerTests
         CharacterUpdateRequest request = new()
                                          {
                                              Id = Guid.NewGuid(),
-                                             Name = "Steve",
-                                             Gender = "All",
-                                             Age = "Infinite",
-                                             Hair = "None",
-                                             Eyes = "None",
-                                             Skin = "None",
-                                             Height = "Infinite",
-                                             Weight = "None",
-                                             Faith = "All"
+                                             Name = "Steve"
                                          };
 
         CharacterResponse expectedResponse = request.ToCharacter(account).ToResponse();

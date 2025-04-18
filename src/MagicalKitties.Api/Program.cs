@@ -72,7 +72,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
                               {
                                   options
-                                      .WithTitle("DND Within API")
+                                      .WithTitle("Magical Kitties Save the Day API")
                                       .WithTheme(ScalarTheme.Mars)
                                       .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
                               });

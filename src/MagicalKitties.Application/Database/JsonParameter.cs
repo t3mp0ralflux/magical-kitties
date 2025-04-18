@@ -23,4 +23,5 @@ public class JsonParameter : SqlMapper.ICustomQueryParameter
 
         command.Parameters.Add(parameter);
     }
+    
 }

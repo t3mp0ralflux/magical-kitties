@@ -2,6 +2,7 @@
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Characters;
@@ -179,10 +180,11 @@ public class CharacterController : ControllerBase
     }
     
     [HttpPut(ApiEndpoints.Characters.ChangeLevel)]
-    [ProducesResponseType<OkResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<CharacterUpdateResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<BadRequestResult>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ChangeLevel([FromRoute]Guid characterId, [FromRoute]int level, CancellationToken token)
+    public async Task<IActionResult> ChangeLevel([FromBody]CharacterLevelUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -191,14 +193,74 @@ public class CharacterController : ControllerBase
             return Unauthorized();
         }
 
+        LevelUpdate update = request.ToUpdate();
+
         // will throw validationexception on errors.
-        bool result = await _characterService.ChangeLevelAsync(characterId, level, token);
+        bool success = await _characterService.UpdateLevelAsync(update, token);
         
-        if (!result)
+        if (!success)
         {
             return NotFound();
         }
 
-        return Ok();
+        CharacterUpdateResponse result = update.ToResponse("Level update was successful");
+
+        return Ok(result);
+    }
+
+    [HttpPut(ApiEndpoints.Characters.ChangeFlaw)]
+    [ProducesResponseType<CharacterUpdateResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<BadRequestResult>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangeFlaw([FromBody]CharacterFlawUpdateRequest request, CancellationToken token)
+    {
+        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        FlawUpdate update = request.ToUpdate();
+
+        bool success = await _characterService.UpdateFlawAsync(update, token);
+
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        CharacterUpdateResponse result = update.ToResponse("Flaw update was successful");
+
+        return Ok(result);
+    }
+    
+    [HttpPut(ApiEndpoints.Characters.ChangeTalent)]
+    [ProducesResponseType<CharacterUpdateResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<BadRequestResult>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangeTalent([FromBody]CharacterTalentUpdateRequest request, CancellationToken token)
+    {
+        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        TalentUpdate update = request.ToUpdate();
+
+        bool success = await _characterService.UpdateTalentAsync(update, token);
+
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        CharacterUpdateResponse result = update.ToResponse("Flaw update was successful");
+
+        return Ok(result);
     }
 }

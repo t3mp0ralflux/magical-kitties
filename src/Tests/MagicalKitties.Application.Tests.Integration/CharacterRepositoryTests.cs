@@ -1,8 +1,9 @@
-﻿using MagicalKitties.Application.Database;
+﻿using System.Data;
+using Dapper;
+using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services.Implementation;
 using FluentAssertions;
@@ -14,15 +15,16 @@ namespace MagicalKitties.Application.Tests.Integration;
 
 public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 {
-    private readonly IAccountRepository _accountRepository;
+    private readonly AccountRepository _accountRepository;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
-        IDbConnectionFactory connectionFactory = apiFactory.Services.GetRequiredService<IDbConnectionFactory>();
+        _dbConnectionFactory = apiFactory.Services.GetRequiredService<IDbConnectionFactory>();
 
-        _sut = new CharacterRepository(connectionFactory, _dateTimeProvider);
-        _accountRepository = new AccountRepository(connectionFactory, _dateTimeProvider);
+        _sut = new CharacterRepository(_dbConnectionFactory, _dateTimeProvider);
+        _accountRepository = new AccountRepository(_dbConnectionFactory, _dateTimeProvider);
     }
 
     public CharacterRepository _sut { get; set; }
@@ -362,5 +364,11 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         yield return [account, character, character.Name.ToLowerInvariant()];
         yield return [account, character, character.Name.ToUpperInvariant()];
         yield return [account, character, character.Name.RandomizeCasing()];
+    }
+    
+    public async void Dispose()
+    {
+        IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
+        await connection.ExecuteAsync("delete from character");
     }
 }

@@ -69,7 +69,9 @@ public static class Fakes
                                           .RuleFor(x=>x.AccountId, _ => account.Id)
                                           .RuleFor(x=>x.Username, _ => account.Username)
                                           .RuleFor(x=>x.Name, f => f.Person.FullName)
-                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3));
+                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3))
+                                          .RuleFor(x=>x.MaxOwies, _ => 2)
+                                          .RuleFor(x=>x.StartingTreats, _ => 2);
 
         return fakeCharacter;
     }
@@ -88,7 +90,9 @@ public static class Fakes
                                           .RuleFor(x=>x.Name, f => f.Person.FullName)
                                           .RuleFor(x=>x.CreatedUtc, _=>DateTime.UtcNow)
                                           .RuleFor(x=>x.UpdatedUtc, _=>DateTime.UtcNow)
-                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3));
+                                          .RuleFor(x=>x.Attributes, _ => attributesFaker.Generate(3))
+                                          .RuleFor(x=>x.MaxOwies, _ => 2)
+                                          .RuleFor(x=>x.StartingTreats, _ => 2);
 
         return fakeCharacter;
     }

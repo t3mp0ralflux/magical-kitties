@@ -1,6 +1,7 @@
 ﻿using MagicalKitties.Application.HostedServices;
 using FluentValidation;
 using MagicalKitties.Application.Database;
+using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
@@ -22,6 +23,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IGlobalSettingsRepository, GlobalSettingsRepository>();
         services.AddSingleton<IEmailRepository, EmailRepository>();
         services.AddSingleton<ICharacterRepository, CharacterRepository>();
+        services.AddSingleton<IFlawRepository, FlawRepository>();
+        services.AddSingleton<ITalentRepository, TalentRepository>();
 
         #endregion
 
@@ -32,6 +35,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IGlobalSettingsService, GlobalSettingsService>();
         services.AddSingleton<IEmailService, Services.Implementation.EmailService>();
         services.AddSingleton<ICharacterService, CharacterService>();
+        services.AddSingleton<IFlawService, FlawService>();
+        services.AddSingleton<ITalentService, TalentService>();
 
         #endregion
 

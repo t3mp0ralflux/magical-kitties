@@ -1,5 +1,8 @@
 ﻿using System.Data;
+using Dapper;
+using MagicalKitties.Application.Models.Characters;
 using Npgsql;
+using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
 namespace MagicalKitties.Application.Database;
 
@@ -15,6 +18,9 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
     public NpgsqlConnectionFactory(string connectionString)
     {
         _connectionString = connectionString;
+        
+        SqlMapper.AddTypeHandler(typeof(List<Attribute>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<Endowment>), new JsonTypeHandler());
     }
 
     public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)
