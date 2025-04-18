@@ -1,4 +1,7 @@
-﻿namespace MagicalKitties.Application.Models.Characters;
+﻿using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.Talents;
+
+namespace MagicalKitties.Application.Models.Characters;
 
 public class Character
 {
@@ -13,9 +16,9 @@ public class Character
     public string Hometown { get; set; } = "";
     public List<Attribute> Attributes { get; set; } = [];
 
-    public Endowment? Flaw { get; set; }
-    public Endowment? Talent { get; set; }
-    public List<Endowment> MagicalPowers { get; set; } = [];
+    public Flaw? Flaw { get; set; }
+    public Talent? Talent { get; set; }
+    // public List<Endowment> MagicalPowers { get; set; } = [];
     public Human? Human { get; set; }
     public int Level { get; set; } = 1;
     public int CurrentXp { get; set; }

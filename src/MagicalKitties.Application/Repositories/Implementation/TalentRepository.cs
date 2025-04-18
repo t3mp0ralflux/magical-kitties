@@ -16,7 +16,7 @@ public class TalentRepository : ITalentRepository
         _dbonConnectionFactory = dbonConnectionFactory;
     }
 
-    public async Task<bool> CreateAsync(Endowment talent, CancellationToken token = default)
+    public async Task<bool> CreateAsync(Talent talent, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -37,15 +37,15 @@ public class TalentRepository : ITalentRepository
         return result > 0;
     }
 
-    public async Task<Endowment?> GetByIdAsync(int id, CancellationToken token = default)
+    public async Task<Talent?> GetByIdAsync(int id, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
-        Endowment? result = await connection.QuerySingleOrDefaultAsync<Endowment>(new CommandDefinition("""
-                                                                                                        select id, name, description, is_custom as IsCustom
-                                                                                                        from talent
-                                                                                                        where id = @id
-                                                                                                        """, new { id }, cancellationToken: token));
+        Talent? result = await connection.QuerySingleOrDefaultAsync<Talent>(new CommandDefinition("""
+                                                                                                  select id, name, description, is_custom as IsCustom
+                                                                                                  from talent
+                                                                                                  where id = @id
+                                                                                                  """, new { id }, cancellationToken: token));
 
         return result;
     }
@@ -64,7 +64,7 @@ public class TalentRepository : ITalentRepository
         return result > 0;
     }
 
-    public async Task<IEnumerable<Endowment>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)
+    public async Task<IEnumerable<Talent>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
@@ -75,14 +75,14 @@ public class TalentRepository : ITalentRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        IEnumerable<Endowment> results = await connection.QueryAsync<Endowment>(new CommandDefinition($"""
-                                                                                                       select id, name, description, is_custom as IsCustom
-                                                                                                       from talent
-                                                                                                       {orderClause}
-                                                                                                       """, new
-                                                                                                            {
-                                                                                                                options
-                                                                                                            }, cancellationToken: token));
+        IEnumerable<Talent> results = await connection.QueryAsync<Talent>(new CommandDefinition($"""
+                                                                                                 select id, name, description, is_custom as IsCustom
+                                                                                                 from talent
+                                                                                                 {orderClause}
+                                                                                                 """, new
+                                                                                                      {
+                                                                                                          options
+                                                                                                      }, cancellationToken: token));
 
         return results;
     }
@@ -110,7 +110,7 @@ public class TalentRepository : ITalentRepository
         return result;
     }
 
-    public async Task<bool> UpdateAsync(Endowment talent, CancellationToken token = default)
+    public async Task<bool> UpdateAsync(Talent talent, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();

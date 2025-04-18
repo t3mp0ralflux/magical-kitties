@@ -1,4 +1,4 @@
-﻿namespace MagicalKitties.Contracts.Requests.Talents;
+﻿namespace MagicalKitties.Contracts.Requests.Endowments.Talents;
 
 public class GetAllTalentsRequest : PagedRequest
 {

@@ -1,8 +1,8 @@
-﻿using MagicalKitties.Application.Models.GlobalSettings;
+﻿using FluentAssertions;
+using FluentValidation;
+using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
-using FluentAssertions;
-using FluentValidation;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using Testing.Common;
@@ -11,10 +11,10 @@ namespace MagicalKitties.Application.Tests.Unit.Services;
 
 public class GlobalSettingsServiceTests
 {
+    private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly IValidator<GetAllGlobalSettingsOptions> _globalSettingOptionsValidator = Substitute.For<IValidator<GetAllGlobalSettingsOptions>>();
     private readonly IGlobalSettingsRepository _globalSettingsRepository = Substitute.For<IGlobalSettingsRepository>();
     private readonly IValidator<GlobalSetting> _globalSettingValidator = Substitute.For<IValidator<GlobalSetting>>();
-    private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly IMemoryCache _memoryCache = Substitute.For<IMemoryCache>();
 
     public GlobalSettingsServiceTests()
@@ -123,12 +123,12 @@ public class GlobalSettingsServiceTests
     public async Task GetSettingAsync_ShouldReturnNull_WhenSettingIsNotFound()
     {
         // Arrange
-        var setting = Fakes.GenerateGlobalSetting();
+        GlobalSetting setting = Fakes.GenerateGlobalSetting();
 
         _globalSettingsRepository.GetSetting(setting.Name).Returns((GlobalSetting?)null);
 
         // Act
-        var result = await _sut.GetSettingAsync(setting.Name);
+        GlobalSetting? result = await _sut.GetSettingAsync(setting.Name);
 
         // Assert
         result.Should().BeNull();
@@ -138,12 +138,12 @@ public class GlobalSettingsServiceTests
     public async Task GetSettingAsync_ShouldReturnSetting_WhenSettingIsFound()
     {
         // Arrange
-        var setting = Fakes.GenerateGlobalSetting();
+        GlobalSetting setting = Fakes.GenerateGlobalSetting();
 
         _globalSettingsRepository.GetSetting(setting.Name).Returns(setting);
 
         // Act
-        var result = await _sut.GetSettingAsync(setting.Name);
+        GlobalSetting? result = await _sut.GetSettingAsync(setting.Name);
 
         // Assert
         result.Should().NotBeNull();
@@ -159,7 +159,7 @@ public class GlobalSettingsServiceTests
     public async Task GetSettingAsync_ShouldReturnDefaultValue_WhenSettingIsNotFound(object value, Type valueType)
     {
         // Arrange
-        var setting = Fakes.GenerateGlobalSetting(value.ToString());
+        GlobalSetting setting = Fakes.GenerateGlobalSetting(value.ToString());
 
         _globalSettingsRepository.GetSetting(setting.Name).Returns((GlobalSetting?)null);
 
@@ -167,7 +167,7 @@ public class GlobalSettingsServiceTests
         int intResult = int.MinValue;
         double doubleResult = double.MinValue;
         DateTime dateTimeResult = DateTime.MinValue;
-        string stringResult = "WhatKindOfStringIsThis";
+        string? stringResult = "WhatKindOfStringIsThis";
 
         // Act
         switch (Type.GetTypeCode(valueType))
@@ -227,7 +227,7 @@ public class GlobalSettingsServiceTests
     public async Task GetSettingAsync_ShouldReturnDefaultValue_WhenSettingHasIncorrectValue(object value, Type valueType)
     {
         // Arrange
-        var setting = Fakes.GenerateGlobalSetting(value.ToString());
+        GlobalSetting setting = Fakes.GenerateGlobalSetting(value.ToString());
 
         _globalSettingsRepository.GetSetting(setting.Name).Returns(setting);
 
@@ -235,7 +235,7 @@ public class GlobalSettingsServiceTests
         int intResult = int.MinValue;
         double doubleResult = double.MinValue;
         DateTime dateTimeResult = DateTime.MinValue;
-        string stringResult = "WhatKindOfStringIsThis";
+        string? stringResult = "WhatKindOfStringIsThis";
 
         // Act
         switch (Type.GetTypeCode(valueType))
@@ -285,7 +285,7 @@ public class GlobalSettingsServiceTests
                 break;
         }
     }
-    
+
     [Theory]
     [InlineData("Test", typeof(string))]
     [InlineData(1, typeof(int))]
@@ -295,7 +295,7 @@ public class GlobalSettingsServiceTests
     public async Task GetSettingAsync_ShouldReturnValue_WhenSettingIsFoundAndHasCorrectValue(object value, Type valueType)
     {
         // Arrange
-        var setting = Fakes.GenerateGlobalSetting(value.ToString());
+        GlobalSetting setting = Fakes.GenerateGlobalSetting(value.ToString());
 
         _globalSettingsRepository.GetSetting(setting.Name).Returns(setting);
 
@@ -303,7 +303,7 @@ public class GlobalSettingsServiceTests
         int intResult = int.MinValue;
         double doubleResult = double.MinValue;
         DateTime dateTimeResult = DateTime.MinValue;
-        string stringResult = "WhatKindOfStringIsThis";
+        string? stringResult = "WhatKindOfStringIsThis";
 
         // Act
         switch (Type.GetTypeCode(valueType))

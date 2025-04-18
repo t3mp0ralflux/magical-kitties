@@ -7,18 +7,18 @@ namespace MagicalKitties.Application.Services.Implementation;
 
 public class FlawService : IFlawService
 {
-    private readonly IValidator<Endowment> _flawValidator;
+    private readonly IValidator<Flaw> _flawValidator;
     private readonly IValidator<GetAllFlawsOptions> _optionsValidator;
     private readonly IFlawRepository _flawRepository;
 
-    public FlawService(IValidator<Endowment> flawValidator, IFlawRepository flawRepository, IValidator<GetAllFlawsOptions> optionsValidator)
+    public FlawService(IValidator<Flaw> flawValidator, IFlawRepository flawRepository, IValidator<GetAllFlawsOptions> optionsValidator)
     {
         this._flawValidator = flawValidator;
         _flawRepository = flawRepository;
         _optionsValidator = optionsValidator;
     }
 
-    public async Task<bool> CreateAsync(Endowment flaw, CancellationToken token = default)
+    public async Task<bool> CreateAsync(Flaw flaw, CancellationToken token = default)
     {
         await _flawValidator.ValidateAndThrowAsync(flaw, token);
 
@@ -27,12 +27,12 @@ public class FlawService : IFlawService
         return result;
     }
 
-    public async Task<Endowment?> GetByIdAsync(int id, CancellationToken token = default)
+    public async Task<Flaw?> GetByIdAsync(int id, CancellationToken token = default)
     {
         return await _flawRepository.GetByIdAsync(id, token);
     }
 
-    public async Task<IEnumerable<Endowment>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)
+    public async Task<IEnumerable<Flaw>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)
     {
         await _optionsValidator.ValidateAndThrowAsync(options, token);
         
@@ -44,7 +44,7 @@ public class FlawService : IFlawService
         return await _flawRepository.GetCountAsync(options, token);
     }
 
-    public async Task<bool> UpdateAsync(Endowment flaw, CancellationToken token = default)
+    public async Task<bool> UpdateAsync(Flaw flaw, CancellationToken token = default)
     {
         await _flawValidator.ValidateAndThrowAsync(flaw, token);
 

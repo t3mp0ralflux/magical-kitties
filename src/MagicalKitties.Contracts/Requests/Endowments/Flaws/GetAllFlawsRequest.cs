@@ -1,4 +1,4 @@
-﻿namespace MagicalKitties.Contracts.Requests.Flaws;
+﻿namespace MagicalKitties.Contracts.Requests.Endowments.Flaws;
 
 public class GetAllFlawsRequest : PagedRequest
 {

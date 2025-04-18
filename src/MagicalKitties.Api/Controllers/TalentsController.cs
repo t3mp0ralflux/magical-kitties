@@ -2,33 +2,36 @@
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Endowments.Flaws;
+using MagicalKitties.Contracts.Requests.Endowments.Talents;
 using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Flaws;
+using MagicalKitties.Contracts.Responses.Talents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class FlawsController : ControllerBase
+public class TalentsController : ControllerBase
 {
     private readonly IAccountService _accountService;
-    private readonly IFlawService _flawService;
+    private readonly ITalentService _talentService;
 
-    public FlawsController(IAccountService accountService, IFlawService flawService)
+    public TalentsController(IAccountService accountService, ITalentService talentService)
     {
         _accountService = accountService;
-        _flawService = flawService;
+        _talentService = talentService;
     }
 
     [Authorize(AuthConstants.TrustedUserPolicyName)]
-    [HttpPost(ApiEndpoints.Flaws.Create)]
+    [HttpPost(ApiEndpoints.Talents.Create)]
     [ProducesResponseType<EndowmentResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Create(CreateFlawRequest request, CancellationToken token)
+    public async Task<IActionResult> Create(CreateTalentRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -37,17 +40,17 @@ public class FlawsController : ControllerBase
             return Unauthorized();
         }
 
-        Flaw result = request.ToFlaw();
+        Talent result = request.ToTalent();
 
-        await _flawService.CreateAsync(result, token);
+        await _talentService.CreateAsync(result, token);
 
-        FlawResponse response = result.ToResponse();
+        TalentResponse response = result.ToResponse();
 
         return CreatedAtAction(nameof(Get), new { id = response.Id }, response);
     }
 
-    [HttpGet(ApiEndpoints.Flaws.Get)]
-    [ProducesResponseType<FlawResponse>(StatusCodes.Status200OK)]
+    [HttpGet(ApiEndpoints.Talents.Get)]
+    [ProducesResponseType<TalentResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken token)
@@ -59,23 +62,23 @@ public class FlawsController : ControllerBase
             return Unauthorized();
         }
 
-        Flaw? result = await _flawService.GetByIdAsync(id, token);
+        Talent? result = await _talentService.GetByIdAsync(id, token);
 
         if (result is null)
         {
             return NotFound();
         }
 
-        FlawResponse response = result.ToResponse();
+        TalentResponse response = result.ToResponse();
 
         return Ok(response);
     }
 
-    [HttpGet(ApiEndpoints.Flaws.GetAll)]
-    [ProducesResponseType<FlawsResponse>(StatusCodes.Status200OK)]
+    [HttpGet(ApiEndpoints.Talents.GetAll)]
+    [ProducesResponseType<TalentsResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAll(GetAllFlawsRequest request, CancellationToken token)
+    public async Task<IActionResult> GetAll(GetAllTalentsRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -84,22 +87,22 @@ public class FlawsController : ControllerBase
             return Unauthorized();
         }
 
-        GetAllFlawsOptions options = request.ToOptions();
+        GetAllTalentsOptions options = request.ToOptions();
 
-        IEnumerable<Flaw> results = await _flawService.GetAllAsync(options, token);
-        int total = await _flawService.GetCountAsync(options, token);
+        IEnumerable<Talent> results = await _talentService.GetAllAsync(options, token);
+        int total = await _talentService.GetCountAsync(options, token);
 
-        FlawsResponse response = results.ToResponse(options.Page, options.PageSize, total);
+        TalentsResponse response = results.ToResponse(options.Page, options.PageSize, total);
 
         return Ok(response);
     }
 
     [Authorize(AuthConstants.TrustedUserPolicyName)]
-    [HttpPut(ApiEndpoints.Flaws.Update)]
-    [ProducesResponseType<FlawResponse>(StatusCodes.Status200OK)]
+    [HttpPut(ApiEndpoints.Talents.Update)]
+    [ProducesResponseType<TalentResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update(UpdateFlawRequest request, CancellationToken token)
+    public async Task<IActionResult> Update(UpdateTalentRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -108,22 +111,22 @@ public class FlawsController : ControllerBase
             return Unauthorized();
         }
 
-        Flaw flaw = request.ToFlaw();
+        Talent talent = request.ToTalent();
 
-        bool result = await _flawService.UpdateAsync(flaw, token);
+        bool result = await _talentService.UpdateAsync(talent, token);
 
         if (!result)
         {
             return NotFound();
         }
 
-        FlawResponse response = flaw.ToResponse();
+        TalentResponse response = talent.ToResponse();
 
         return Ok(response);
     }
 
     [Authorize(AuthConstants.AdminUserPolicyName)]
-    [HttpDelete(ApiEndpoints.Flaws.Delete)]
+    [HttpDelete(ApiEndpoints.Talents.Delete)]
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
@@ -136,7 +139,7 @@ public class FlawsController : ControllerBase
             return Unauthorized();
         }
 
-        bool result = await _flawService.DeleteAsync(id, token);
+        bool result = await _talentService.DeleteAsync(id, token);
 
         if (!result)
         {

@@ -16,7 +16,7 @@ public class FlawRepository : IFlawRepository
         _dbonConnectionFactory = dbonConnectionFactory;
     }
 
-    public async Task<bool> CreateAsync(Endowment flaw, CancellationToken token = default)
+    public async Task<bool> CreateAsync(Flaw flaw, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -31,22 +31,22 @@ public class FlawRepository : IFlawRepository
                                                                                   flaw.Description,
                                                                                   flaw.IsCustom
                                                                               }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;
     }
 
-    public async Task<Endowment?> GetByIdAsync(int id, CancellationToken token = default)
+    public async Task<Flaw?> GetByIdAsync(int id, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
-        Endowment? result = await connection.QuerySingleOrDefaultAsync<Endowment>(new CommandDefinition("""
-                                                                                                        select id, name, description, is_custom as IsCustom
-                                                                                                        from flaw
-                                                                                                        where id = @id
-                                                                                                        """, new { id }, cancellationToken: token));
-        
+        Flaw? result = await connection.QuerySingleOrDefaultAsync<Flaw>(new CommandDefinition("""
+                                                                                              select id, name, description, is_custom as IsCustom
+                                                                                              from flaw
+                                                                                              where id = @id
+                                                                                              """, new { id }, cancellationToken: token));
+
         return result;
     }
 
@@ -55,15 +55,15 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         int result = await connection.QuerySingleOrDefaultAsync<int>(new CommandDefinition("""
-                                                                                                        select count(id)
-                                                                                                        from flaw
-                                                                                                        where id = @id
-                                                                                                        """, new { id }, cancellationToken: token));
-        
+                                                                                           select count(id)
+                                                                                           from flaw
+                                                                                           where id = @id
+                                                                                           """, new { id }, cancellationToken: token));
+
         return result > 0;
     }
 
-    public async Task<IEnumerable<Endowment>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)
+    public async Task<IEnumerable<Flaw>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
@@ -74,14 +74,14 @@ public class FlawRepository : IFlawRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        IEnumerable<Endowment> results = await connection.QueryAsync<Endowment>(new CommandDefinition($"""
-                                                                                                       select id, name, description, is_custom as IsCustom
-                                                                                                       from flaw
-                                                                                                       {orderClause}
-                                                                                                       """, new
-                                                                                                            {
-                                                                                                                options
-                                                                                                            }, cancellationToken: token));
+        IEnumerable<Flaw> results = await connection.QueryAsync<Flaw>(new CommandDefinition($"""
+                                                                                             select id, name, description, is_custom as IsCustom
+                                                                                             from flaw
+                                                                                             {orderClause}
+                                                                                             """, new
+                                                                                                  {
+                                                                                                      options
+                                                                                                  }, cancellationToken: token));
 
         return results;
     }
@@ -98,18 +98,32 @@ public class FlawRepository : IFlawRepository
         }
 
         int result = await connection.QuerySingleAsync<int>(new CommandDefinition($"""
-                                                                                    select count(id)
-                                                                                    from flaw
-                                                                                    {orderClause}
-                                                                                    """, new
-                                                                                         {
-                                                                                             options
-                                                                                         }, cancellationToken: token));
+                                                                                   select count(id)
+                                                                                   from flaw
+                                                                                   {orderClause}
+                                                                                   """, new
+                                                                                        {
+                                                                                            options
+                                                                                        }, cancellationToken: token));
 
         return result;
     }
 
-    public async Task<bool> UpdateAsync(Endowment flaw, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(int id, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsync(new CommandDefinition("""
+                                                                         delete from flaw
+                                                                         where id = @id
+                                                                         """, new { id }, cancellationToken: token));
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    public async Task<bool> UpdateAsync(Flaw flaw, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -124,21 +138,7 @@ public class FlawRepository : IFlawRepository
                                                                                   flaw.Description,
                                                                                   flaw.Id
                                                                               }, cancellationToken: token));
-        
-        transaction.Commit();
 
-        return result > 0;
-    }
-
-    public async Task<bool> DeleteAsync(int id, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
-        using var transaction = connection.BeginTransaction();
-
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         delete from flaw
-                                                                         where id = @id
-                                                                         """, new { id }, cancellationToken: token));
         transaction.Commit();
 
         return result > 0;

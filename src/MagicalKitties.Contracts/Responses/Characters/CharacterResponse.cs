@@ -1,4 +1,7 @@
-﻿namespace MagicalKitties.Contracts.Responses.Characters;
+﻿using MagicalKitties.Contracts.Responses.Flaws;
+using MagicalKitties.Contracts.Responses.Talents;
+
+namespace MagicalKitties.Contracts.Responses.Characters;
 
 public class CharacterResponse
 {
@@ -8,9 +11,9 @@ public class CharacterResponse
     public required string Description { get; init; }
     
     public required List<AttributeResponse> Attributes {get;init;}
-    public required EndowmentResponse? Flaw { get; init; }
-    public required EndowmentResponse? Talent { get; init; }
-    public required List<EndowmentResponse> MagicalPowers { get; init; }
+    public required FlawResponse? Flaw { get; init; }
+    public required TalentResponse? Talent { get; init; }
+    //public required List<EndowmentResponse> MagicalPowers { get; init; }
     public required string Hometown { get; init; }
     public required HumanResponse? Human { get; init; }
     

@@ -8,18 +8,18 @@ namespace MagicalKitties.Application.Services.Implementation;
 
 public class TalentService : ITalentService
 {
-    private readonly IValidator<Endowment> _flawValidator;
+    private readonly IValidator<Talent> _flawValidator;
     private readonly IValidator<GetAllTalentsOptions> _optionsValidator;
     private readonly ITalentRepository _talentRepository;
 
-    public TalentService(IValidator<Endowment> flawValidator, ITalentRepository talentRepository, IValidator<GetAllTalentsOptions> optionsValidator)
+    public TalentService(IValidator<Talent> flawValidator, ITalentRepository talentRepository, IValidator<GetAllTalentsOptions> optionsValidator)
     {
         this._flawValidator = flawValidator;
         _talentRepository = talentRepository;
         _optionsValidator = optionsValidator;
     }
 
-    public async Task<bool> CreateAsync(Endowment flaw, CancellationToken token = default)
+    public async Task<bool> CreateAsync(Talent flaw, CancellationToken token = default)
     {
         await _flawValidator.ValidateAndThrowAsync(flaw, token);
 
@@ -28,12 +28,12 @@ public class TalentService : ITalentService
         return result;
     }
 
-    public async Task<Endowment?> GetByIdAsync(int id, CancellationToken token = default)
+    public async Task<Talent?> GetByIdAsync(int id, CancellationToken token = default)
     {
         return await _talentRepository.GetByIdAsync(id, token);
     }
 
-    public async Task<IEnumerable<Endowment>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)
+    public async Task<IEnumerable<Talent>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)
     {
         await _optionsValidator.ValidateAndThrowAsync(options, token);
         
@@ -45,11 +45,11 @@ public class TalentService : ITalentService
         return await _talentRepository.GetCountAsync(options, token);
     }
 
-    public async Task<bool> UpdateAsync(Endowment flaw, CancellationToken token = default)
+    public async Task<bool> UpdateAsync(Talent talent, CancellationToken token = default)
     {
-        await _flawValidator.ValidateAndThrowAsync(flaw, token);
+        await _flawValidator.ValidateAndThrowAsync(talent, token);
 
-        return await _talentRepository.UpdateAsync(flaw, token);
+        return await _talentRepository.UpdateAsync(talent, token);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken token = default)

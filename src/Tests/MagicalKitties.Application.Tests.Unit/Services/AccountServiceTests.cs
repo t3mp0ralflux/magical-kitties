@@ -428,7 +428,7 @@ public class AccountServiceTests
         AccountActivation activation = new()
                                        {
                                            Username = account.Username,
-                                           ActivationCode = account.ActivationCode,
+                                           ActivationCode = account.ActivationCode!,
                                            Expiration = DateTime.MinValue
                                        };
 

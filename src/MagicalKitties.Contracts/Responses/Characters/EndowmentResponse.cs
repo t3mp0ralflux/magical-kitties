@@ -6,5 +6,5 @@ public class EndowmentResponse
     public required string Name { get; init; }
     public required string Description { get; init; }
     public required bool IsCustom { get; init; }
-    public required List<EndowmentResponse> BonusFeatures { get; init; } = [];
+    // public List<EndowmentResponse> BonusFeatures { get; init; } = []; // TODO: Move this to MagicalPower. It's the only one that needs it.
 }
