@@ -114,7 +114,7 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>
     [SkipIfEnvironmentMissingTheory]
     [InlineData(AccountStatus.banned, null, null)]
     [InlineData(null, AccountRole.standard, null)]
-    [InlineData(null, null, "Bingus")]
+    [InlineData(null, null, "AlarmingPaper")]
     public async Task GetAllAsync_ShouldReturnEmptyList_WhenNothingIsFound(AccountStatus? accountStatus, AccountRole? accountRole, string? userName)
     {
         // Arrange

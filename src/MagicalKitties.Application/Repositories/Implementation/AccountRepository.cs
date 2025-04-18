@@ -26,7 +26,7 @@ public class AccountRepository : IAccountRepository
                                          acct.activation_expiration as activationexpiration,
                                          acct.activation_code as activationcode,
                                          acct.password_reset_requested_utc as PasswordResetRequestedUtc,
-                                         acct.password_reset_code as ResetCode
+                                         acct.password_reset_code as PasswordResetCode
                                          """;
 
     private readonly IDateTimeProvider _dateTimeProvider;
