@@ -58,7 +58,7 @@ values('66', 'Vanity', 'You are very proud of your appearance. Grooming and pres
 commit;
 
 begin transaction;
-insert into flaw(id, name, description, is_custom)
+insert into talent(id, name, description, is_custom)
 values('11', 'Animal Friend', 'You like and get long with squirrels, robins, and other non-magical critters. Even dogs, most of the time.', false);
 values('12', 'Artistic', 'You are good at visual arts like painting and sculpting.', false);
 values('13', 'Athletic', 'You are good at physical activities like running, jumping, and climbing.', false);
