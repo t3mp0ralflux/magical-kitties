@@ -1,5 +1,6 @@
 using System.Text;
 using Asp.Versioning;
+using MagicalKitties.Api;
 using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
@@ -52,6 +53,35 @@ builder.Services.AddApiVersioning(x =>
                                       x.ApiVersionReader = new MediaTypeApiVersionReader("api-version");
                                   }).AddMvc();
 
+builder.Services.AddOutputCache(x =>
+                                {
+                                    x.AddBasePolicy(c=> c.Cache());
+                                    
+                                    x.AddPolicy(ApiAssumptions.PolicyNames.Flaws, c =>
+                                                                                  {
+                                                                                      c.Cache()
+                                                                                       .Expire(TimeSpan.FromMinutes(5))
+                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                       .Tag(ApiAssumptions.TagNames.Flaws);
+                                                                                  });
+                                    
+                                    x.AddPolicy(ApiAssumptions.PolicyNames.Talents, c =>
+                                                                                  {
+                                                                                      c.Cache()
+                                                                                       .Expire(TimeSpan.FromMinutes(5))
+                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                       .Tag(ApiAssumptions.TagNames.Talents);
+                                                                                  });
+                                    
+                                    x.AddPolicy(ApiAssumptions.PolicyNames.MagicalPowers, c =>
+                                                                                  {
+                                                                                      c.Cache()
+                                                                                       .Expire(TimeSpan.FromMinutes(5))
+                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                       .Tag(ApiAssumptions.TagNames.MagicalPowers);
+                                                                                  });
+                                });
+
 builder.Services.AddControllers();
 
 builder.Services.AddApplication();
@@ -82,6 +112,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseOutputCache();
 
 app.UseMiddleware<ValidationMappingMiddleware>();
 app.MapControllers();

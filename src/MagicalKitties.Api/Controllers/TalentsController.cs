@@ -8,6 +8,7 @@ using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Talents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace MagicalKitties.Api.Controllers;
 
@@ -16,11 +17,13 @@ public class TalentsController : ControllerBase
 {
     private readonly IAccountService _accountService;
     private readonly ITalentService _talentService;
+    private readonly IOutputCacheStore _outputCacheStore;
 
-    public TalentsController(IAccountService accountService, ITalentService talentService)
+    public TalentsController(IAccountService accountService, ITalentService talentService, IOutputCacheStore outputCacheStore)
     {
         _accountService = accountService;
         _talentService = talentService;
+        _outputCacheStore = outputCacheStore;
     }
 
     [Authorize(AuthConstants.TrustedUserPolicyName)]
@@ -41,24 +44,19 @@ public class TalentsController : ControllerBase
 
         await _talentService.CreateAsync(result, token);
 
+        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
+        
         TalentResponse response = result.ToResponse();
 
         return CreatedAtAction(nameof(Get), new { id = response.Id }, response);
     }
 
     [HttpGet(ApiEndpoints.Talents.Get)]
+    [OutputCache(PolicyName = ApiAssumptions.PolicyNames.Talents)]
     [ProducesResponseType<TalentResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
-
-        if (account is null)
-        {
-            return Unauthorized();
-        }
-
         Talent? result = await _talentService.GetByIdAsync(id, token);
 
         if (result is null)
@@ -72,18 +70,11 @@ public class TalentsController : ControllerBase
     }
 
     [HttpGet(ApiEndpoints.Talents.GetAll)]
+    [OutputCache(PolicyName = ApiAssumptions.PolicyNames.Talents)]
     [ProducesResponseType<TalentsResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAll(GetAllTalentsRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
-
-        if (account is null)
-        {
-            return Unauthorized();
-        }
-
         GetAllTalentsOptions options = request.ToOptions();
 
         IEnumerable<Talent> results = await _talentService.GetAllAsync(options, token);
@@ -119,6 +110,7 @@ public class TalentsController : ControllerBase
 
         TalentResponse response = talent.ToResponse();
 
+        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
         return Ok(response);
     }
 
@@ -143,6 +135,7 @@ public class TalentsController : ControllerBase
             return NotFound();
         }
 
+        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
         return NoContent();
     }
 }

@@ -7,6 +7,7 @@ using MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace MagicalKitties.Api.Controllers;
 
@@ -15,11 +16,13 @@ public class MagicalPowersController : ControllerBase
 {
     private readonly IAccountService _accountService;
     private readonly IMagicalPowerService _magicalPowerService;
+    private readonly IOutputCacheStore _outputCacheStore;
 
-    public MagicalPowersController(IAccountService accountService, IMagicalPowerService magicalPowerService)
+    public MagicalPowersController(IAccountService accountService, IMagicalPowerService magicalPowerService, IOutputCacheStore outputCacheStore)
     {
         _accountService = accountService;
         _magicalPowerService = magicalPowerService;
+        _outputCacheStore = outputCacheStore;
     }
 
     [Authorize(AuthConstants.TrustedUserPolicyName)]
@@ -39,6 +42,8 @@ public class MagicalPowersController : ControllerBase
         MagicalPower result = request.ToMagicalPower();
 
         await _magicalPowerService.CreateAsync(result, token);
+        
+        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
 
         MagicalPowerResponse response = result.ToResponse();
 
@@ -46,18 +51,11 @@ public class MagicalPowersController : ControllerBase
     }
 
     [HttpGet(ApiEndpoints.MagicalPowers.Get)]
+    [OutputCache(PolicyName = ApiAssumptions.PolicyNames.MagicalPowers)]
     [ProducesResponseType<MagicalPowerResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
-
-        if (account is null)
-        {
-            return Unauthorized();
-        }
-
         MagicalPower? result = await _magicalPowerService.GetByIdAsync(id, token);
 
         if (result is null)
@@ -71,18 +69,11 @@ public class MagicalPowersController : ControllerBase
     }
 
     [HttpGet(ApiEndpoints.MagicalPowers.GetAll)]
+    [OutputCache(PolicyName = ApiAssumptions.PolicyNames.MagicalPowers)]
     [ProducesResponseType<MagicalPowersResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAll(GetAllMagicalPowersRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
-
-        if (account is null)
-        {
-            return Unauthorized();
-        }
-
         GetAllMagicalPowersOptions options = request.ToOptions();
 
         IEnumerable<MagicalPower> results = await _magicalPowerService.GetAllAsync(options, token);
@@ -118,6 +109,7 @@ public class MagicalPowersController : ControllerBase
 
         MagicalPowerResponse response = magicalPower.ToResponse();
 
+        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
         return Ok(response);
     }
 
@@ -142,6 +134,7 @@ public class MagicalPowersController : ControllerBase
             return NotFound();
         }
 
+        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
         return NoContent();
     }
 }
