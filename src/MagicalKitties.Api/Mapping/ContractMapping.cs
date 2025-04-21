@@ -284,6 +284,15 @@ public static class ContractMapping
                    TalentId = request.TalentId
                };
     }
+    
+    public static MagicalPowerUpdate ToUpdate(this CharacterMagicalPowerUpdateRequest request)
+    {
+        return new MagicalPowerUpdate
+               {
+                   CharacterId = request.CharacterId,
+                   MagicalPowerId = request.MagicalPowerId
+               };
+    }
 
     public static CharacterUpdateResponse ToResponse(this LevelUpdate update, string message)
     {
@@ -492,36 +501,39 @@ public static class ContractMapping
 
     #region BonusFeatures
 
-    public static Endowment ToBonusFeature(this CreateEndowmentRequest request)
+    public static BonusFeature ToBonusFeature(this CreateBonusFeatureRequest request)
     {
-        return new Endowment
+        return new BonusFeature
                {
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
-                   IsCustom = request.IsCustom
+                   IsCustom = request.IsCustom,
+                   Selected = false // never selected on create
                };
     }
 
-    public static Endowment ToBonusFeature(this UpdateEndowmentRequest request)
+    public static BonusFeature ToBonusFeature(this UpdateBonusFeatureRequest request)
     {
-        return new Endowment
+        return new BonusFeature
                {
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
-                   IsCustom = request.IsCustom
+                   IsCustom = request.IsCustom,
+                   Selected = false
                };
     }
 
-    public static EndowmentResponse ToResponse(this Endowment endowment)
+    public static BonusFeatureResponse ToResponse(this BonusFeature bonusFeature)
     {
-        return new EndowmentResponse
+        return new BonusFeatureResponse
                {
-                   Id = endowment.Id,
-                   Name = endowment.Name,
-                   Description = endowment.Description,
-                   IsCustom = endowment.IsCustom
+                   Id = bonusFeature.Id,
+                   Name = bonusFeature.Name,
+                   Description = bonusFeature.Description,
+                   IsCustom = bonusFeature.IsCustom,
+                   Selected = bonusFeature.Selected
                };
     }
 

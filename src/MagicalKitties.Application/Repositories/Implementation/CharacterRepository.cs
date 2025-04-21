@@ -66,8 +66,7 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-
-        // https://stackoverflow.com/questions/56283658/how-do-i-pass-json-as-a-primitive-postgresql-type-to-a-function-using-dapper/57534990#57534990
+        
         IEnumerable<Character> result = await connection.QueryAsync<Character>(new CommandDefinition($"""
                                                                                                       select {CharacterFields}, {StatsFields}
                                                                                                       from character c

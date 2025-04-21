@@ -2,7 +2,7 @@
 
 namespace MagicalKitties.Application.Models.MagicalPowers;
 
-public class MagicalPower : Endowment
+public class BonusFeature : Endowment
 {
-    public List<BonusFeature> BonusFeatures { get; set; } = [];
+    public required bool Selected { get; set; } = false;
 }

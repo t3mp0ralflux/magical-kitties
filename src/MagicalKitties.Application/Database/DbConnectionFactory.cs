@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.MagicalPowers;
 using Npgsql;
 using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
@@ -21,6 +22,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
 
         SqlMapper.AddTypeHandler(typeof(List<Attribute>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Endowment>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<BonusFeature>), new JsonTypeHandler());
     }
 
     public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)

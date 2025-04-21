@@ -1,10 +1,10 @@
-﻿namespace MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
+﻿namespace MagicalKitties.Contracts.Responses.MagicalPowers;
 
-public class CreateMagicalPowerRequest
+public class BonusFeatureResponse
 {
     public required int Id { get; init; }
     public required string Name { get; init; }
     public required string Description { get; init; }
     public required bool IsCustom { get; init; }
-    public List<CreateBonusFeatureRequest> BonusFeatures { get; set; } = [];
+    public required bool Selected { get; set; }
 }

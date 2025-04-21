@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Text.Json;
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
@@ -30,7 +31,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
                                                                                   magicalpower.Name,
                                                                                   magicalpower.Description,
                                                                                   magicalpower.IsCustom,
-                                                                                  magicalpower.BonusFeatures
+                                                                                  BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures))
                                                                               }, cancellationToken: token));
 
         transaction.Commit();
@@ -138,7 +139,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
                                                                                   magicalPower.Name,
                                                                                   magicalPower.Description,
                                                                                   magicalPower.Id,
-                                                                                  magicalPower.BonusFeatures
+                                                                                  BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalPower.BonusFeatures))
                                                                               }, cancellationToken: token));
 
         transaction.Commit();
