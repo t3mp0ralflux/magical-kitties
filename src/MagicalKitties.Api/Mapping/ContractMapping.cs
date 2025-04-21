@@ -448,7 +448,7 @@ public static class ContractMapping
                    Name = request.Name,
                    Description = request.Description,
                    IsCustom = request.IsCustom,
-                   BonusFeatures = request.BonusFeatures.Select(ToBonusFeature).ToList()
+                   BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList()
                };
     }
 
@@ -460,7 +460,7 @@ public static class ContractMapping
                    Name = request.Name,
                    Description = request.Description,
                    IsCustom = request.IsCustom,
-                   BonusFeatures = request.BonusFeatures.Select(ToBonusFeature).ToList()
+                   BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList()
                };
     }
 
@@ -498,47 +498,7 @@ public static class ContractMapping
     }
 
     #endregion
-
-    #region BonusFeatures
-
-    public static BonusFeature ToBonusFeature(this CreateBonusFeatureRequest request)
-    {
-        return new BonusFeature
-               {
-                   Id = request.Id,
-                   Name = request.Name,
-                   Description = request.Description,
-                   IsCustom = request.IsCustom,
-                   Selected = false // never selected on create
-               };
-    }
-
-    public static BonusFeature ToBonusFeature(this UpdateBonusFeatureRequest request)
-    {
-        return new BonusFeature
-               {
-                   Id = request.Id,
-                   Name = request.Name,
-                   Description = request.Description,
-                   IsCustom = request.IsCustom,
-                   Selected = false
-               };
-    }
-
-    public static BonusFeatureResponse ToResponse(this BonusFeature bonusFeature)
-    {
-        return new BonusFeatureResponse
-               {
-                   Id = bonusFeature.Id,
-                   Name = bonusFeature.Name,
-                   Description = bonusFeature.Description,
-                   IsCustom = bonusFeature.IsCustom,
-                   Selected = bonusFeature.Selected
-               };
-    }
-
-    #endregion
-
+    
     #region GlobalSettings
 
     public static GlobalSetting ToGlobalSetting(this GlobalSettingCreateRequest request)

@@ -21,8 +21,8 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         _connectionString = connectionString;
 
         SqlMapper.AddTypeHandler(typeof(List<Attribute>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(List<Endowment>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(List<BonusFeature>), new JsonTypeHandler());
+        //SqlMapper.AddTypeHandler(typeof(List<Endowment>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());
     }
 
     public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)

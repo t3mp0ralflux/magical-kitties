@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Dapper;
 
 namespace MagicalKitties.Application.Database;
@@ -13,6 +14,6 @@ public class JsonTypeHandler : SqlMapper.ITypeHandler
 
     public object? Parse(Type destinationType, object value)
     {
-        return JsonSerializer.Deserialize(value as string ?? string.Empty, destinationType);
+        return JsonSerializer.Deserialize(value as string ?? string.Empty, destinationType, JsonSerializerOptions.Web);
     }
 }
