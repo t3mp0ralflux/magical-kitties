@@ -20,6 +20,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<ICharacterRepository, CharacterRepository>();
         services.AddSingleton<IFlawRepository, FlawRepository>();
         services.AddSingleton<ITalentRepository, TalentRepository>();
+        services.AddSingleton<IMagicalPowerRepository, MagicalPowerRepository>();
 
         #endregion
 
@@ -32,6 +33,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<ICharacterService, CharacterService>();
         services.AddSingleton<IFlawService, FlawService>();
         services.AddSingleton<ITalentService, TalentService>();
+        services.AddSingleton<IMagicalPowerService, MagicalPowerService>();
 
         #endregion
 

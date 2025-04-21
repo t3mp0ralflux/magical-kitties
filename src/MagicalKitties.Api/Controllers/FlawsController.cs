@@ -25,7 +25,7 @@ public class FlawsController : ControllerBase
 
     [Authorize(AuthConstants.TrustedUserPolicyName)]
     [HttpPost(ApiEndpoints.Flaws.Create)]
-    [ProducesResponseType<EndowmentResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<FlawResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(CreateFlawRequest request, CancellationToken token)
