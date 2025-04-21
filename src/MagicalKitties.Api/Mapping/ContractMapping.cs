@@ -5,11 +5,14 @@ using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
+using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Requests.Characters;
+using MagicalKitties.Contracts.Requests.Endowments;
 using MagicalKitties.Contracts.Requests.Endowments.Flaws;
+using MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
 using MagicalKitties.Contracts.Requests.GlobalSetting;
 using MagicalKitties.Contracts.Responses.Account;
@@ -17,6 +20,7 @@ using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.GlobalSetting;
+using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
 using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 using ctr = MagicalKitties.Contracts.Models;
@@ -421,6 +425,103 @@ public static class ContractMapping
                    Page = request.Page,
                    PageSize = request.PageSize,
                    SortField = request.SortBy
+               };
+    }
+
+    #endregion
+    
+    #region Magical Powers
+    public static MagicalPower ToMagicalPower(this CreateMagicalPowerRequest request)
+    {
+        return new MagicalPower
+               {
+                   Id = request.Id,
+                   Name = request.Name,
+                   Description = request.Description,
+                   IsCustom = request.IsCustom,
+                   BonusFeatures = request.BonusFeatures.Select(ToBonusFeature).ToList()
+               };
+    }
+
+    public static MagicalPower ToMagicalPower(this UpdateMagicalPowerRequest request)
+    {
+        return new MagicalPower
+               {
+                   Id = request.Id,
+                   Name = request.Name,
+                   Description = request.Description,
+                   IsCustom = request.IsCustom,
+                   BonusFeatures = request.BonusFeatures.Select(ToBonusFeature).ToList()
+               };
+    }
+
+    public static MagicalPowerResponse ToResponse(this MagicalPower magicalPower)
+    {
+        return new MagicalPowerResponse
+               {
+                   Id = magicalPower.Id,
+                   Name = magicalPower.Name,
+                   Description = magicalPower.Description,
+                   IsCustom = magicalPower.IsCustom,
+                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
+               };
+    }
+
+    public static MagicalPowersResponse ToResponse(this IEnumerable<MagicalPower> magicalPowers, int page, int pageSize, int total)
+    {
+        return new MagicalPowersResponse
+               {
+                   Items = magicalPowers.Select(ToResponse).ToList(),
+                   Page = page,
+                   PageSize = pageSize,
+                   Total = total
+               };
+    }
+
+    public static GetAllMagicalPowersOptions ToOptions(this GetAllMagicalPowersRequest request)
+    {
+        return new GetAllMagicalPowersOptions
+               {
+                   Page = request.Page,
+                   PageSize = request.PageSize,
+                   SortField = request.SortBy
+               };
+    }
+
+    #endregion
+
+    #region BonusFeatures
+
+    public static Endowment ToBonusFeature(this CreateEndowmentRequest request)
+    {
+        return new Endowment
+               {
+                   Id = request.Id,
+                   Name = request.Name,
+                   Description = request.Description,
+                   IsCustom = request.IsCustom
+               };
+    }
+
+    public static Endowment ToBonusFeature(this UpdateEndowmentRequest request)
+    {
+        return new Endowment
+               {
+                   Id = request.Id,
+                   Name = request.Name,
+                   Description = request.Description,
+                   IsCustom = request.IsCustom
+               };
+    }
+
+    public static EndowmentResponse ToResponse(this Endowment endowment)
+    {
+        return new EndowmentResponse
+               {
+                   Id = endowment.Id,
+                   Name = endowment.Name,
+                   Description = endowment.Description,
+                   IsCustom = endowment.IsCustom
                };
     }
 

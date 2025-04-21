@@ -79,7 +79,8 @@ create table if not exists human(
 create table if not exists charactermagicalpower(
     id UUID primary key,
     character_id UUID references character(id),
-    magical_power_id numeric references magicalpower(id)
+    magical_power_id numeric references magicalpower(id),
+    UNIQUE(character_id, magical_power_id)
 );
 
 create table if not exists email(
