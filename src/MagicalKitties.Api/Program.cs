@@ -7,13 +7,17 @@ using MagicalKitties.Api.Services;
 using MagicalKitties.Application;
 using MagicalKitties.Application.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ConfigurationManager config = builder.Configuration;
 
-// Add services to the container.
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -83,14 +87,37 @@ builder.Services.AddOutputCache(x =>
                                 });
 
 builder.Services.AddControllers();
+builder.Services.AddRateLimiter(options =>
+                                {
+                                    options.AddFixedWindowLimiter(ApiAssumptions.PolicyNames.RateLimiter, windowOptions =>
+                                                                                            {
+                                                                                                windowOptions.PermitLimit = 3;
+                                                                                                windowOptions.Window = TimeSpan.FromSeconds(5);
+                                                                                            });
+                                    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                                    options.OnRejected = async (context, token) =>
+                                                         {
+                                                             ProblemDetails problemDetails = new ProblemDetails
+                                                                                             {
+                                                                                                 Status = StatusCodes.Status429TooManyRequests,
+                                                                                                 Title = "Too Many Requests",
+                                                                                                 Detail = "Too many requests were received. Please wait before submitting again."
+                                                                                             };
+
+                                                             await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken: token);
+                                                         };
+                                });
 
 builder.Services.AddApplication();
+builder.Services.AddResilience();
+
 builder.Services.AddDatabase(config["ConnectionStrings:Database"]!);
 
 builder.Services.Configure<HostOptions>(x =>
                                         {
                                             x.ServicesStartConcurrently = true;
                                             x.ServicesStopConcurrently = false;
+                                            x.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore; // will log error, but don't want complete death.
                                         });
 
 WebApplication app = builder.Build();
@@ -110,18 +137,22 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseExceptionHandler();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseOutputCache();
 
-app.UseMiddleware<ValidationMappingMiddleware>();
 app.MapControllers();
+app.UseRateLimiter();
 
-if (app.Environment.IsDevelopment())
-{
-    DbInitializer dbInitializer = app.Services.GetRequiredService<DbInitializer>();
-    await dbInitializer.InitializeAsync();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     DbInitializer dbInitializer = app.Services.GetRequiredService<DbInitializer>();
+//     await dbInitializer.InitializeAsync();
+// }
 
 app.Run();

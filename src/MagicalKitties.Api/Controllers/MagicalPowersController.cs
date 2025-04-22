@@ -8,6 +8,7 @@ using MagicalKitties.Contracts.Responses.MagicalPowers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace MagicalKitties.Api.Controllers;
 
@@ -86,6 +87,7 @@ public class MagicalPowersController : ControllerBase
 
     [Authorize(AuthConstants.TrustedUserPolicyName)]
     [HttpPut(ApiEndpoints.MagicalPowers.Update)]
+    [EnableRateLimiting("ThreeRequestsPerSecond")]
     [ProducesResponseType<MagicalPowerResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]

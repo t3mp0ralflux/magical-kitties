@@ -2,5 +2,5 @@
 
 public class UpdateMagicalPowerRequest : UpdateEndowmentRequest
 {
-    public required List<UpdateMagicalPowerRequest> BonusFeatures { get; set; }
+    public List<UpdateMagicalPowerRequest> BonusFeatures { get; set; } = [];
 }

@@ -1,10 +1,13 @@
-﻿using FluentValidation;
+﻿using System.Net.Sockets;
+using FluentValidation;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Retry;
 
 namespace MagicalKitties.Application;
 
@@ -60,6 +63,21 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IEmailService, EmailService>();
 
         services.AddHostedService<HostedServices.EmailService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddResilience(this IServiceCollection services)
+    {
+        services.AddResiliencePipeline("DbPipeline", static builder =>
+                                                     {
+                                                         builder.AddRetry(new RetryStrategyOptions()
+                                                                          {
+                                                                              ShouldHandle = new PredicateBuilder().Handle<SocketException>()
+                                                                          });
+
+                                                         builder.AddTimeout(TimeSpan.FromSeconds(1.5));
+                                                     });
 
         return services;
     }

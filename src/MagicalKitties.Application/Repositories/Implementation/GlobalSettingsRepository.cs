@@ -48,7 +48,7 @@ public class GlobalSettingsRepository : IGlobalSettingsRepository
         }
 
         IEnumerable<GlobalSetting> results = await connection.QueryAsync<GlobalSetting>(new CommandDefinition($"""
-                                                                                                               select * from globalsettings
+                                                                                                               select * from globalsetting
                                                                                                                where (@name is null or name like ('%' || @name || '%'))
                                                                                                                {orderClause}
                                                                                                                limit @pageSize
@@ -68,7 +68,7 @@ public class GlobalSettingsRepository : IGlobalSettingsRepository
         using IDbConnection connection = await _connectionFactory.CreateConnectionAsync(token);
         return await connection.QuerySingleAsync<int>(new CommandDefinition("""
                                                                             select count(id)
-                                                                            from globalsettings
+                                                                            from globalsetting
                                                                             where (@name is null or name like ('%' || @name || '%'))
                                                                             """, new { name }, cancellationToken: token));
     }
