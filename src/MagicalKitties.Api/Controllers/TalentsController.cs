@@ -4,7 +4,6 @@ using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
-using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Talents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,8 +15,8 @@ namespace MagicalKitties.Api.Controllers;
 public class TalentsController : ControllerBase
 {
     private readonly IAccountService _accountService;
-    private readonly ITalentService _talentService;
     private readonly IOutputCacheStore _outputCacheStore;
+    private readonly ITalentService _talentService;
 
     public TalentsController(IAccountService accountService, ITalentService talentService, IOutputCacheStore outputCacheStore)
     {
@@ -45,7 +44,7 @@ public class TalentsController : ControllerBase
         await _talentService.CreateAsync(result, token);
 
         await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
-        
+
         TalentResponse response = result.ToResponse();
 
         return CreatedAtAction(nameof(Get), new { id = response.Id }, response);

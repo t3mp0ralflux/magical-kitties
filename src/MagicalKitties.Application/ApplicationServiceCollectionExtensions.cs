@@ -63,4 +63,9 @@ public static class ApplicationServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddResilience(this IServiceCollection services)
+    {
+        return services;
+    }
 }

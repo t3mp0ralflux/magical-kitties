@@ -10,3 +10,11 @@ services:
       - POSTGRES_DB=sql-db-magickitty-dev
     ports:
       - '5432:5432'
+  seq:
+    image: datalust/seq:latest
+    restart: unless-stopped
+    container_name: logs
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - '5341:80'

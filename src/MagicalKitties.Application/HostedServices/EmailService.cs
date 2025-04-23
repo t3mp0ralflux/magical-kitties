@@ -1,11 +1,13 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using System.Net.Sockets;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace MagicalKitties.Application.HostedServices;
 
@@ -56,50 +58,64 @@ public class EmailService : IHostedService
             return;
         }
 
-        int maxEmailsToSend = await _globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.EMAIL_SEND_BATCH_LIMIT, 100, token);
-
-        List<EmailData> emailsToProcess = await _emailService.GetForProcessingAsync(maxEmailsToSend, token);
-
-        if (emailsToProcess.Count == 0)
+        try
         {
-            state.IsRunning = false;
-            return;
+            int maxEmailsToSend = await _globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.EMAIL_SEND_BATCH_LIMIT, 100, token);
+
+            List<EmailData> emailsToProcess = await _emailService.GetForProcessingAsync(maxEmailsToSend, token);
+
+            if (emailsToProcess.Count == 0)
+            {
+                state.IsRunning = false;
+                return;
+            }
+
+            int maxAttempts = await _globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.EMAIL_SEND_ATTEMPTS_MAX, 5, token);
+
+            foreach (EmailData emailData in emailsToProcess)
+            {
+                emailData.SendAttempts++;
+
+                if (emailData.SendAttempts > maxAttempts)
+                {
+                    emailData.ShouldSend = false;
+                    emailData.ResponseLog += $"{_dateTimeProvider}: Max email attempts reached";
+
+                    await _emailService.UpdateAsync(emailData, token);
+                    continue;
+                }
+
+                emailData.ShouldSend = false; // hit early to avoid spamming on DB write errors.
+
+                await _emailService.UpdateAsync(emailData, token);
+
+                (bool success, string message) = await SendEmailAsync(emailData, token);
+
+                if (success)
+                {
+                    emailData.ResponseLog += $"{_dateTimeProvider}: Email Sent;";
+                    emailData.ShouldSend = false;
+                    emailData.SentUtc = _dateTimeProvider.GetUtcNow();
+
+                    await _emailService.UpdateAsync(emailData, token);
+                    continue;
+                }
+
+                emailData.ShouldSend = true;
+                emailData.ResponseLog += $"{_dateTimeProvider.GetUtcNow()}: Email failed to send. Attempt {emailData.SendAttempts} out of {maxAttempts}. Error {message};";
+                await _emailService.UpdateAsync(emailData, token);
+            }
         }
-
-        int maxAttempts = await _globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.EMAIL_SEND_ATTEMPTS_MAX, 5, token);
-
-        foreach (EmailData emailData in emailsToProcess)
+        catch (NpgsqlException dbException)
         {
-            emailData.SendAttempts++;
-
-            if (emailData.SendAttempts > maxAttempts)
+            if (dbException.InnerException is SocketException)
             {
-                emailData.ShouldSend = false;
-                emailData.ResponseLog += $"{_dateTimeProvider}: Max email attempts reached";
-
-                await _emailService.UpdateAsync(emailData, token);
-                continue;
+                _logger.LogCritical("Could not reach database. Error: {Message}", dbException.Message);
             }
-
-            emailData.ShouldSend = false; // hit early to avoid spamming on DB write errors.
-
-            await _emailService.UpdateAsync(emailData, token);
-
-            (bool success, string message) = await SendEmailAsync(emailData, token);
-
-            if (success)
-            {
-                emailData.ResponseLog += $"{_dateTimeProvider}: Email Sent;";
-                emailData.ShouldSend = false;
-                emailData.SentUtc = _dateTimeProvider.GetUtcNow();
-
-                await _emailService.UpdateAsync(emailData, token);
-                continue;
-            }
-
-            emailData.ShouldSend = true;
-            emailData.ResponseLog += $"{_dateTimeProvider.GetUtcNow()}: Email failed to send. Attempt {emailData.SendAttempts} out of {maxAttempts}. Error {message};";
-            await _emailService.UpdateAsync(emailData, token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
         }
     }
 

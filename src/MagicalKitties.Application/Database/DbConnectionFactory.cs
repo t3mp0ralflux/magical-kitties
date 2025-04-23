@@ -1,15 +1,13 @@
-﻿using System.Data;
-using Dapper;
-using MagicalKitties.Application.Models.Characters;
+﻿using Dapper;
 using MagicalKitties.Application.Models.MagicalPowers;
-using Npgsql;
 using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
 namespace MagicalKitties.Application.Database;
 
 public interface IDbConnectionFactory
 {
-    Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default);
+    //Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default);
+    string GetConnectionString();
 }
 
 public class NpgsqlConnectionFactory : IDbConnectionFactory
@@ -21,14 +19,18 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         _connectionString = connectionString;
 
         SqlMapper.AddTypeHandler(typeof(List<Attribute>), new JsonTypeHandler());
-        //SqlMapper.AddTypeHandler(typeof(List<Endowment>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());
     }
 
-    public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)
+    // public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)
+    // {
+    //     NpgsqlConnection connection = new(_connectionString);
+    //     await connection.OpenAsync(token);
+    //     return connection;
+    // }
+
+    public string GetConnectionString()
     {
-        NpgsqlConnection connection = new(_connectionString);
-        await connection.OpenAsync(token);
-        return connection;
+        return _connectionString;
     }
 }

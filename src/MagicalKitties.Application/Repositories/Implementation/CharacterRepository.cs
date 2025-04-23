@@ -28,32 +28,32 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown, attributes)
-                                                                         values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown, @Attributes)
-                                                                         """, new
-                                                                              {
-                                                                                  character.Id,
-                                                                                  character.AccountId,
-                                                                                  character.Name,
-                                                                                  character.Username,
-                                                                                  CreatedUtc = _dateTimeProvider.GetUtcNow(),
-                                                                                  UpdatedUtc = _dateTimeProvider.GetUtcNow(),
-                                                                                  character.Description,
-                                                                                  character.Hometown,
-                                                                                  Attributes = new JsonParameter(JsonSerializer.Serialize(character.Attributes))
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown, attributes)
+                                                                                  values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown, @Attributes)
+                                                                                  """, new
+                                                                                       {
+                                                                                           character.Id,
+                                                                                           character.AccountId,
+                                                                                           character.Name,
+                                                                                           character.Username,
+                                                                                           CreatedUtc = _dateTimeProvider.GetUtcNow(),
+                                                                                           UpdatedUtc = _dateTimeProvider.GetUtcNow(),
+                                                                                           character.Description,
+                                                                                           character.Hometown,
+                                                                                           Attributes = new JsonParameter(JsonSerializer.Serialize(character.Attributes))
+                                                                                       }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         insert into characterstat(id, character_id)
-                                                                         values(@Id, @CharacterId)
-                                                                         """, new
-                                                                              {
-                                                                                  Id = Guid.NewGuid(),
-                                                                                  CharacterId = character.Id
-                                                                              }, cancellationToken: token));
+            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into characterstat(id, character_id)
+                                                                                  values(@Id, @CharacterId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           CharacterId = character.Id
+                                                                                       }, cancellationToken: token));
         }
 
         transaction.Commit();
@@ -66,14 +66,14 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-        
-        IEnumerable<Character> result = await connection.QueryAsync<Character>(new CommandDefinition($"""
-                                                                                                      select {CharacterFields}, {StatsFields}
-                                                                                                      from character c
-                                                                                                      inner join characterstat cs on c.id = cs.character_id
-                                                                                                      where c.id = @id
-                                                                                                      {shouldIncludeDeleted}
-                                                                                                      """, new { id }, cancellationToken: token));
+
+        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
+                                                                                                               select {CharacterFields}, {StatsFields}
+                                                                                                               from character c
+                                                                                                               inner join characterstat cs on c.id = cs.character_id
+                                                                                                               where c.id = @id
+                                                                                                               {shouldIncludeDeleted}
+                                                                                                               """, new { id }, cancellationToken: token));
         return result.FirstOrDefault();
     }
 
@@ -88,19 +88,19 @@ public class CharacterRepository : ICharacterRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        IEnumerable<Character> results = await connection.QueryAsync<Character>(new CommandDefinition($"""
-                                                                                                       select {CharacterFields}, {StatsFields}
-                                                                                                       from character c
-                                                                                                       inner join characterstat cs on c.id = cs.character_id
-                                                                                                       where c.account_id = @AccountId
-                                                                                                       and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
-                                                                                                       and c.deleted_utc is null
-                                                                                                       {orderClause}
-                                                                                                       """, new
-                                                                                                            {
-                                                                                                                options.AccountId,
-                                                                                                                Name = options.Name?.ToLowerInvariant()
-                                                                                                            }, cancellationToken: token));
+        IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
+                                                                                                                select {CharacterFields}, {StatsFields}
+                                                                                                                from character c
+                                                                                                                inner join characterstat cs on c.id = cs.character_id
+                                                                                                                where c.account_id = @AccountId
+                                                                                                                and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
+                                                                                                                and c.deleted_utc is null
+                                                                                                                {orderClause}
+                                                                                                                """, new
+                                                                                                                     {
+                                                                                                                         options.AccountId,
+                                                                                                                         Name = options.Name?.ToLowerInvariant()
+                                                                                                                     }, cancellationToken: token));
         return results;
     }
 
@@ -108,17 +108,17 @@ public class CharacterRepository : ICharacterRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        int result = await connection.QuerySingleAsync<int>(new CommandDefinition("""
-                                                                                  select count(c.id)
-                                                                                  from character c
-                                                                                  where c.account_id = @AccountId
-                                                                                  and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
-                                                                                  and c.deleted_utc is null
-                                                                                  """, new
-                                                                                       {
-                                                                                           options.AccountId,
-                                                                                           Name = options.Name?.ToLowerInvariant()
-                                                                                       }, cancellationToken: token));
+        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
+                                                                                           select count(c.id)
+                                                                                           from character c
+                                                                                           where c.account_id = @AccountId
+                                                                                           and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
+                                                                                           and c.deleted_utc is null
+                                                                                           """, new
+                                                                                                {
+                                                                                                    options.AccountId,
+                                                                                                    Name = options.Name?.ToLowerInvariant()
+                                                                                                }, cancellationToken: token));
 
         return result;
     }
@@ -127,11 +127,11 @@ public class CharacterRepository : ICharacterRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        int result = await connection.QuerySingleAsync<int>(new CommandDefinition("""
-                                                                                  select count(id)
-                                                                                  from character
-                                                                                  where id = @id
-                                                                                  """, new { id }, cancellationToken: token));
+        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
+                                                                                           select count(id)
+                                                                                           from character
+                                                                                           where id = @id
+                                                                                           """, new { id }, cancellationToken: token));
 
         return result > 0;
     }
@@ -142,17 +142,17 @@ public class CharacterRepository : ICharacterRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         // note: don't update the dead
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update character
-                                                                         set name = @Name, updated_utc = @UpdatedUtc
-                                                                         where id = @Id
-                                                                         and deleted_utc is null
-                                                                         """, new
-                                                                              {
-                                                                                  character.Name,
-                                                                                  character.Id,
-                                                                                  character.UpdatedUtc
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set name = @Name, updated_utc = @UpdatedUtc
+                                                                                  where id = @Id
+                                                                                  and deleted_utc is null
+                                                                                  """, new
+                                                                                       {
+                                                                                           character.Name,
+                                                                                           character.Id,
+                                                                                           character.UpdatedUtc
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 
@@ -164,15 +164,15 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update character
-                                                                         set deleted_utc = @DeletedUtc
-                                                                         where id = @id
-                                                                         """, new
-                                                                              {
-                                                                                  DeletedUtc = _dateTimeProvider.GetUtcNow(),
-                                                                                  id
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set deleted_utc = @DeletedUtc
+                                                                                  where id = @id
+                                                                                  """, new
+                                                                                       {
+                                                                                           DeletedUtc = _dateTimeProvider.GetUtcNow(),
+                                                                                           id
+                                                                                       }, cancellationToken: token));
         transaction.Commit();
 
         return result > 0;
@@ -183,15 +183,15 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update characterstat
-                                                                         set level = @Level
-                                                                         where id = @CharacterId
-                                                                         """, new
-                                                                              {
-                                                                                  update.CharacterId,
-                                                                                  update.Level
-                                                                              }));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update characterstat
+                                                                                  set level = @Level
+                                                                                  where id = @CharacterId
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.CharacterId,
+                                                                                           update.Level
+                                                                                       }));
 
         transaction.Commit();
 
@@ -203,15 +203,15 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update character
-                                                                         set flaw_id = @FlawId
-                                                                         where id = @CharacterId
-                                                                         """, new
-                                                                              {
-                                                                                  update.CharacterId,
-                                                                                  update.FlawId
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set flaw_id = @FlawId
+                                                                                  where id = @CharacterId
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.CharacterId,
+                                                                                           update.FlawId
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 
@@ -223,15 +223,15 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update character
-                                                                         set talent_id = @TalentId
-                                                                         where id = @CharacterId
-                                                                         """, new
-                                                                              {
-                                                                                  update.CharacterId,
-                                                                                  update.TalentId
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set talent_id = @TalentId
+                                                                                  where id = @CharacterId
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.CharacterId,
+                                                                                           update.TalentId
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 

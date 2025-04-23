@@ -2,21 +2,48 @@ using System.Text;
 using Asp.Versioning;
 using MagicalKitties.Api;
 using MagicalKitties.Api.Auth;
-using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application;
-using MagicalKitties.Application.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ConfigurationManager config = builder.Configuration;
 
-// Add services to the container.
+builder.Logging.ClearProviders();
+
+Log.Logger = new LoggerConfiguration()
+             .Enrich.FromLogContext()
+             .WriteTo.Console()
+             .WriteTo.OpenTelemetry(x =>
+                                    {
+                                        x.Endpoint = config["Logging:Settings:Endpoint"]!;
+                                        x.Protocol = OtlpProtocol.HttpProtobuf;
+                                        x.Headers = new Dictionary<string, string>
+                                                    {
+                                                        ["X-Seq-ApiKey"] = config["Logging:Settings:ApiKey"]!
+                                                    };
+                                        x.ResourceAttributes = new Dictionary<string, object>
+                                                               {
+                                                                   ["service.name"] = "Magical Kitties API",
+                                                                   ["deployment.environment"] = builder.Environment.EnvironmentName
+                                                               };
+                                    })
+             .CreateLogger();
+
+builder.Services.AddSerilog();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddAuthentication(x =>
@@ -55,8 +82,8 @@ builder.Services.AddApiVersioning(x =>
 
 builder.Services.AddOutputCache(x =>
                                 {
-                                    x.AddBasePolicy(c=> c.Cache());
-                                    
+                                    x.AddBasePolicy(c => c.Cache());
+
                                     x.AddPolicy(ApiAssumptions.PolicyNames.Flaws, c =>
                                                                                   {
                                                                                       c.Cache()
@@ -64,33 +91,54 @@ builder.Services.AddOutputCache(x =>
                                                                                        .SetVaryByQuery(["sortBy", "page", "pageSize"])
                                                                                        .Tag(ApiAssumptions.TagNames.Flaws);
                                                                                   });
-                                    
+
                                     x.AddPolicy(ApiAssumptions.PolicyNames.Talents, c =>
-                                                                                  {
-                                                                                      c.Cache()
-                                                                                       .Expire(TimeSpan.FromMinutes(5))
-                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
-                                                                                       .Tag(ApiAssumptions.TagNames.Talents);
-                                                                                  });
-                                    
+                                                                                    {
+                                                                                        c.Cache()
+                                                                                         .Expire(TimeSpan.FromMinutes(5))
+                                                                                         .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                         .Tag(ApiAssumptions.TagNames.Talents);
+                                                                                    });
+
                                     x.AddPolicy(ApiAssumptions.PolicyNames.MagicalPowers, c =>
-                                                                                  {
-                                                                                      c.Cache()
-                                                                                       .Expire(TimeSpan.FromMinutes(5))
-                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
-                                                                                       .Tag(ApiAssumptions.TagNames.MagicalPowers);
-                                                                                  });
+                                                                                          {
+                                                                                              c.Cache()
+                                                                                               .Expire(TimeSpan.FromMinutes(5))
+                                                                                               .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                               .Tag(ApiAssumptions.TagNames.MagicalPowers);
+                                                                                          });
                                 });
 
 builder.Services.AddControllers();
+builder.Services.AddRateLimiter(options =>
+                                {
+                                    options.AddFixedWindowLimiter(ApiAssumptions.PolicyNames.RateLimiter, windowOptions =>
+                                                                                                          {
+                                                                                                              windowOptions.PermitLimit = 3;
+                                                                                                              windowOptions.Window = TimeSpan.FromSeconds(5);
+                                                                                                          });
+                                    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                                    options.OnRejected = async (context, token) =>
+                                                         {
+                                                             ProblemDetails problemDetails = new()
+                                                                                             {
+                                                                                                 Status = StatusCodes.Status429TooManyRequests,
+                                                                                                 Title = "Too Many Requests",
+                                                                                                 Detail = "Too many requests were received. Please wait before submitting again."
+                                                                                             };
 
-builder.Services.AddApplication();
+                                                             await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, token);
+                                                         };
+                                });
+
 builder.Services.AddDatabase(config["ConnectionStrings:Database"]!);
+builder.Services.AddApplication();
 
 builder.Services.Configure<HostOptions>(x =>
                                         {
                                             x.ServicesStartConcurrently = true;
                                             x.ServicesStopConcurrently = false;
+                                            x.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore; // will log error, but don't want complete death.
                                         });
 
 WebApplication app = builder.Build();
@@ -110,18 +158,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseExceptionHandler();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseOutputCache();
 
-app.UseMiddleware<ValidationMappingMiddleware>();
 app.MapControllers();
+app.UseRateLimiter();
 
-if (app.Environment.IsDevelopment())
-{
-    DbInitializer dbInitializer = app.Services.GetRequiredService<DbInitializer>();
-    await dbInitializer.InitializeAsync();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     DbInitializer dbInitializer = app.Services.GetRequiredService<DbInitializer>();
+//     await dbInitializer.InitializeAsync();
+// }
 
 app.Run();

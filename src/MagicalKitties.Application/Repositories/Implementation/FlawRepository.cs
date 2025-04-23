@@ -20,16 +20,16 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         insert into flaw(id, name, description, is_custom)
-                                                                         values (@Id, @Name, @Description, @IsCustom)
-                                                                         """, new
-                                                                              {
-                                                                                  flaw.Id,
-                                                                                  flaw.Name,
-                                                                                  flaw.Description,
-                                                                                  flaw.IsCustom
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into flaw(id, name, description, is_custom)
+                                                                                  values (@Id, @Name, @Description, @IsCustom)
+                                                                                  """, new
+                                                                                       {
+                                                                                           flaw.Id,
+                                                                                           flaw.Name,
+                                                                                           flaw.Description,
+                                                                                           flaw.IsCustom
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 
@@ -40,11 +40,11 @@ public class FlawRepository : IFlawRepository
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
-        Flaw? result = await connection.QuerySingleOrDefaultAsync<Flaw>(new CommandDefinition("""
-                                                                                              select id, name, description, is_custom as IsCustom
-                                                                                              from flaw
-                                                                                              where id = @id
-                                                                                              """, new { id }, cancellationToken: token));
+        Flaw? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Flaw>(new CommandDefinition("""
+                                                                                                       select id, name, description, is_custom as IsCustom
+                                                                                                       from flaw
+                                                                                                       where id = @id
+                                                                                                       """, new { id }, cancellationToken: token));
 
         return result;
     }
@@ -53,11 +53,11 @@ public class FlawRepository : IFlawRepository
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
-        int result = await connection.QuerySingleOrDefaultAsync<int>(new CommandDefinition("""
-                                                                                           select count(id)
-                                                                                           from flaw
-                                                                                           where id = @id
-                                                                                           """, new { id }, cancellationToken: token));
+        int result = await connection.QuerySingleOrDefaultAsyncWithRetry<int>(new CommandDefinition("""
+                                                                                                    select count(id)
+                                                                                                    from flaw
+                                                                                                    where id = @id
+                                                                                                    """, new { id }, cancellationToken: token));
 
         return result > 0;
     }
@@ -73,14 +73,14 @@ public class FlawRepository : IFlawRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        IEnumerable<Flaw> results = await connection.QueryAsync<Flaw>(new CommandDefinition($"""
-                                                                                             select id, name, description, is_custom as IsCustom
-                                                                                             from flaw
-                                                                                             {orderClause}
-                                                                                             """, new
-                                                                                                  {
-                                                                                                      options
-                                                                                                  }, cancellationToken: token));
+        IEnumerable<Flaw> results = await connection.QueryAsyncWithRetry<Flaw>(new CommandDefinition($"""
+                                                                                                      select id, name, description, is_custom as IsCustom
+                                                                                                      from flaw
+                                                                                                      {orderClause}
+                                                                                                      """, new
+                                                                                                           {
+                                                                                                               options
+                                                                                                           }, cancellationToken: token));
 
         return results;
     }
@@ -96,14 +96,14 @@ public class FlawRepository : IFlawRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        int result = await connection.QuerySingleAsync<int>(new CommandDefinition($"""
-                                                                                   select count(id)
-                                                                                   from flaw
-                                                                                   {orderClause}
-                                                                                   """, new
-                                                                                        {
-                                                                                            options
-                                                                                        }, cancellationToken: token));
+        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition($"""
+                                                                                            select count(id)
+                                                                                            from flaw
+                                                                                            {orderClause}
+                                                                                            """, new
+                                                                                                 {
+                                                                                                     options
+                                                                                                 }, cancellationToken: token));
 
         return result;
     }
@@ -113,10 +113,10 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         delete from flaw
-                                                                         where id = @id
-                                                                         """, new { id }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  delete from flaw
+                                                                                  where id = @id
+                                                                                  """, new { id }, cancellationToken: token));
         transaction.Commit();
 
         return result > 0;
@@ -127,16 +127,16 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update flaw
-                                                                         set name = @Name, description = @Description
-                                                                         where id = @Id
-                                                                         """, new
-                                                                              {
-                                                                                  flaw.Name,
-                                                                                  flaw.Description,
-                                                                                  flaw.Id
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update flaw
+                                                                                  set name = @Name, description = @Description
+                                                                                  where id = @Id
+                                                                                  """, new
+                                                                                       {
+                                                                                           flaw.Name,
+                                                                                           flaw.Description,
+                                                                                           flaw.Id
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 

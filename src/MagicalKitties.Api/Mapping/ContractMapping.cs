@@ -10,7 +10,6 @@ using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Requests.Characters;
-using MagicalKitties.Contracts.Requests.Endowments;
 using MagicalKitties.Contracts.Requests.Endowments.Flaws;
 using MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
@@ -284,7 +283,7 @@ public static class ContractMapping
                    TalentId = request.TalentId
                };
     }
-    
+
     public static MagicalPowerUpdate ToUpdate(this CharacterMagicalPowerUpdateRequest request)
     {
         return new MagicalPowerUpdate
@@ -438,8 +437,9 @@ public static class ContractMapping
     }
 
     #endregion
-    
+
     #region Magical Powers
+
     public static MagicalPower ToMagicalPower(this CreateMagicalPowerRequest request)
     {
         return new MagicalPower
@@ -472,7 +472,7 @@ public static class ContractMapping
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
                    IsCustom = magicalPower.IsCustom,
-                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
+                   BonusFeatures = magicalPower.BonusFeatures?.Select(ToResponse).ToList()
                };
     }
 
@@ -498,7 +498,7 @@ public static class ContractMapping
     }
 
     #endregion
-    
+
     #region GlobalSettings
 
     public static GlobalSetting ToGlobalSetting(this GlobalSettingCreateRequest request)
