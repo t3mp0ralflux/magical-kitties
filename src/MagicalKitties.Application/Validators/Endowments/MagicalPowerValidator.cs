@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using MagicalKitties.Application.Models.MagicalPowers;
-using MagicalKitties.Application.Models.Talents;
 
 namespace MagicalKitties.Application.Validators.Endowments;
 

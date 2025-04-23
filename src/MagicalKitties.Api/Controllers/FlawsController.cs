@@ -4,7 +4,6 @@ using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Endowments.Flaws;
-using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Flaws;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +42,7 @@ public class FlawsController : ControllerBase
         Flaw result = request.ToFlaw();
 
         await _flawService.CreateAsync(result, token);
-        
+
         await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
 
         FlawResponse response = result.ToResponse();
