@@ -15,7 +15,7 @@ public class DebugController : ControllerBase
     {
         _dbConnectionFactory = dbConnectionFactory;
     }
-
+#if DEBUG
     [HttpGet("timeout")]
     public async Task<IActionResult> CheckTimeout()
     {
@@ -25,4 +25,6 @@ public class DebugController : ControllerBase
 
         return Ok(result);
     }
+    
+#endif
 }
