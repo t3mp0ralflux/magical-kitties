@@ -1,16 +1,6 @@
-﻿using System.Data;
-using Dapper;
-using MagicalKitties.Application.Models.Characters;
+﻿using Dapper;
 using MagicalKitties.Application.Models.MagicalPowers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Npgsql;
-using Polly;
-using Polly.Fallback;
-using Polly.Retry;
-using Serilog;
 using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
-using ILogger = Serilog.ILogger;
 
 namespace MagicalKitties.Application.Database;
 
@@ -23,7 +13,7 @@ public interface IDbConnectionFactory
 public class NpgsqlConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
-    
+
     public NpgsqlConnectionFactory(string connectionString)
     {
         _connectionString = connectionString;

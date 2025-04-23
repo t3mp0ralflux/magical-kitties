@@ -66,7 +66,7 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-        
+
         IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
                                                                                                                select {CharacterFields}, {StatsFields}
                                                                                                                from character c

@@ -15,24 +15,25 @@ public static class DapperExtensions
     [
         TimeSpan.FromSeconds(1),
         TimeSpan.FromSeconds(2),
-        TimeSpan.FromSeconds(3),
+        TimeSpan.FromSeconds(3)
     ];
-    
+
     private static readonly AsyncRetryPolicy RetryPolicy = Policy
                                                            // .Handle<NpgsqlException>()
                                                            // .Or<TimeoutException>()
                                                            .HandleInner<TimeoutException>()
                                                            .OrInner<SocketException>()
                                                            .WaitAndRetryAsync(RetryTimes, (exception, timeSpan, retryCount, context) =>
-                                                                                 {
-                                                                                     Log.Warning(exception, "WARNING: Error talking to DB, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
-                                                                                         timeSpan,
-                                                                                         retryCount);
-                                                                                 });
+                                                                                          {
+                                                                                              Log.Warning(exception, "WARNING: Error talking to DB, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
+                                                                                                  timeSpan,
+                                                                                                  retryCount);
+                                                                                          });
+
 
     public static async Task<IDbConnection> CreateConnectionAsync(this IDbConnectionFactory connectionFactory, CancellationToken token = default)
     {
-        NpgsqlConnection connection  = new NpgsqlConnection(connectionFactory.GetConnectionString());
+        NpgsqlConnection connection = new(connectionFactory.GetConnectionString());
         await RetryPolicy.ExecuteAsync(async ctx => await connection.OpenAsync(ctx), token);
 
         return connection;

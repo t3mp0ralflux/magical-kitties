@@ -44,10 +44,10 @@ public class AccountRepository : IAccountRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                         insert into account(id, first_name, last_name, username, email, password, created_utc, updated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code)
-                                                                         values (@Id, @FirstName, @LastName, @UserName, @Email, @Password, @CreatedUtc, @UpdatedUtc, @LastLoginUtc, @DeletedUtc, @AccountStatus, @AccountRole, @ActivationExpiration, @ActivationCode)
-                                                                         on conflict do nothing
-                                                                         """, account, cancellationToken: token));
+                                                                                  insert into account(id, first_name, last_name, username, email, password, created_utc, updated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code)
+                                                                                  values (@Id, @FirstName, @LastName, @UserName, @Email, @Password, @CreatedUtc, @UpdatedUtc, @LastLoginUtc, @DeletedUtc, @AccountStatus, @AccountRole, @ActivationExpiration, @ActivationCode)
+                                                                                  on conflict do nothing
+                                                                                  """, account, cancellationToken: token));
 
         transaction.Commit();
 
@@ -59,10 +59,10 @@ public class AccountRepository : IAccountRepository
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
 
         int result = await connection.QuerySingleOrDefaultAsyncWithRetry<int>(new CommandDefinition("""
-                                                                                                     select count(id) 
-                                                                                                     from account 
-                                                                                                     where id = @id 
-                                                                                                     """, new { id }, cancellationToken: token));
+                                                                                                    select count(id) 
+                                                                                                    from account 
+                                                                                                    where id = @id 
+                                                                                                    """, new { id }, cancellationToken: token));
         return result > 0;
     }
 

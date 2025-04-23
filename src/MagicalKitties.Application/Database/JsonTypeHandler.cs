@@ -6,7 +6,8 @@ namespace MagicalKitties.Application.Database;
 
 public class JsonTypeHandler : SqlMapper.ITypeHandler
 {
-    private readonly JsonSerializerOptions _options = new JsonSerializerOptions(JsonSerializerOptions.Web);
+    private readonly JsonSerializerOptions _options = new(JsonSerializerOptions.Web);
+
     public void SetValue(IDbDataParameter parameter, object value)
     {
         parameter.Value = JsonSerializer.Serialize(value);

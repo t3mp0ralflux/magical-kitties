@@ -19,9 +19,9 @@ public class DebugController : ControllerBase
     [HttpGet("timeout")]
     public async Task<IActionResult> CheckTimeout()
     {
-        using var connection = await _dbConnectionFactory.CreateConnectionAsync();
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
 
-        var result = await connection.QueryAsyncWithRetry<bool>(new CommandDefinition(""" select pg_sleep(200); """, commandTimeout: 3));
+        IEnumerable<bool> result = await connection.QueryAsyncWithRetry<bool>(new CommandDefinition(""" select pg_sleep(200); """, commandTimeout: 3));
 
         return Ok(result);
     }

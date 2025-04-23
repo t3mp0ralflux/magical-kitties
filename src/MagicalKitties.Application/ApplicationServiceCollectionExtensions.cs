@@ -1,15 +1,10 @@
-﻿using System.Net.Sockets;
-using FluentValidation;
+﻿using FluentValidation;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using Polly;
-using Polly.Retry;
-using Serilog;
 
 namespace MagicalKitties.Application;
 
@@ -64,17 +59,13 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<DbInitializer>();
         services.AddSingleton<IEmailService, EmailService>();
 
-        
-
         services.AddHostedService<HostedServices.EmailService>();
-        
+
         return services;
     }
 
     public static IServiceCollection AddResilience(this IServiceCollection services)
     {
-        
-
         return services;
     }
 }

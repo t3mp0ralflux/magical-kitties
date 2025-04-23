@@ -1,10 +1,8 @@
-﻿
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using FluentValidation;
 using MagicalKitties.Contracts.Responses.Errors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Serilog;
 
@@ -22,7 +20,7 @@ public class GlobalExceptionHandler : IExceptionHandler
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         ProblemDetails? problemDetails = null;
-        
+
         switch (exception)
         {
             case ValidationException validationException:
@@ -45,18 +43,22 @@ public class GlobalExceptionHandler : IExceptionHandler
                 if (postgresException.Message.Contains("duplicate"))
                 {
                     httpContext.Response.StatusCode = 400;
-                    ValidationFailureResponse result = new ()
+                    ValidationFailureResponse result = new()
                                                        {
-                                                           Errors = [new ValidationResponse()
-                                                                     {
-                                                                         PropertyName = "Id",
-                                                                         Message = "Item already exists"
-                                                                     }]
+                                                           Errors =
+                                                           [
+                                                               new ValidationResponse
+                                                               {
+                                                                   PropertyName = "Id",
+                                                                   Message = "Item already exists"
+                                                               }
+                                                           ]
                                                        };
 
                     await httpContext.Response.WriteAsJsonAsync(result, cancellationToken);
                     return true;
                 }
+
                 break;
             case TimeoutException:
             case SocketException:
@@ -69,7 +71,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                                  };
 
                 httpContext.Response.StatusCode = StatusCodes.Status408RequestTimeout;
-                        
+
                 Log.Logger.Error(exception, "DB timed out during request. Message: {Message}", exception.Message);
                 break;
             default:
@@ -83,7 +85,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                 Log.Logger.Error(exception, "Uncaught DB error detected. Message: {Message}", exception.Message);
 
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                
+
                 _logger.LogError(exception, "Uncaught Exception Occurred: {Message}", exception.Message);
                 break;
         }
@@ -94,8 +96,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         }
 
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-        
-        return true;
 
+        return true;
     }
 }

@@ -43,7 +43,7 @@ public class MagicalPowersController : ControllerBase
         MagicalPower result = request.ToMagicalPower();
 
         await _magicalPowerService.CreateAsync(result, token);
-        
+
         await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
 
         MagicalPowerResponse response = result.ToResponse();
@@ -65,7 +65,7 @@ public class MagicalPowersController : ControllerBase
         }
 
         MagicalPowerResponse response = result.ToResponse();
-        
+
         return Ok(response);
     }
 

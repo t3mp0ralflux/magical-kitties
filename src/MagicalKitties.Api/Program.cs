@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using System.Text;
 using Asp.Versioning;
 using MagicalKitties.Api;
@@ -9,9 +8,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
-using Polly;
-using Polly.Retry;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
@@ -27,16 +23,16 @@ Log.Logger = new LoggerConfiguration()
              .WriteTo.OpenTelemetry(x =>
                                     {
                                         x.Endpoint = config["Logging:Settings:Endpoint"]!;
-                                                            x.Protocol = OtlpProtocol.HttpProtobuf;
-                                                            x.Headers = new Dictionary<string, string>
-                                                                        {
-                                                                            ["X-Seq-ApiKey"] = config["Logging:Settings:ApiKey"]!
-                                                                        };
-                                                            x.ResourceAttributes = new Dictionary<string, object>
-                                                                                   {
-                                                                                       ["service.name"] = "Magical Kitties API",
-                                                                                       ["deployment.environment"] = builder.Environment.EnvironmentName
-                                                                                   };
+                                        x.Protocol = OtlpProtocol.HttpProtobuf;
+                                        x.Headers = new Dictionary<string, string>
+                                                    {
+                                                        ["X-Seq-ApiKey"] = config["Logging:Settings:ApiKey"]!
+                                                    };
+                                        x.ResourceAttributes = new Dictionary<string, object>
+                                                               {
+                                                                   ["service.name"] = "Magical Kitties API",
+                                                                   ["deployment.environment"] = builder.Environment.EnvironmentName
+                                                               };
                                     })
              .CreateLogger();
 
@@ -86,8 +82,8 @@ builder.Services.AddApiVersioning(x =>
 
 builder.Services.AddOutputCache(x =>
                                 {
-                                    x.AddBasePolicy(c=> c.Cache());
-                                    
+                                    x.AddBasePolicy(c => c.Cache());
+
                                     x.AddPolicy(ApiAssumptions.PolicyNames.Flaws, c =>
                                                                                   {
                                                                                       c.Cache()
@@ -95,43 +91,43 @@ builder.Services.AddOutputCache(x =>
                                                                                        .SetVaryByQuery(["sortBy", "page", "pageSize"])
                                                                                        .Tag(ApiAssumptions.TagNames.Flaws);
                                                                                   });
-                                    
+
                                     x.AddPolicy(ApiAssumptions.PolicyNames.Talents, c =>
-                                                                                  {
-                                                                                      c.Cache()
-                                                                                       .Expire(TimeSpan.FromMinutes(5))
-                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
-                                                                                       .Tag(ApiAssumptions.TagNames.Talents);
-                                                                                  });
-                                    
+                                                                                    {
+                                                                                        c.Cache()
+                                                                                         .Expire(TimeSpan.FromMinutes(5))
+                                                                                         .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                         .Tag(ApiAssumptions.TagNames.Talents);
+                                                                                    });
+
                                     x.AddPolicy(ApiAssumptions.PolicyNames.MagicalPowers, c =>
-                                                                                  {
-                                                                                      c.Cache()
-                                                                                       .Expire(TimeSpan.FromMinutes(5))
-                                                                                       .SetVaryByQuery(["sortBy", "page", "pageSize"])
-                                                                                       .Tag(ApiAssumptions.TagNames.MagicalPowers);
-                                                                                  });
+                                                                                          {
+                                                                                              c.Cache()
+                                                                                               .Expire(TimeSpan.FromMinutes(5))
+                                                                                               .SetVaryByQuery(["sortBy", "page", "pageSize"])
+                                                                                               .Tag(ApiAssumptions.TagNames.MagicalPowers);
+                                                                                          });
                                 });
 
 builder.Services.AddControllers();
 builder.Services.AddRateLimiter(options =>
                                 {
                                     options.AddFixedWindowLimiter(ApiAssumptions.PolicyNames.RateLimiter, windowOptions =>
-                                                                                            {
-                                                                                                windowOptions.PermitLimit = 3;
-                                                                                                windowOptions.Window = TimeSpan.FromSeconds(5);
-                                                                                            });
+                                                                                                          {
+                                                                                                              windowOptions.PermitLimit = 3;
+                                                                                                              windowOptions.Window = TimeSpan.FromSeconds(5);
+                                                                                                          });
                                     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
                                     options.OnRejected = async (context, token) =>
                                                          {
-                                                             ProblemDetails problemDetails = new ProblemDetails
+                                                             ProblemDetails problemDetails = new()
                                                                                              {
                                                                                                  Status = StatusCodes.Status429TooManyRequests,
                                                                                                  Title = "Too Many Requests",
                                                                                                  Detail = "Too many requests were received. Please wait before submitting again."
                                                                                              };
 
-                                                             await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken: token);
+                                                             await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, token);
                                                          };
                                 });
 

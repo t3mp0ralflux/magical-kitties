@@ -7,6 +7,7 @@ using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace MagicalKitties.Application.HostedServices;
 
@@ -105,7 +106,7 @@ public class EmailService : IHostedService
                 await _emailService.UpdateAsync(emailData, token);
             }
         }
-        catch (Npgsql.NpgsqlException dbException)
+        catch (NpgsqlException dbException)
         {
             if (dbException.InnerException is SocketException)
             {

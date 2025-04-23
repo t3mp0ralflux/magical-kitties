@@ -3,23 +3,19 @@ using System.Text.Json;
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
-using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.MagicalPowers;
-using Npgsql;
-using Polly;
-using Polly.Registry;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class MagicalPowerRepository : IMagicalPowerRepository
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    
+
     public MagicalPowerRepository(IDbConnectionFactory dbConnectionFactory)
     {
         _dbConnectionFactory = dbConnectionFactory;
     }
-    
+
     public async Task<bool> CreateAsync(MagicalPower magicalpower, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -47,10 +43,10 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         MagicalPower? result = await connection.QuerySingleOrDefaultAsyncWithRetry<MagicalPower>(new CommandDefinition("""
-                                                                                                              select id, name, description, is_custom as IsCustom, bonusfeatures
-                                                                                                              from magicalpower
-                                                                                                              where id = @id
-                                                                                                              """, new { id }, cancellationToken: token));
+                                                                                                                       select id, name, description, is_custom as IsCustom, bonusfeatures
+                                                                                                                       from magicalpower
+                                                                                                                       where id = @id
+                                                                                                                       """, new { id }, cancellationToken: token));
 
         return result;
     }
