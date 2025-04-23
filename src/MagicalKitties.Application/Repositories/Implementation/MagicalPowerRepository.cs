@@ -25,17 +25,17 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         insert into magicalpower(id, name, description, is_custom, bonusfeatures)
-                                                                         values (@Id, @Name, @Description, @IsCustom, @BonusFeatures)
-                                                                         """, new
-                                                                              {
-                                                                                  magicalpower.Id,
-                                                                                  magicalpower.Name,
-                                                                                  magicalpower.Description,
-                                                                                  magicalpower.IsCustom,
-                                                                                  BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures))
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into magicalpower(id, name, description, is_custom, bonusfeatures)
+                                                                                  values (@Id, @Name, @Description, @IsCustom, @BonusFeatures)
+                                                                                  """, new
+                                                                                       {
+                                                                                           magicalpower.Id,
+                                                                                           magicalpower.Name,
+                                                                                           magicalpower.Description,
+                                                                                           magicalpower.IsCustom,
+                                                                                           BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures))
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 
@@ -59,11 +59,11 @@ public class MagicalPowerRepository : IMagicalPowerRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        int result = await connection.QuerySingleOrDefaultAsync<int>(new CommandDefinition("""
-                                                                                           select count(id)
-                                                                                           from magicalpower
-                                                                                           where id = @id
-                                                                                           """, new { id }, cancellationToken: token));
+        int result = await connection.QuerySingleOrDefaultAsyncWithRetry<int>(new CommandDefinition("""
+                                                                                                    select count(id)
+                                                                                                    from magicalpower
+                                                                                                    where id = @id
+                                                                                                    """, new { id }, cancellationToken: token));
 
         return result > 0;
     }
@@ -79,14 +79,14 @@ public class MagicalPowerRepository : IMagicalPowerRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        IEnumerable<MagicalPower> results = await connection.QueryAsync<MagicalPower>(new CommandDefinition($"""
-                                                                                                             select id, name, description, is_custom as IsCustom, bonusfeatures
-                                                                                                             from magicalpower
-                                                                                                             {orderClause}
-                                                                                                             """, new
-                                                                                                                  {
-                                                                                                                      options
-                                                                                                                  }, cancellationToken: token));
+        IEnumerable<MagicalPower> results = await connection.QueryAsyncWithRetry<MagicalPower>(new CommandDefinition($"""
+                                                                                                                      select id, name, description, is_custom as IsCustom, bonusfeatures
+                                                                                                                      from magicalpower
+                                                                                                                      {orderClause}
+                                                                                                                      """, new
+                                                                                                                           {
+                                                                                                                               options
+                                                                                                                           }, cancellationToken: token));
 
         return results;
     }
@@ -102,14 +102,14 @@ public class MagicalPowerRepository : IMagicalPowerRepository
             orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
         }
 
-        int result = await connection.QuerySingleAsync<int>(new CommandDefinition($"""
-                                                                                   select count(id)
-                                                                                   from magicalpower
-                                                                                   {orderClause}
-                                                                                   """, new
-                                                                                        {
-                                                                                            options
-                                                                                        }, cancellationToken: token));
+        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition($"""
+                                                                                            select count(id)
+                                                                                            from magicalpower
+                                                                                            {orderClause}
+                                                                                            """, new
+                                                                                                 {
+                                                                                                     options
+                                                                                                 }, cancellationToken: token));
 
         return result;
     }
@@ -119,10 +119,10 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         delete from magicalpower
-                                                                         where id = @id
-                                                                         """, new { id }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  delete from magicalpower
+                                                                                  where id = @id
+                                                                                  """, new { id }, cancellationToken: token));
         transaction.Commit();
 
         return result > 0;
@@ -133,17 +133,17 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
-        int result = await connection.ExecuteAsync(new CommandDefinition("""
-                                                                         update magicalpower
-                                                                         set name = @Name, description = @Description, bonusfeatures = @BonusFeatures
-                                                                         where id = @Id
-                                                                         """, new
-                                                                              {
-                                                                                  magicalPower.Name,
-                                                                                  magicalPower.Description,
-                                                                                  magicalPower.Id,
-                                                                                  BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalPower.BonusFeatures))
-                                                                              }, cancellationToken: token));
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update magicalpower
+                                                                                  set name = @Name, description = @Description, bonusfeatures = @BonusFeatures
+                                                                                  where id = @Id
+                                                                                  """, new
+                                                                                       {
+                                                                                           magicalPower.Name,
+                                                                                           magicalPower.Description,
+                                                                                           magicalPower.Id,
+                                                                                           BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalPower.BonusFeatures))
+                                                                                       }, cancellationToken: token));
 
         transaction.Commit();
 

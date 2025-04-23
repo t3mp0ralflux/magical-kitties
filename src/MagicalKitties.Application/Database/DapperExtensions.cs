@@ -47,6 +47,11 @@ public static class DapperExtensions
         return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync<T>(commandDefinition));
     }
 
+    public static async Task<T> QuerySingleAsyncWithRetry<T>(this IDbConnection cnn, CommandDefinition commandDefinition)
+    {
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QuerySingleAsync<T>(commandDefinition));
+    }
+
     public static async Task<T?> QuerySingleOrDefaultAsyncWithRetry<T>(this IDbConnection cnn, CommandDefinition commandDefinition)
     {
         return await RetryPolicy.ExecuteAsync(async () => await cnn.QuerySingleOrDefaultAsync<T?>(commandDefinition));
