@@ -55,7 +55,7 @@ public class MagicalPowersController : ControllerBase
     [OutputCache(PolicyName = ApiAssumptions.PolicyNames.MagicalPowers)]
     [ProducesResponseType<MagicalPowerResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get(int id, CancellationToken token, ILogger<MagicalPowersController> logger)
+    public async Task<IActionResult> Get(int id, CancellationToken token)
     {
         MagicalPower? result = await _magicalPowerService.GetByIdAsync(id, token);
 
@@ -66,8 +66,6 @@ public class MagicalPowersController : ControllerBase
 
         MagicalPowerResponse response = result.ToResponse();
         
-        logger.LogInformation("Found {Name} with Id {Id}", result.Name, id);
-
         return Ok(response);
     }
 
