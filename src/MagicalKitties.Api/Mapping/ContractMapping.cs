@@ -472,7 +472,7 @@ public static class ContractMapping
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
                    IsCustom = magicalPower.IsCustom,
-                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
+                   BonusFeatures = magicalPower.BonusFeatures?.Select(ToResponse).ToList()
                };
     }
 

@@ -1,26 +1,53 @@
+using System.Net.Sockets;
 using System.Text;
 using Asp.Versioning;
 using MagicalKitties.Api;
 using MagicalKitties.Api.Auth;
-using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application;
-using MagicalKitties.Application.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
+using Polly;
+using Polly.Retry;
 using Scalar.AspNetCore;
+using Serilog;
+using Serilog.Sinks.OpenTelemetry;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ConfigurationManager config = builder.Configuration;
+
+builder.Logging.ClearProviders();
+
+Log.Logger = new LoggerConfiguration()
+             .Enrich.FromLogContext()
+             .WriteTo.Console()
+             .WriteTo.OpenTelemetry(x =>
+                                    {
+                                        x.Endpoint = config["Logging:Settings:Endpoint"]!;
+                                                            x.Protocol = OtlpProtocol.HttpProtobuf;
+                                                            x.Headers = new Dictionary<string, string>
+                                                                        {
+                                                                            ["X-Seq-ApiKey"] = config["Logging:Settings:ApiKey"]!
+                                                                        };
+                                                            x.ResourceAttributes = new Dictionary<string, object>
+                                                                                   {
+                                                                                       ["service.name"] = "Magical Kitties API",
+                                                                                       ["deployment.environment"] = builder.Environment.EnvironmentName
+                                                                                   };
+                                    })
+             .CreateLogger();
+
+builder.Services.AddSerilog();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddAuthentication(x =>
@@ -108,10 +135,8 @@ builder.Services.AddRateLimiter(options =>
                                                          };
                                 });
 
-builder.Services.AddApplication();
-builder.Services.AddResilience();
-
 builder.Services.AddDatabase(config["ConnectionStrings:Database"]!);
+builder.Services.AddApplication();
 
 builder.Services.Configure<HostOptions>(x =>
                                         {
@@ -136,8 +161,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseExceptionHandler();
 

@@ -1,0 +1,54 @@
+﻿using System.Data;
+using System.Net.Sockets;
+using Dapper;
+using Npgsql;
+using Polly;
+using Polly.Retry;
+using Serilog;
+
+namespace MagicalKitties.Application.Database;
+
+// https://hyr.mn/dapper-and-polly
+public static class DapperExtensions
+{
+    private static readonly IEnumerable<TimeSpan> RetryTimes =
+    [
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(3),
+    ];
+    
+    private static readonly AsyncRetryPolicy RetryPolicy = Policy
+                                                           .Handle<NpgsqlException>()
+                                                           .Or<TimeoutException>()
+                                                           .Or<SocketException>()
+                                                           .WaitAndRetryAsync(RetryTimes, (exception, timeSpan, retryCount, context) =>
+                                                                                 {
+                                                                                     Log.Warning(exception, "WARNING: Error talking to ReportingDb, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
+                                                                                         timeSpan,
+                                                                                         retryCount);
+                                                                                 });
+
+    public static async Task<IDbConnection> CreateConnectionAsync(this IDbConnectionFactory connectionFactory, CancellationToken token = default)
+    {
+        NpgsqlConnection connection  = new NpgsqlConnection(connectionFactory.GetConnectionString());
+        await RetryPolicy.ExecuteAsync(async ctx => await connection.OpenAsync(ctx), token);
+
+        return connection;
+    }
+
+    public static async Task<int> ExecuteAsyncWithRetry(this IDbConnection cnn, CommandDefinition commandDefinition)
+    {
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.ExecuteAsync(commandDefinition));
+    }
+
+    public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T>(this IDbConnection cnn, CommandDefinition commandDefinition)
+    {
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync<T>(commandDefinition));
+    }
+
+    public static async Task<T?> QuerySingleOrDefaultAsyncWithRetry<T>(this IDbConnection cnn, CommandDefinition commandDefinition)
+    {
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QuerySingleOrDefaultAsync<T?>(commandDefinition));
+    }
+}

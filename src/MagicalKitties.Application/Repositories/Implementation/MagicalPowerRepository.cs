@@ -5,21 +5,24 @@ using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.MagicalPowers;
+using Npgsql;
+using Polly;
+using Polly.Registry;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class MagicalPowerRepository : IMagicalPowerRepository
 {
-    private readonly IDbConnectionFactory _dbonConnectionFactory;
-
-    public MagicalPowerRepository(IDbConnectionFactory dbonConnectionFactory)
+    private readonly IDbConnectionFactory _dbConnectionFactory;
+    
+    public MagicalPowerRepository(IDbConnectionFactory dbConnectionFactory)
     {
-        _dbonConnectionFactory = dbonConnectionFactory;
+        _dbConnectionFactory = dbConnectionFactory;
     }
-
+    
     public async Task<bool> CreateAsync(MagicalPower magicalpower, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsync(new CommandDefinition("""
@@ -41,9 +44,9 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
     public async Task<MagicalPower?> GetByIdAsync(int id, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        MagicalPower? result = await connection.QuerySingleOrDefaultAsync<MagicalPower>(new CommandDefinition("""
+        MagicalPower? result = await connection.QuerySingleOrDefaultAsyncWithRetry<MagicalPower>(new CommandDefinition("""
                                                                                                               select id, name, description, is_custom as IsCustom, bonusfeatures
                                                                                                               from magicalpower
                                                                                                               where id = @id
@@ -54,7 +57,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
     public async Task<bool> ExistsByIdAsync(int id, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         int result = await connection.QuerySingleOrDefaultAsync<int>(new CommandDefinition("""
                                                                                            select count(id)
@@ -67,7 +70,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
     public async Task<IEnumerable<MagicalPower>> GetAllAsync(GetAllMagicalPowersOptions options, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string orderClause = string.Empty;
 
@@ -90,7 +93,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
     public async Task<int> GetCountAsync(GetAllMagicalPowersOptions options, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string orderClause = string.Empty;
 
@@ -113,7 +116,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
     public async Task<bool> DeleteAsync(int id, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsync(new CommandDefinition("""
@@ -127,7 +130,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
     public async Task<bool> UpdateAsync(MagicalPower magicalPower, CancellationToken token = default)
     {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsync(new CommandDefinition("""

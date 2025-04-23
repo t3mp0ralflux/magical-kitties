@@ -4,5 +4,5 @@ namespace MagicalKitties.Contracts.Responses.MagicalPowers;
 
 public class MagicalPowerResponse : EndowmentResponse
 {
-    public required List<MagicalPowerResponse> BonusFeatures { get; init; }
+    public List<MagicalPowerResponse> BonusFeatures { get; init; } = [];
 }
