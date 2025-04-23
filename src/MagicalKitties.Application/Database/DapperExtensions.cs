@@ -19,12 +19,13 @@ public static class DapperExtensions
     ];
     
     private static readonly AsyncRetryPolicy RetryPolicy = Policy
-                                                           .Handle<NpgsqlException>()
-                                                           .Or<TimeoutException>()
-                                                           .Or<SocketException>()
+                                                           // .Handle<NpgsqlException>()
+                                                           // .Or<TimeoutException>()
+                                                           .HandleInner<TimeoutException>()
+                                                           .OrInner<SocketException>()
                                                            .WaitAndRetryAsync(RetryTimes, (exception, timeSpan, retryCount, context) =>
                                                                                  {
-                                                                                     Log.Warning(exception, "WARNING: Error talking to ReportingDb, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
+                                                                                     Log.Warning(exception, "WARNING: Error talking to DB, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
                                                                                          timeSpan,
                                                                                          retryCount);
                                                                                  });
