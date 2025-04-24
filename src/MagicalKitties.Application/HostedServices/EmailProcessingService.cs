@@ -11,17 +11,17 @@ using Npgsql;
 
 namespace MagicalKitties.Application.HostedServices;
 
-public class EmailService : IHostedService
+public class EmailProcessingService : IHostedService
 {
     private readonly IConfiguration _configuration;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IEmailService _emailService;
     private readonly IGlobalSettingsService _globalSettingsService;
-    private readonly ILogger<EmailService> _logger;
+    private readonly ILogger<EmailProcessingService> _logger;
 
     private PeriodicTimer _timer = new(TimeSpan.FromSeconds(9999)); // initial value to prevent running for a while. Overridden in StartAsync.
 
-    public EmailService(ILogger<EmailService> logger, IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
+    public EmailProcessingService(ILogger<EmailProcessingService> logger, IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
     {
         _logger = logger;
         _emailService = emailService;
@@ -32,7 +32,7 @@ public class EmailService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("EmailVerification Service started");
+        _logger.LogInformation("EmailProcessing Service started");
 
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         State state = new();
@@ -47,7 +47,7 @@ public class EmailService : IHostedService
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _timer.Dispose();
-        _logger.LogInformation("EmailVerification Service ended");
+        _logger.LogInformation("EmailProcessing Service ended");
         return Task.CompletedTask;
     }
 
