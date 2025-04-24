@@ -51,9 +51,7 @@ create table if not exists character(
     deleted_utc timestamp null,
     description text not null,
     hometown text not null,
-    attributes json not null,
-    flaw_id numeric references flaw(id) null,
-    talent_id numeric references talent(id) null
+    attributes json not null
 );
 
 create table if not exists characterstat(
@@ -66,6 +64,19 @@ create table if not exists characterstat(
     starting_treats numeric not null default 2,
     current_treats numeric not null default 0,
     current_injuries numeric not null default 0
+);
+
+create table if not exists characterflaw(
+    id UUID primary key,
+    character_id UUID references character(id),
+    flaw_id numeric references flaw(id),
+    UNIQUE(character_id, flaw_id)  
+);
+
+create table if not exists charactertalent(
+    id UUID primary key,
+    character_id UUID references character(id),
+    talent_id numeric references talent(id)
 );
 
 create table if not exists human(

@@ -23,7 +23,7 @@ public class Character
     public string Hometown { get; set; } = "";
     public List<Attribute> Attributes { get; set; } = [];
     public Flaw? Flaw { get; set; }
-    public Talent? Talent { get; set; }
+    public List<Talent> Talents { get; set; } = [];
 
     // public List<Endowment> MagicalPowers { get; set; } = [];
     public Human? Human { get; set; }

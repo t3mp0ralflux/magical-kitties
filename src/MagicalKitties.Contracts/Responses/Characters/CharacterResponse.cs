@@ -13,7 +13,7 @@ public class CharacterResponse
     public required List<AttributeResponse> Attributes { get; init; }
     public required FlawResponse? Flaw { get; init; }
 
-    public required TalentResponse? Talent { get; init; }
+    public required List<TalentResponse> Talents { get; init; }
 
     //public required List<EndowmentResponse> MagicalPowers { get; init; }
     public required string Hometown { get; init; }
