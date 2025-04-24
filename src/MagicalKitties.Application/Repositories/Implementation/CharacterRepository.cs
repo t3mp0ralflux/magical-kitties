@@ -70,7 +70,7 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries,
                                                                                                                (select to_json(f.*)
                                                                                                                 from flaw f
-                                                                                                                inner join characterflaw cf on f.id = cf.flaw_id
+                                                                                                                right join characterflaw cf on f.id = cf.flaw_id
                                                                                                                 where character_id = @id) as flaw,
                                                                                                                (select json_agg(t.*)
                                                                                                                from talent t
