@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections;
+using System.Data;
 using System.Text.Json;
 using Dapper;
 
@@ -15,6 +16,17 @@ public class JsonTypeHandler : SqlMapper.ITypeHandler
 
     public object? Parse(Type destinationType, object value)
     {
-        return JsonSerializer.Deserialize(value as string ?? string.Empty, destinationType, _options);
+        string parsedValue = value.ToString() ?? string.Empty;
+        
+        if (string.IsNullOrWhiteSpace(parsedValue) && typeof(IEnumerable).IsAssignableFrom(destinationType))
+        {
+            parsedValue = "[]";
+        }
+        else if (string.IsNullOrWhiteSpace(parsedValue) && destinationType.IsClass)
+        {
+            return null;
+        }
+        
+        return JsonSerializer.Deserialize(parsedValue, destinationType, _options);
     }
 }

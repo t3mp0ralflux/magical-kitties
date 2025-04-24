@@ -183,7 +183,7 @@ public static class ContractMapping
                    Name = character.Name,
                    Attributes = character.Attributes.ToResponse(),
                    Flaw = character.Flaw?.ToResponse(),
-                   Talent = character.Talent?.ToResponse(),
+                   Talents = character.Talents.Select(ToResponse).ToList(),
                    //MagicalPowers = character.MagicalPowers.ToResponse(),
                    CurrentInjuries = character.CurrentInjuries,
                    CurrentOwies = character.CurrentOwies,
