@@ -51,8 +51,9 @@ public class AccountController : ControllerBase
 
         return Ok(response);
     }
-
+    
     [HttpGet(ApiEndpoints.Accounts.GetAll)]
+    [Authorize(AuthConstants.TrustedUserPolicyName)]
     [ProducesResponseType<AccountsResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll([FromQuery] GetAllAccountsRequest request, CancellationToken token)
     {

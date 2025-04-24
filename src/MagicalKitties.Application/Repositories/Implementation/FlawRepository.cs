@@ -41,7 +41,7 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         Flaw? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Flaw>(new CommandDefinition("""
-                                                                                                       select id, name, description, is_custom as IsCustom
+                                                                                                       select id, name, description, is_custom
                                                                                                        from flaw
                                                                                                        where id = @id
                                                                                                        """, new { id }, cancellationToken: token));
@@ -74,7 +74,7 @@ public class FlawRepository : IFlawRepository
         }
 
         IEnumerable<Flaw> results = await connection.QueryAsyncWithRetry<Flaw>(new CommandDefinition($"""
-                                                                                                      select id, name, description, is_custom as IsCustom
+                                                                                                      select id, name, description, is_custom
                                                                                                       from flaw
                                                                                                       {orderClause}
                                                                                                       """, new

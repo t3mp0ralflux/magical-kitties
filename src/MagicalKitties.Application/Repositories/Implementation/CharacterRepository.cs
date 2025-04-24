@@ -11,9 +11,6 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class CharacterRepository : ICharacterRepository
 {
-    private const string CharacterFields = "c.id, c.account_id as AccountId, c.username, c.name, c.created_utc as CreatedUtc, c.updated_utc as UpdatedUtc, c.deleted_utc as DeletedUtc, c.description, c.hometown, c.attributes";
-    private const string StatsFields = "cs.level, cs.current_xp as CurrentXp, cs.max_owies as MaxOwies, cs.current_owies, cs.starting_treats as StartingTreats, cs.current_treats as CurrentTreats, cs.current_injuries as CurrentInjuries";
-
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
@@ -68,7 +65,8 @@ public class CharacterRepository : ICharacterRepository
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
 
         IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
-                                                                                                               select {CharacterFields}, {StatsFields}
+                                                                                                               select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
+                                                                                                               cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries
                                                                                                                from character c
                                                                                                                inner join characterstat cs on c.id = cs.character_id
                                                                                                                where c.id = @id
@@ -89,7 +87,8 @@ public class CharacterRepository : ICharacterRepository
         }
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
-                                                                                                                select {CharacterFields}, {StatsFields}
+                                                                                                                select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
+                                                                                                                cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries
                                                                                                                 from character c
                                                                                                                 inner join characterstat cs on c.id = cs.character_id
                                                                                                                 where c.account_id = @AccountId
