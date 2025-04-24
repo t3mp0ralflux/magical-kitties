@@ -257,8 +257,8 @@ public class AccountService : IAccountService
 
         Account? serviceAccount = await _accountRepository.GetByUsernameAsync(serviceUsername, token);
 
-        string activationLink = string.Format(ApplicationAssumptions.ACTIVATION_LINK_FORMAT, account.Username, account.ActivationCode);
-        string resendLink = string.Format(ApplicationAssumptions.RESEND_ACTIVATION_LINK_FORMAT, account.Username, account.ActivationCode);
+        string activationLink = string.Format(ApplicationAssumptions.ActivationLinkFormat, account.Username, account.ActivationCode);
+        string resendLink = string.Format(ApplicationAssumptions.ResendActivationLinkFormat, account.Username, account.ActivationCode);
 
         EmailData data = new()
                          {

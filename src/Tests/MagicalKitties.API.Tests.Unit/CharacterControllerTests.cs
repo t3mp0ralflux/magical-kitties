@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
+using MagicalKitties.Application;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Services;
@@ -45,7 +46,7 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-
+        
         _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
 
         CharacterResponse expectedResponse = new Character
@@ -58,19 +59,19 @@ public class CharacterControllerTests
                                                  [
                                                      new Attribute
                                                      {
-                                                         Id = Guid.NewGuid(),
+                                                         Id = Guid.Parse(ApplicationAssumptions.CuteAttributeId),
                                                          Name = "Cute",
                                                          Value = 0
                                                      },
                                                      new Attribute
                                                      {
-                                                         Id = Guid.NewGuid(),
+                                                         Id = Guid.Parse(ApplicationAssumptions.CunningAttributeId),
                                                          Name = "Cunning",
                                                          Value = 0
                                                      },
                                                      new Attribute
                                                      {
-                                                         Id = Guid.NewGuid(),
+                                                         Id = Guid.Parse(ApplicationAssumptions.FierceAttributeId),
                                                          Name = "Fierce",
                                                          Value = 0
                                                      }

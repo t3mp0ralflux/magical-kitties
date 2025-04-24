@@ -1,5 +1,6 @@
 ﻿using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
+using MagicalKitties.Application;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
@@ -54,19 +55,19 @@ public class CharacterController : ControllerBase
                                   [
                                       new Attribute
                                       {
-                                          Id = Guid.NewGuid(),
+                                          Id = Guid.Parse(ApplicationAssumptions.CuteAttributeId),
                                           Name = "Cute",
                                           Value = 0
                                       },
                                       new Attribute
                                       {
-                                          Id = Guid.NewGuid(),
+                                          Id = Guid.Parse(ApplicationAssumptions.CunningAttributeId),
                                           Name = "Cunning",
                                           Value = 0
                                       },
                                       new Attribute
                                       {
-                                          Id = Guid.NewGuid(),
+                                          Id = Guid.Parse(ApplicationAssumptions.FierceAttributeId),
                                           Name = "Fierce",
                                           Value = 0
                                       }
