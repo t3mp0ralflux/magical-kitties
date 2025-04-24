@@ -59,7 +59,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<DbInitializer>();
         services.AddSingleton<IEmailService, EmailService>();
 
-        services.AddHostedService<HostedServices.EmailService>();
+        services.AddHostedService<HostedServices.EmailProcessingService>();
 
         return services;
     }

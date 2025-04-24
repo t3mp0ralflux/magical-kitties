@@ -43,7 +43,7 @@ public class ApplicationApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLi
     {
         builder.ConfigureServices(services =>
                                   {
-                                      ServiceDescriptor? descriptor = services.SingleOrDefault(x => x.ImplementationType == typeof(EmailService));
+                                      ServiceDescriptor? descriptor = services.SingleOrDefault(x => x.ImplementationType == typeof(EmailProcessingService));
 
                                       if (descriptor is not null)
                                       {
