@@ -20,15 +20,10 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
 
         SqlMapper.AddTypeHandler(typeof(List<Attribute>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());
+
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
     }
-
-    // public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default)
-    // {
-    //     NpgsqlConnection connection = new(_connectionString);
-    //     await connection.OpenAsync(token);
-    //     return connection;
-    // }
-
+    
     public string GetConnectionString()
     {
         return _connectionString;

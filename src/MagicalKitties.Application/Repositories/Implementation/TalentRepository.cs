@@ -41,7 +41,7 @@ public class TalentRepository : ITalentRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         Talent? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Talent>(new CommandDefinition("""
-                                                                                                           select id, name, description, is_custom as IsCustom
+                                                                                                           select id, name, description, is_custom
                                                                                                            from talent
                                                                                                            where id = @id
                                                                                                            """, new { id }, cancellationToken: token));
@@ -74,7 +74,7 @@ public class TalentRepository : ITalentRepository
         }
 
         IEnumerable<Talent> results = await connection.QueryAsyncWithRetry<Talent>(new CommandDefinition($"""
-                                                                                                          select id, name, description, is_custom as IsCustom
+                                                                                                          select id, name, description, is_custom
                                                                                                           from talent
                                                                                                           {orderClause}
                                                                                                           """, new

@@ -10,25 +10,6 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class AccountRepository : IAccountRepository
 {
-    private const string AccountFields = """
-                                         acct.id, 
-                                         acct.first_name as firstname, 
-                                         acct.last_name as lastname, 
-                                         acct.username, 
-                                         acct.email, 
-                                         acct.password, 
-                                         acct.created_utc as createdutc, 
-                                         acct.updated_utc as updatedutc, 
-                                         acct.last_login_utc as lastloginutc, 
-                                         acct.deleted_utc as deletedutc, 
-                                         acct.account_status as accountstatus, 
-                                         acct.account_role as accountrole,
-                                         acct.activation_expiration as activationexpiration,
-                                         acct.activation_code as activationcode,
-                                         acct.password_reset_requested_utc as PasswordResetRequestedUtc,
-                                         acct.password_reset_code as PasswordResetCode
-                                         """;
-
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnection;
 
@@ -95,9 +76,9 @@ public class AccountRepository : IAccountRepository
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
 
         Account? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                              select {AccountFields}
-                                                                                                              from account acct
-                                                                                                              where acct.id = @id 
+                                                                                                              select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code 
+                                                                                                              from account
+                                                                                                              where id = @id 
                                                                                                               """, new { id }, cancellationToken: token));
 
         return result;
@@ -115,8 +96,8 @@ public class AccountRepository : IAccountRepository
         }
 
         IEnumerable<Account> results = await connection.QueryAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                            select {AccountFields}
-                                                                                                            from account acct
+                                                                                                            select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
+                                                                                                            from account
                                                                                                             where (@username is null or lower(username) like ('%' || @username || '%'))
                                                                                                             and (@accountrole is null or account_role = @accountrole)
                                                                                                             and (@accountstatus is null or account_status = @accountstatus )
@@ -149,8 +130,8 @@ public class AccountRepository : IAccountRepository
     {
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
         return await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                   select {AccountFields}
-                                                                                                   from account acct
+                                                                                                   select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
+                                                                                                   from account
                                                                                                    where lower(email) = @Email
                                                                                                    """, new { Email = email.ToLowerInvariant() }, cancellationToken: token));
     }
@@ -159,7 +140,7 @@ public class AccountRepository : IAccountRepository
     {
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
         return await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                   select {AccountFields}
+                                                                                                   select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
                                                                                                    from account acct
                                                                                                    where lower(username) = @userName
                                                                                                    """, new { userName = username.ToLowerInvariant() }, cancellationToken: token));

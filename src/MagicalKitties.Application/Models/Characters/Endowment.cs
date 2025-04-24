@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MagicalKitties.Application.Models.Characters;
 
@@ -11,5 +12,6 @@ public class Endowment
     public required string Description { get; init; }
 
     [JsonPropertyName("is_custom")]
+    [Column("is_custom")]
     public required bool IsCustom { get; init; }
 }
