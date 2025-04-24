@@ -5,6 +5,8 @@ using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -63,15 +65,28 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-
-        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
+        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>>(new CommandDefinition($"""
                                                                                                                select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
-                                                                                                               cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries
+                                                                                                               cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries,
+                                                                                                               (select to_json(f.*)
+                                                                                                                from flaw f
+                                                                                                                inner join characterflaw cf on f.id = cf.flaw_id
+                                                                                                                where character_id = @id) as flaw,
+                                                                                                               (select json_agg(t.*)
+                                                                                                               from talent t
+                                                                                                               inner join charactertalent ct on t.id = ct.talent_id
+                                                                                                               where character_id = @id) as talents
                                                                                                                from character c
                                                                                                                inner join characterstat cs on c.id = cs.character_id
                                                                                                                where c.id = @id
                                                                                                                {shouldIncludeDeleted}
-                                                                                                               """, new { id }, cancellationToken: token));
+                                                                                                               """, new { id }, cancellationToken: token), (character, flaw, talents) =>
+                                                                                                                                                           {
+                                                                                                                                                               character.Flaw = flaw;
+                                                                                                                                                               character.Talents = talents;
+
+                                                                                                                                                               return character;
+                                                                                                                                                           }, "flaw,talents");
         return result.FirstOrDefault();
     }
 
