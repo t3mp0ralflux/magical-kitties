@@ -22,7 +22,9 @@ using MagicalKitties.Contracts.Responses.GlobalSetting;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
 using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
-using ctr = MagicalKitties.Contracts.Models;
+using MKCtr = MagicalKitties.Contracts.Models;
+using MKCtrCharacterRequests = MagicalKitties.Contracts.Requests.Characters;
+using MKAppCharacterRequests = MagicalKitties.Application.Models.Characters;
 
 namespace MagicalKitties.Api.Mapping;
 
@@ -67,8 +69,8 @@ public static class ContractMapping
                    LastName = account.LastName,
                    Email = account.Email,
                    UserName = account.Username,
-                   AccountRole = (ctr.AccountRole)account.AccountRole,
-                   AccountStatus = (ctr.AccountStatus)account.AccountStatus,
+                   AccountRole = (MKCtr.AccountRole)account.AccountRole,
+                   AccountStatus = (MKCtr.AccountStatus)account.AccountStatus,
                    LastLogin = account.LastLoginUtc
                };
     }
@@ -145,18 +147,6 @@ public static class ContractMapping
     #endregion
 
     #region Characters
-
-    public static Character ToCharacter(this CharacterUpdateRequest request, Account account)
-    {
-        return new Character
-               {
-                   Id = request.Id,
-                   AccountId = account.Id,
-                   Name = request.Name,
-                   Username = account.Username
-               };
-    }
-
     public static CharactersResponse ToGetAllResponse(this IEnumerable<Character> characters, int page, int pageSize, int total)
     {
         return new CharactersResponse
@@ -317,6 +307,24 @@ public static class ContractMapping
                {
                    CharacterId = update.CharacterId,
                    Message = message
+               };
+    }
+
+    #endregion
+
+    #region CharacterUpdates
+
+    public static DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOptions descriptionOption)
+    {
+        return new DescriptionUpdate
+               {
+                   DescriptionOption = (MKAppCharacterRequests.Updates.DescriptionOptions)descriptionOption,
+                    AccountId = accountId,
+                    CharacterId = request.CharacterId,
+                    Name = request.Name,
+                    Description = request.Description,
+                    Hometown = request.Hometown,
+                    XP = request.XP
                };
     }
 

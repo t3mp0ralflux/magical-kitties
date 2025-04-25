@@ -34,9 +34,9 @@ public class CharacterService : ICharacterService
         return result;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, CancellationToken token = default)
     {
-        Character? result = await _characterRepository.GetByIdAsync(id, token: token);
+        Character? result = await _characterRepository.GetByIdAsync(accountId, id, token: token);
 
         return result;
     }
@@ -79,12 +79,14 @@ public class CharacterService : ICharacterService
 
     public async Task<bool> UpdateLevelAsync(LevelUpdate update, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(update.CharacterId, token: token);
-
-        if (character is null)
-        {
-            return false;
-        }
+        
+        // TODO: REMOVE THIS.
+        // Character? character = await _characterRepository.GetByIdAsync(update.CharacterId, token: token);
+        //
+        // if (character is null)
+        // {
+        //     return false;
+        // }
 
         return await _characterRepository.UpdateLevelAsync(update, token);
     }

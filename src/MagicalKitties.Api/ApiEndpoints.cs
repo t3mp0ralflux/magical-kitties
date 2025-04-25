@@ -35,7 +35,11 @@ public static class ApiEndpoints
         public const string Delete = $"{Base}/{{id:guid}}";
         public const string Get = $"{Base}/{{id:guid}}";
         public const string GetAll = Base;
-        public const string Update = Base;
+        public const string UpdateDescription = $"{Base}/description/{{description}}";
+        public const string UpdateAttribute = $"{Base}/attributes/{{attribute}}";
+        public const string UpdateEndowment = $"{Base}/endowments/{{endowment}}";
+        public const string UpdateHumanDescription = $"{Base}/human/{{description}}";
+        public const string UpdateHumanProblem = $"{Base}/human/problem";
     }
 
     public static class Flaws

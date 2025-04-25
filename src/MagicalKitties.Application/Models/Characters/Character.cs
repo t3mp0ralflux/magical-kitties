@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 
 namespace MagicalKitties.Application.Models.Characters;
@@ -25,7 +26,7 @@ public class Character
     public Flaw? Flaw { get; set; }
     public List<Talent> Talents { get; set; } = [];
 
-    // public List<Endowment> MagicalPowers { get; set; } = [];
+    public List<MagicalPower> MagicalPowers { get; set; } = [];
     public Human? Human { get; set; }
     public int Level { get; set; } = 1;
     

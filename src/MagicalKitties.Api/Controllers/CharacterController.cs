@@ -98,7 +98,7 @@ public class CharacterController : ControllerBase
             return Unauthorized();
         }
 
-        Character? character = await _characterService.GetByIdAsync(id, token);
+        Character? character = await _characterService.GetByIdAsync(account.Id, id, token);
 
         if (character is null)
         {
@@ -131,43 +131,16 @@ public class CharacterController : ControllerBase
 
         return Ok(response);
     }
-
-    [HttpPut(ApiEndpoints.Characters.Update)]
-    [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Update([FromBody] CharacterUpdateRequest request, CancellationToken token)
-    {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail()!, token);
-
-        if (account is null)
-        {
-            return Unauthorized();
-        }
-
-        Character character = request.ToCharacter(account);
-
-        bool result = await _characterService.UpdateAsync(character, token);
-
-        if (!result)
-        {
-            return NotFound();
-        }
-
-        CharacterResponse response = character.ToResponse();
-
-        return Ok(response);
-    }
-
+    
     [HttpDelete(ApiEndpoints.Characters.Delete)]
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        bool accountExists = await _accountService.ExistsByEmailAsync(HttpContext.GetUserEmail(), token);
 
-        if (account is null)
+        if (!accountExists)
         {
             return Unauthorized();
         }
@@ -189,9 +162,9 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChangeLevel([FromBody] CharacterLevelUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        bool accountExists = await _accountService.ExistsByEmailAsync(HttpContext.GetUserEmail(), token);
 
-        if (account is null)
+        if (accountExists)
         {
             return Unauthorized();
         }
@@ -218,9 +191,9 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChangeFlaw([FromBody] CharacterFlawUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        bool accountExists = await _accountService.ExistsByEmailAsync(HttpContext.GetUserEmail(), token);
 
-        if (account is null)
+        if (!accountExists)
         {
             return Unauthorized();
         }
@@ -246,9 +219,9 @@ public class CharacterController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChangeTalent([FromBody] CharacterTalentUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        bool accountExists = await _accountService.ExistsByEmailAsync(HttpContext.GetUserEmail(), token);
 
-        if (account is null)
+        if (!accountExists)
         {
             return Unauthorized();
         }

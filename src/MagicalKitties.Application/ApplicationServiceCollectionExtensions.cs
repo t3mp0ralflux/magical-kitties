@@ -18,6 +18,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IGlobalSettingsRepository, GlobalSettingsRepository>();
         services.AddSingleton<IEmailRepository, EmailRepository>();
         services.AddSingleton<ICharacterRepository, CharacterRepository>();
+        services.AddSingleton<ICharacterUpdateRepository, CharacterUpdateRepository>();
         services.AddSingleton<IFlawRepository, FlawRepository>();
         services.AddSingleton<ITalentRepository, TalentRepository>();
         services.AddSingleton<IMagicalPowerRepository, MagicalPowerRepository>();
@@ -31,6 +32,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IGlobalSettingsService, GlobalSettingsService>();
         services.AddSingleton<IEmailService, EmailService>();
         services.AddSingleton<ICharacterService, CharacterService>();
+        services.AddSingleton<ICharacterUpdateService, CharacterUpdateService>();
         services.AddSingleton<IFlawService, FlawService>();
         services.AddSingleton<ITalentService, TalentService>();
         services.AddSingleton<IMagicalPowerService, MagicalPowerService>();

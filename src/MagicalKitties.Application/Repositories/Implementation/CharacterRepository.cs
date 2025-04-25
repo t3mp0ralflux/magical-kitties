@@ -60,7 +60,7 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken token = default)
+    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, bool includeDeleted = false, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
@@ -79,8 +79,9 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                from character c
                                                                                                                inner join characterstat cs on c.id = cs.character_id
                                                                                                                where c.id = @id
+                                                                                                               and c.account_id = @accountId
                                                                                                                {shouldIncludeDeleted}
-                                                                                                               """, new { id }, cancellationToken: token), (character, flaw, talents) =>
+                                                                                                               """, new { id, accountId }, cancellationToken: token), (character, flaw, talents) =>
                                                                                                                                                            {
                                                                                                                                                                character.Flaw = flaw;
                                                                                                                                                                character.Talents = talents;

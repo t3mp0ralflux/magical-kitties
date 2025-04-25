@@ -225,75 +225,7 @@ public class CharacterControllerTests
         result.StatusCode.Should().Be(200);
         result.Value.Should().BeEquivalentTo(expectedResponse);
     }
-
-    [Fact]
-    public async Task Update_ShouldReturnUnauthorized_WhenAccountIsNotFound()
-    {
-        // Arrange
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns((Account?)null);
-
-        CharacterUpdateRequest request = new()
-                                         {
-                                             Id = Guid.NewGuid(),
-                                             Name = string.Empty
-                                         };
-
-        // Act
-        UnauthorizedResult result = (UnauthorizedResult)await _sut.Update(request, CancellationToken.None);
-
-        // Assert
-        result.StatusCode.Should().Be(401);
-    }
-
-    [Fact]
-    public async Task Update_ShouldReturnNotFound_WhenCharacterIsNotFound()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
-
-        _characterService.UpdateAsync(Arg.Any<Character>()).Returns(false);
-
-        CharacterUpdateRequest request = new()
-                                         {
-                                             Id = Guid.NewGuid(),
-                                             Name = string.Empty
-                                         };
-
-        // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Update(request, CancellationToken.None);
-
-        // Assert
-        result.StatusCode.Should().Be(404);
-    }
-
-    [Fact]
-    public async Task Update_ShouldReturnUpdatedCharacter_WhenCharacterIsFound()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
-
-        _characterService.UpdateAsync(Arg.Any<Character>()).Returns(true);
-
-        CharacterUpdateRequest request = new()
-                                         {
-                                             Id = Guid.NewGuid(),
-                                             Name = "Steve"
-                                         };
-
-        CharacterResponse expectedResponse = request.ToCharacter(account).ToResponse();
-
-        // Act
-        OkObjectResult result = (OkObjectResult)await _sut.Update(request, CancellationToken.None);
-
-        // Assert
-        result.StatusCode.Should().Be(200);
-        result.Value.Should().BeEquivalentTo(expectedResponse);
-    }
-
+    
     [Fact]
     public async Task Delete_ShouldReturnUnauthorized_WhenAccountIsNotFound()
     {
