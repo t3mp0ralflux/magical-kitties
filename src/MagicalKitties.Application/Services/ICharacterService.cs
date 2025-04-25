@@ -11,7 +11,4 @@ public interface ICharacterService
     Task<int> GetCountAsync(GetAllCharactersOptions options, CancellationToken token = default);
     Task<bool> UpdateAsync(Character character, CancellationToken token = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken token = default);
-    Task<bool> UpdateLevelAsync(LevelUpdate update, CancellationToken token = default);
-    Task<bool> UpdateFlawAsync(FlawUpdate update, CancellationToken token = default);
-    Task<bool> UpdateTalentAsync(TalentUpdate update, CancellationToken token = default);
 }

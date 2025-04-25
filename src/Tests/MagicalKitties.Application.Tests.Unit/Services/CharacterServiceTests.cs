@@ -15,14 +15,11 @@ public class CharacterServiceTests
 {
     private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
     private readonly IValidator<Character> _characterValidator = new CharacterValidator();
-    private readonly IFlawRepository _flawRepository = Substitute.For<IFlawRepository>();
-    private readonly ILogger<CharacterService> _logger = Substitute.For<ILogger<CharacterService>>();
     private readonly IValidator<GetAllCharactersOptions> _optionsValidator = new GetAllCharactersOptionsValidator();
-    private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
 
     public CharacterServiceTests()
     {
-        _sut = new CharacterService(_characterRepository, _characterValidator, _optionsValidator, _logger, _flawRepository, _talentRepository);
+        _sut = new CharacterService(_characterRepository, _characterValidator, _optionsValidator);
     }
 
     public CharacterService _sut { get; set; }

@@ -1,9 +1,11 @@
-﻿using MagicalKitties.Api.Auth;
+﻿using FluentValidation.Results;
+using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Characters;
+using MagicalKitties.Contracts.Responses.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MKCtrCharacterRequests = MagicalKitties.Contracts.Requests.Characters;
@@ -24,6 +26,10 @@ public class CharacterUpdateController : ControllerBase
     }
 
     [HttpPut(ApiEndpoints.Characters.UpdateDescription)]
+    [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<NotFoundObjectResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateDescription([FromRoute]MKCtrCharacterRequests.DescriptionOptions description, [FromBody]CharacterDescriptionUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
