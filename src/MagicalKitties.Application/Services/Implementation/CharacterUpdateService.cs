@@ -30,10 +30,10 @@ public class CharacterUpdateService : ICharacterUpdateService
 
         return update.DescriptionOption switch
         {
-            DescriptionOptions.name => await _characterUpdateRepository.UpdateNameAsync(update, token), // validated above. won't be null here.
-            DescriptionOptions.description => await _characterUpdateRepository.UpdateDescriptionAsync(update, token),
-            DescriptionOptions.hometown => await _characterUpdateRepository.UpdateHometownAsync(update, token),
-            DescriptionOptions.xp => await _characterUpdateRepository.UpdateXPAsync(update, token),
+            DescriptionOption.name => await _characterUpdateRepository.UpdateNameAsync(update, token), // validated above. won't be null here.
+            DescriptionOption.description => await _characterUpdateRepository.UpdateDescriptionAsync(update, token),
+            DescriptionOption.hometown => await _characterUpdateRepository.UpdateHometownAsync(update, token),
+            DescriptionOption.xp => await _characterUpdateRepository.UpdateXPAsync(update, token),
             _ => throw new ValidationException("Selected description option not valid")
         };
     }

@@ -12,14 +12,14 @@ public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdate>
                                {
                                    switch (update.DescriptionOption)
                                    {
-                                       case DescriptionOptions.name:
+                                       case DescriptionOption.name:
                                            if (string.IsNullOrWhiteSpace(update.Name))
                                            {
                                                context.AddFailure(new ValidationFailure(nameof(update.Name), "Name cannot be empty"));
                                            }
 
                                            break;
-                                       case DescriptionOptions.xp:
+                                       case DescriptionOption.xp:
                                            if (!update.XP.HasValue)
                                            {
                                                context.AddFailure(new ValidationFailure(nameof(update.XP), "XP cannot be empty"));
@@ -32,13 +32,13 @@ public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdate>
                                                    context.AddFailure(new ValidationFailure(nameof(update.XP), "XP cannot be negative"));
                                                    break;
                                                case > 100:
-                                                   context.AddFailure(new ValidationFailure(nameof(update.XP), "XP value exceeds game capacity."));
+                                                   context.AddFailure(new ValidationFailure(nameof(update.XP), "XP value exceeds game capacity"));
                                                    break;
                                            }
 
                                            break;
-                                       case DescriptionOptions.description:
-                                       case DescriptionOptions.hometown:
+                                       case DescriptionOption.description:
+                                       case DescriptionOption.hometown:
                                            // these can be empty, sure. leave em.
                                            break;
                                        default:

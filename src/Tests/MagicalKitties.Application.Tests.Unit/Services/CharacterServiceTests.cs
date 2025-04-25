@@ -81,10 +81,10 @@ public class CharacterServiceTests
     public async Task GetAsync_ShouldReturnNull_WhenCharacterIsNotFound()
     {
         // Arrange
-        _characterRepository.GetByIdAsync(Guid.NewGuid()).Returns((Character?)null);
+        _characterRepository.GetByIdAsync(Guid.NewGuid(),Guid.NewGuid()).Returns((Character?)null);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(Guid.NewGuid(),Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -97,10 +97,10 @@ public class CharacterServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterRepository.GetByIdAsync(character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(character.Id);
+        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
         // Assert
         result.Should().NotBeNull();

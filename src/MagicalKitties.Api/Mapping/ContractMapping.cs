@@ -318,7 +318,7 @@ public static class ContractMapping
     {
         return new DescriptionUpdate
                {
-                   DescriptionOption = (MKAppCharacterRequests.Updates.DescriptionOptions)descriptionOption,
+                   DescriptionOption = (MKAppCharacterRequests.Updates.DescriptionOption)descriptionOption,
                     AccountId = accountId,
                     CharacterId = request.CharacterId,
                     Name = request.Name,

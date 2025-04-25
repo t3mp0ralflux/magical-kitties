@@ -133,7 +133,7 @@ public class CharacterControllerTests
 
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterService.GetByIdAsync(character.Id).Returns(character);
+        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
 
         CharacterResponse expectedResponse = character.ToResponse();
 
@@ -243,9 +243,7 @@ public class CharacterControllerTests
     public async Task Delete_ShouldReturnNotFound_WhenCharacterIsNotFound()
     {
         // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.ExistsByEmailAsync(Arg.Any<string?>()).Returns(true);
 
         _characterService.DeleteAsync(Guid.NewGuid()).Returns(false);
 
@@ -261,9 +259,7 @@ public class CharacterControllerTests
     {
         // Arrange
         // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.ExistsByEmailAsync(Arg.Any<string?>()).Returns(true);
 
         Guid characterId = Guid.NewGuid();
 

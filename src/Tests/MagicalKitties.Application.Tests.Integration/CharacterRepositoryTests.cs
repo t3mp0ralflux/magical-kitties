@@ -44,7 +44,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? createdCharacter = await _sut.GetByIdAsync(character.Id);
+        Character? createdCharacter = await _sut.GetByIdAsync(account.Id, character.Id);
         createdCharacter.Should().NotBeNull();
         createdCharacter.Should().BeEquivalentTo(character);
     }
@@ -60,7 +60,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(account.Id,Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -80,7 +80,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(character.Id);
+        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -349,7 +349,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? deletedCharacter = await _sut.GetByIdAsync(character.Id, true);
+        Character? deletedCharacter = await _sut.GetByIdAsync(account.Id, character.Id, true);
 
         deletedCharacter.Should().NotBeNull();
         deletedCharacter.DeletedUtc.Should().NotBeNull();
