@@ -1,9 +1,10 @@
 ﻿using Bogus;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Models.System;
-using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
+using MagicalKitties.Application.Validators.Characters;
 
 namespace Testing.Common;
 
@@ -32,17 +33,17 @@ public static class Fakes
 
     public static EmailData GenerateEmailData(DateTime? sendAfterUtc = null)
     {
-        Faker<EmailData>? fakeSetting = new Faker<EmailData>()
-                                        .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                        .RuleFor(x => x.ShouldSend, _ => true)
-                                        .RuleFor(x => x.SendAttempts, f => 0)
-                                        .RuleFor(x => x.SendAfterUtc, f => sendAfterUtc ??= f.Date.Recent())
-                                        .RuleFor(x => x.SenderEmail, f => f.Person.Email)
-                                        .RuleFor(x => x.RecipientEmail, f => f.Person.Email)
-                                        .RuleFor(x => x.SenderAccountId, _ => Guid.NewGuid())
-                                        .RuleFor(x => x.ReceiverAccountId, _ => Guid.NewGuid())
-                                        .RuleFor(x => x.ResponseLog, f => f.System.FileType())
-                                        .RuleFor(x => x.Body, f => f.Internet.ExampleEmail());
+        Faker<EmailData> fakeSetting = new Faker<EmailData>()
+                                       .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                       .RuleFor(x => x.ShouldSend, _ => true)
+                                       .RuleFor(x => x.SendAttempts, f => 0)
+                                       .RuleFor(x => x.SendAfterUtc, f => sendAfterUtc ??= f.Date.Recent())
+                                       .RuleFor(x => x.SenderEmail, f => f.Person.Email)
+                                       .RuleFor(x => x.RecipientEmail, f => f.Person.Email)
+                                       .RuleFor(x => x.SenderAccountId, _ => Guid.NewGuid())
+                                       .RuleFor(x => x.ReceiverAccountId, _ => Guid.NewGuid())
+                                       .RuleFor(x => x.ResponseLog, f => f.System.FileType())
+                                       .RuleFor(x => x.Body, f => f.Internet.ExampleEmail());
 
         return fakeSetting;
     }
@@ -59,41 +60,65 @@ public static class Fakes
 
     public static Character GenerateNewCharacter(Account account)
     {
-        Faker<Attribute> attributesFaker = new Faker<Attribute>()
-                                           .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                           .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-                                           .RuleFor(x => x.Value, f => f.Random.Int(1, 3));
-
-        Faker<Character>? fakeCharacter = new Faker<Character>()
-                                          .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                          .RuleFor(x => x.AccountId, _ => account.Id)
-                                          .RuleFor(x => x.Username, _ => account.Username)
-                                          .RuleFor(x => x.Name, f => f.Person.FullName)
-                                          .RuleFor(x => x.Attributes, _ => attributesFaker.Generate(3))
-                                          .RuleFor(x => x.MaxOwies, _ => 2)
-                                          .RuleFor(x => x.StartingTreats, _ => 2);
+        Faker<Character> fakeCharacter = new Faker<Character>()
+                                         .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                         .RuleFor(x => x.AccountId, _ => account.Id)
+                                         .RuleFor(x => x.Username, _ => account.Username)
+                                         .RuleFor(x => x.Name, f => f.Person.FullName)
+                                         .RuleFor(x => x.MaxOwies, _ => 2)
+                                         .RuleFor(x => x.StartingTreats, _ => 2)
+                                         .RuleFor(x => x.Cunning, _ => 0)
+                                         .RuleFor(x => x.Cute, _ => 0)
+                                         .RuleFor(x => x.Fierce, _ => 0);
 
         return fakeCharacter;
     }
 
     public static Character GenerateCharacter(Account account)
     {
-        Faker<Attribute> attributesFaker = new Faker<Attribute>()
-                                           .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                           .RuleFor(x => x.Name, f => f.Commerce.ProductName())
-                                           .RuleFor(x => x.Value, f => f.Random.Int(1, 3));
-
-        Faker<Character>? fakeCharacter = new Faker<Character>()
-                                          .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                          .RuleFor(x => x.AccountId, _ => account.Id)
-                                          .RuleFor(x => x.Username, _ => account.Username)
-                                          .RuleFor(x => x.Name, f => f.Person.FullName)
-                                          .RuleFor(x => x.CreatedUtc, _ => DateTime.UtcNow)
-                                          .RuleFor(x => x.UpdatedUtc, _ => DateTime.UtcNow)
-                                          .RuleFor(x => x.Attributes, _ => attributesFaker.Generate(3))
-                                          .RuleFor(x => x.MaxOwies, _ => 2)
-                                          .RuleFor(x => x.StartingTreats, _ => 2);
+        Faker<Character> fakeCharacter = new Faker<Character>()
+                                         .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                                         .RuleFor(x => x.AccountId, _ => account.Id)
+                                         .RuleFor(x => x.Username, _ => account.Username)
+                                         .RuleFor(x => x.Name, f => f.Person.FullName)
+                                         .RuleFor(x => x.CreatedUtc, _ => DateTime.UtcNow)
+                                         .RuleFor(x => x.UpdatedUtc, _ => DateTime.UtcNow)
+                                         .RuleFor(x => x.MaxOwies, _ => 2)
+                                         .RuleFor(x => x.StartingTreats, _ => 2)
+                                         .RuleFor(x => x.Cunning, _ => 0)
+                                         .RuleFor(x => x.Cute, _ => 0)
+                                         .RuleFor(x => x.Fierce, _ => 0);
 
         return fakeCharacter;
+    }
+
+    public static AttributeUpdateValidationContext GenerateValidationContext(Guid? accountId = null, Guid? characterId = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? owies = null)
+    {
+        Account account = GenerateAccount();
+        Character character = GenerateCharacter(account);
+
+        AttributeUpdate update = new()
+                                 {
+                                     AccountId = accountId ?? account.Id,
+                                     CharacterId = characterId ?? character.Id,
+                                     Cunning = cunning,
+                                     Cute = cute,
+                                     Fierce = fierce,
+                                     AttributeOption = attributeOption ?? AttributeOption.cunning,
+                                     CurrentTreats = currentTreats,
+                                     FlawChange = flawChange,
+                                     Level = level,
+                                     MagicalPowerChange = magicalPowerChange,
+                                     TalentChange = talentChange,
+                                     Owies = owies
+                                 };
+
+        AttributeUpdateValidationContext fakeContext = new()
+                                                       {
+                                                           Character = character,
+                                                           Update = update
+                                                       };
+
+        return fakeContext;
     }
 }

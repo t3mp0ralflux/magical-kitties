@@ -28,8 +28,8 @@ public class CharacterRepository : ICharacterRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown, attributes)
-                                                                                  values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown, @Attributes)
+                                                                                  insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown)
+                                                                                  values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown)
                                                                                   """, new
                                                                                        {
                                                                                            character.Id,
@@ -40,7 +40,6 @@ public class CharacterRepository : ICharacterRepository
                                                                                            UpdatedUtc = _dateTimeProvider.GetUtcNow(),
                                                                                            character.Description,
                                                                                            character.Hometown,
-                                                                                           Attributes = new JsonParameter(JsonSerializer.Serialize(character.Attributes))
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -60,13 +59,13 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, bool includeDeleted = false, CancellationToken token = default)
+    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
         IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>>(new CommandDefinition($"""
-                                                                                                               select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
+                                                                                                               select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown,
                                                                                                                cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries,
                                                                                                                (select to_json(f.*)
                                                                                                                 from flaw f
@@ -75,13 +74,16 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                (select json_agg(t.*)
                                                                                                                from talent t
                                                                                                                inner join charactertalent ct on t.id = ct.talent_id
-                                                                                                               where character_id = @id) as talents
+                                                                                                               where character_id = @id) as talents,
+                                                                                                               (select json_agg(h.*)
+                                                                                                               from human h
+                                                                                                               where h.character_id = @id) as humans
                                                                                                                from character c
                                                                                                                inner join characterstat cs on c.id = cs.character_id
                                                                                                                where c.id = @id
                                                                                                                and c.account_id = @accountId
                                                                                                                {shouldIncludeDeleted}
-                                                                                                               """, new { id, accountId }, cancellationToken: token), (character, flaw, talents) =>
+                                                                                                               """, new { id, accountId }, cancellationToken: cancellationToken), (character, flaw, talents) =>
                                                                                                                                                            {
                                                                                                                                                                character.Flaw = flaw;
                                                                                                                                                                character.Talents = talents;
@@ -103,7 +105,7 @@ public class CharacterRepository : ICharacterRepository
         }
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
-                                                                                                                select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
+                                                                                                                select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown,
                                                                                                                 cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries
                                                                                                                 from character c
                                                                                                                 inner join characterstat cs on c.id = cs.character_id

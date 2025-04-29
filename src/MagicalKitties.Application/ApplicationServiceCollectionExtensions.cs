@@ -41,7 +41,7 @@ public static class ApplicationServiceCollectionExtensions
 
         #region Validators
 
-        services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Singleton); // set to singleton as it'll be one.
+        services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Transient); // set to singleton as it'll be one.
 
         #endregion
 

@@ -1,16 +1,13 @@
 ﻿using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
-using MagicalKitties.Application;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Characters;
 using MagicalKitties.Contracts.Responses.Characters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
 namespace MagicalKitties.Api.Controllers;
 
@@ -51,27 +48,9 @@ public class CharacterController : ControllerBase
                                   UpdatedUtc = _dateTimeProvider.GetUtcNow(),
                                   Description = "",
                                   Hometown = "",
-                                  Attributes =
-                                  [
-                                      new Attribute
-                                      {
-                                          Id = Guid.Parse(ApplicationAssumptions.CuteAttributeId),
-                                          Name = "Cute",
-                                          Value = 0
-                                      },
-                                      new Attribute
-                                      {
-                                          Id = Guid.Parse(ApplicationAssumptions.CunningAttributeId),
-                                          Name = "Cunning",
-                                          Value = 0
-                                      },
-                                      new Attribute
-                                      {
-                                          Id = Guid.Parse(ApplicationAssumptions.FierceAttributeId),
-                                          Name = "Fierce",
-                                          Value = 0
-                                      }
-                                  ],
+                                  Cunning = 0,
+                                  Cute = 0,
+                                  Fierce = 0,
                                   Level = 1,
                                   CurrentXp = 0,
                                   MaxOwies = 2,

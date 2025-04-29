@@ -8,6 +8,8 @@ public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdate>
 {
     public DescriptionUpdateValidator()
     {
+        RuleFor(x => x.AccountId).NotNull().NotEqual(Guid.Empty);
+        RuleFor(x => x.CharacterId).NotNull().NotEqual(Guid.Empty);
         RuleFor(x => x).Custom((update, context) =>
                                {
                                    switch (update.DescriptionOption)

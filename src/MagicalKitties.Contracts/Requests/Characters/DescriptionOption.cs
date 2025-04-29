@@ -1,6 +1,6 @@
 ﻿namespace MagicalKitties.Contracts.Requests.Characters;
 
-public enum DescriptionOptions
+public enum DescriptionOption
 {
     name,
     description,

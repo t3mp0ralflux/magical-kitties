@@ -21,7 +21,6 @@ using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.GlobalSetting;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
-using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 using MKCtr = MagicalKitties.Contracts.Models;
 using MKCtrCharacterRequests = MagicalKitties.Contracts.Requests.Characters;
 using MKAppCharacterRequests = MagicalKitties.Application.Models.Characters;
@@ -171,10 +170,9 @@ public static class ContractMapping
                    Id = character.Id,
                    AccountId = character.AccountId,
                    Name = character.Name,
-                   Attributes = character.Attributes.ToResponse(),
                    Flaw = character.Flaw?.ToResponse(),
                    Talents = character.Talents.Select(ToResponse).ToList(),
-                   //MagicalPowers = character.MagicalPowers.ToResponse(),
+                   MagicalPowers = character.MagicalPowers.Select(ToResponse).ToList(),
                    CurrentInjuries = character.CurrentInjuries,
                    CurrentOwies = character.CurrentOwies,
                    MaxOwies = character.MaxOwies,
@@ -183,8 +181,11 @@ public static class ContractMapping
                    CurrentXp = character.CurrentXp,
                    Description = character.Description,
                    Hometown = character.Hometown,
-                   Human = character.Human?.ToResponse(),
-                   Level = character.Level
+                   Human = character.Humans.Select(ToResponse).ToList(),
+                   Level = character.Level,
+                   Cunning = character.Cunning,
+                   Cute = character.Cute,
+                   Fierce = character.Fierce
                };
     }
 
@@ -215,22 +216,7 @@ public static class ContractMapping
     {
         return problems.Select(x => x.ToResponse()).ToList();
     }
-
-    public static AttributeResponse ToResponse(this Attribute attribute)
-    {
-        return new AttributeResponse
-               {
-                   Id = attribute.Id,
-                   Name = attribute.Name,
-                   Value = attribute.Value
-               };
-    }
-
-    public static List<AttributeResponse> ToResponse(this List<Attribute> attributes)
-    {
-        return attributes.Select(x => x.ToResponse()).ToList();
-    }
-
+    
     public static GetAllCharactersOptions ToOptions(this GetAllCharactersRequest request, Guid accountId)
     {
         return new GetAllCharactersOptions
@@ -247,74 +233,11 @@ public static class ContractMapping
                };
     }
 
-    public static LevelUpdate ToUpdate(this CharacterLevelUpdateRequest request)
-    {
-        return new LevelUpdate
-               {
-                   CharacterId = request.CharacterId,
-                   Level = request.Level
-               };
-    }
-
-    public static FlawUpdate ToUpdate(this CharacterFlawUpdateRequest request)
-    {
-        return new FlawUpdate
-               {
-                   CharacterId = request.CharacterId,
-                   FlawId = request.FlawId
-               };
-    }
-
-    public static TalentUpdate ToUpdate(this CharacterTalentUpdateRequest request)
-    {
-        return new TalentUpdate
-               {
-                   CharacterId = request.CharacterId,
-                   TalentId = request.TalentId
-               };
-    }
-
-    public static MagicalPowerUpdate ToUpdate(this CharacterMagicalPowerUpdateRequest request)
-    {
-        return new MagicalPowerUpdate
-               {
-                   CharacterId = request.CharacterId,
-                   MagicalPowerId = request.MagicalPowerId
-               };
-    }
-
-    public static CharacterUpdateResponse ToResponse(this LevelUpdate update, string message)
-    {
-        return new CharacterUpdateResponse
-               {
-                   CharacterId = update.CharacterId,
-                   Message = message
-               };
-    }
-
-    public static CharacterUpdateResponse ToResponse(this FlawUpdate update, string message)
-    {
-        return new CharacterUpdateResponse
-               {
-                   CharacterId = update.CharacterId,
-                   Message = message
-               };
-    }
-
-    public static CharacterUpdateResponse ToResponse(this TalentUpdate update, string message)
-    {
-        return new CharacterUpdateResponse
-               {
-                   CharacterId = update.CharacterId,
-                   Message = message
-               };
-    }
-
     #endregion
 
     #region CharacterUpdates
 
-    public static DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOptions descriptionOption)
+    public static DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOption descriptionOption)
     {
         return new DescriptionUpdate
                {
@@ -325,6 +248,34 @@ public static class ContractMapping
                     Description = request.Description,
                     Hometown = request.Hometown,
                     XP = request.XP
+               };
+    }
+
+    public static AttributeUpdate ToUpdate(this CharacterAttributeUpdateRequest request, Guid accountId, MKCtrCharacterRequests.AttributeOption attributeOption)
+    {
+        return new AttributeUpdate
+               {
+                   AttributeOption = (MKAppCharacterRequests.Updates.AttributeOption)attributeOption,
+                   AccountId = accountId,
+                   CharacterId = request.CharacterId,
+                   Cunning = request.Cunning,
+                   Cute = request.Cute,
+                   Fierce = request.Fierce,
+                   Level = request.Level,
+                   FlawChange = request.FlawChange?.ToUpdate(),
+                   TalentChange = request.TalentChange?.ToUpdate(),
+                   MagicalPowerChange = request.MagicalPowerChange?.ToUpdate(),
+                   Owies = request.Owies,
+                   CurrentTreats = request.CurrentTreats
+               };
+    }
+
+    public static EndowmentChange ToUpdate(this EndowmentChangeRequest request)
+    {
+        return new EndowmentChange
+               {
+                   PreviousId = request.PreviousId,
+                   NewId = request.NewId
                };
     }
 
@@ -480,7 +431,7 @@ public static class ContractMapping
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
                    IsCustom = magicalPower.IsCustom,
-                   BonusFeatures = magicalPower.BonusFeatures?.Select(ToResponse).ToList()
+                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
                };
     }
 

@@ -1,4 +1,5 @@
 ﻿using FluentValidation.Results;
+using Grpc.Core;
 using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
@@ -30,7 +31,7 @@ public class CharacterUpdateController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundObjectResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateDescription([FromRoute]MKCtrCharacterRequests.DescriptionOptions description, [FromBody]CharacterDescriptionUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> UpdateDescription([FromRoute]MKCtrCharacterRequests.DescriptionOption description, [FromBody]CharacterDescriptionUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -46,5 +47,23 @@ public class CharacterUpdateController : ControllerBase
 
         // returns not found if character not found
         return success ? Ok($"{description.ToString()} updated successfully.") : NotFound("Character not found.");
+    }
+
+    [HttpPut(ApiEndpoints.Characters.UpdateAttribute)]
+    public async Task<IActionResult> UpdateAttribute([FromRoute]MKCtrCharacterRequests.AttributeOption attribute, [FromBody]CharacterAttributeUpdateRequest request, CancellationToken token)
+    {
+        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        AttributeUpdate attributeUpdate = request.ToUpdate(account.Id, attribute);
+        
+        // will throw validation errors
+        bool success = await _characterUpdateService.UpdateAttributeAsync(attributeUpdate, token);
+
+        return success ? Ok($"{attribute.ToString()} updated successfully.") : NotFound("Character not found.");
     }
 }

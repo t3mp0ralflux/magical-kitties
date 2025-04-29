@@ -3,6 +3,7 @@ using FluentValidation;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
+using MagicalKitties.Application.Validators.Characters;
 using NSubstitute;
 
 namespace MagicalKitties.Application.Tests.Unit.Services;
@@ -12,11 +13,13 @@ public class CharacterUpdateServiceTests
     private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
     private readonly ICharacterUpdateRepository _characterUpdateRepository = Substitute.For<ICharacterUpdateRepository>();
     private readonly IValidator<DescriptionUpdate> _descriptionValidator = Substitute.For<IValidator<DescriptionUpdate>>();
+    private readonly IValidator<AttributeUpdateValidationContext> _updateValidator = Substitute.For<IValidator<AttributeUpdateValidationContext>>();
+    
     public CharacterUpdateService _sut;
 
     public CharacterUpdateServiceTests()
     {
-        _sut = new CharacterUpdateService(_characterRepository, _characterUpdateRepository, _descriptionValidator);
+        _sut = new CharacterUpdateService(_characterRepository, _characterUpdateRepository, _descriptionValidator, _updateValidator);
     }
 
     [Fact]

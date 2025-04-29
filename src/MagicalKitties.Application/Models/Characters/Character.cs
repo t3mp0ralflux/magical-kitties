@@ -22,12 +22,11 @@ public class Character
     public DateTime? DeletedUtc { get; set; }
     public string Description { get; set; } = "";
     public string Hometown { get; set; } = "";
-    public List<Attribute> Attributes { get; set; } = [];
     public Flaw? Flaw { get; set; }
     public List<Talent> Talents { get; set; } = [];
 
     public List<MagicalPower> MagicalPowers { get; set; } = [];
-    public Human? Human { get; set; }
+    public List<Human> Humans { get; set; } = [];
     public int Level { get; set; } = 1;
     
     [Column("current_xp")]
@@ -47,4 +46,8 @@ public class Character
     
     [Column("current_injuries")]
     public int CurrentInjuries { get; set; }
+
+    public int Cunning { get; set; }
+    public int Cute { get; set; }
+    public int Fierce { get; set; }
 }
