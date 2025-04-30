@@ -11,7 +11,7 @@ public class CharacterAttributeUpdateRequest
     public EndowmentChangeRequest? TalentChange { get; init; }
     public EndowmentChangeRequest? MagicalPowerChange { get; init; }
     
-    public int? Owies { get; init; }
+    public int? CurrentOwies { get; init; }
     public int? CurrentTreats { get; init; }
 }
 

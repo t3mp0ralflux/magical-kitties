@@ -6,6 +6,7 @@ using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Services.Implementation;
 
@@ -15,6 +16,9 @@ public class CharacterRepository : ICharacterRepository
 {
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
+
+    public const string CharacterFields = "c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown";
+    public const string CharacterStatFields = "cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries, cs.cute, cs.cunning, cs.fierce";
 
     public CharacterRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
@@ -64,9 +68,8 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>>(new CommandDefinition($"""
-                                                                                                               select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown,
-                                                                                                               cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries,
+        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>, List<MagicalPower>>(new CommandDefinition($"""
+                                                                                                               select {CharacterFields}, {CharacterStatFields},
                                                                                                                (select to_json(f.*)
                                                                                                                 from flaw f
                                                                                                                 right join characterflaw cf on f.id = cf.flaw_id
@@ -75,6 +78,10 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                from talent t
                                                                                                                inner join charactertalent ct on t.id = ct.talent_id
                                                                                                                where character_id = @id) as talents,
+                                                                                                               (select json_agg(mp.*)
+                                                                                                                from magicalpower mp
+                                                                                                                inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
+                                                                                                                where character_id = @id) as magicalpowers,
                                                                                                                (select json_agg(h.*)
                                                                                                                from human h
                                                                                                                where h.character_id = @id) as humans
@@ -83,13 +90,14 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                where c.id = @id
                                                                                                                and c.account_id = @accountId
                                                                                                                {shouldIncludeDeleted}
-                                                                                                               """, new { id, accountId }, cancellationToken: cancellationToken), (character, flaw, talents) =>
+                                                                                                               """, new { id, accountId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers) =>
                                                                                                                                                            {
                                                                                                                                                                character.Flaw = flaw;
                                                                                                                                                                character.Talents = talents;
+                                                                                                                                                               character.MagicalPowers = magicalPowers;
 
                                                                                                                                                                return character;
-                                                                                                                                                           }, "flaw,talents");
+                                                                                                                                                           }, "flaw,talents,magicalpowers");
         return result.FirstOrDefault();
     }
 
@@ -105,8 +113,7 @@ public class CharacterRepository : ICharacterRepository
         }
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
-                                                                                                                select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown,
-                                                                                                                cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries
+                                                                                                                select {CharacterFields}, {CharacterStatFields}
                                                                                                                 from character c
                                                                                                                 inner join characterstat cs on c.id = cs.character_id
                                                                                                                 where c.account_id = @AccountId

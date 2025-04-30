@@ -100,7 +100,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
     
-    public async Task<bool> UpdateCunningAsync(AttributeUpdate update, string cunningId, CancellationToken token = default)
+    public async Task<bool> UpdateCunningAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -120,7 +120,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateCuteAsync(AttributeUpdate update, string cuteId, CancellationToken token = default)
+    public async Task<bool> UpdateCuteAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -140,7 +140,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateFierceAsync(AttributeUpdate update, string fierceId, CancellationToken token = default)
+    public async Task<bool> UpdateFierceAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -180,6 +180,26 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
+    public async Task<bool> CreateFlawAsync(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into characterflaw(id, character_id, flaw_id)
+                                                                                  values(@Id, @CharacterId, @FlawId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           update.CharacterId,
+                                                                                           FlawId = update.FlawChange!.NewId
+                                                                                       }, cancellationToken: token));
+        
+        transaction.Commit();
+
+        return result > 0;
+    }
+
     public async Task<bool> UpdateFlawAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -200,6 +220,26 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
+    public async Task<bool> CreateTalentAsync(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into charactertalent(id, character_id, talent_id)
+                                                                                  values(@Id, @CharacterId, @TalentId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           update.CharacterId,
+                                                                                           TalentId = update.TalentChange!.NewId
+                                                                                       }, cancellationToken: token));
+        
+        transaction.Commit();
+
+        return result > 0;
+    }
+
     public async Task<bool> UpdateTalentAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -209,10 +249,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   update charactertalent
                                                                                   set talent_id = @NewId
                                                                                   where character_id = @CharacterId
+                                                                                  and talent_id = @PreviousId
                                                                                   """, new
                                                                                        {
                                                                                            update.TalentChange!.NewId,
-                                                                                           update.CharacterId
+                                                                                           update.CharacterId,
+                                                                                           update.TalentChange!.PreviousId
                                                                                        }, cancellationToken: token));
         
         transaction.Commit();
@@ -220,9 +262,47 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public Task<bool> UpdateMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default)
+    public async Task<bool> CreateMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default)
     {
-        throw new NotImplementedException();
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id)
+                                                                                  values(@Id, @CharacterId, @MagicalPowerId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           update.CharacterId,
+                                                                                           MagicalPowerId = update.MagicalPowerChange!.NewId
+                                                                                       }, cancellationToken: token));
+        
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    public async Task<bool> UpdateMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update charactermagicalpower
+                                                                                  set magical_power_id = @NewId
+                                                                                  where character_id = @CharacterId
+                                                                                  and magical_power_id = @PreviousId
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.MagicalPowerChange!.NewId,
+                                                                                           update.CharacterId,
+                                                                                           update.MagicalPowerChange!.PreviousId
+                                                                                           
+                                                                                       }, cancellationToken: token));
+        
+        transaction.Commit();
+
+        return result > 0;
     }
 
     public async Task<bool> UpdateOwiesAsync(AttributeUpdate update, CancellationToken token = default)
@@ -236,7 +316,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   where character_id = @CharacterId
                                                                                   """, new
                                                                                        {
-                                                                                           update.Owies,
+                                                                                           update.CurrentOwies,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
         

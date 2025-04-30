@@ -9,6 +9,6 @@ public enum AttributeOption
     flaw,
     talent,
     magicalpower,
-    owies,
+    currentowies,
     currenttreats
 }

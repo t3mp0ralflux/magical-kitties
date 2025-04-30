@@ -72,13 +72,14 @@ create table if not exists characterflaw(
     id UUID primary key,
     character_id UUID references character(id),
     flaw_id numeric references flaw(id),
-    UNIQUE(character_id, flaw_id)  
+    UNIQUE(character_id)  
 );
 
 create table if not exists charactertalent(
     id UUID primary key,
     character_id UUID references character(id),
-    talent_id numeric references talent(id)
+    talent_id numeric references talent(id),
+    UNIQUE(character_id, talent_id)
 );
 
 create table if not exists human(

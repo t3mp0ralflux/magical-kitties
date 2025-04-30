@@ -12,7 +12,7 @@ public class AttributeUpdate
     public required EndowmentChange? FlawChange { get; init; }
     public required EndowmentChange? TalentChange { get; init; }
     public required EndowmentChange? MagicalPowerChange { get; init; }
-    public required int? Owies { get; init; }
+    public required int? CurrentOwies { get; init; }
     public required int? CurrentTreats { get; init; }
 }
 

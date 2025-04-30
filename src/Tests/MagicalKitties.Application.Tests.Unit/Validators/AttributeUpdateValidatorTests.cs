@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using FluentValidation;
+using FluentValidation.TestHelper;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
@@ -24,10 +25,10 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(accountId: Guid.Empty);
         
         // Act
-        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>();
+        result.ShouldHaveValidationErrorFor(x => x.Update.AccountId);
     }
     
     [Fact]
@@ -37,26 +38,29 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(characterId: Guid.Empty);
         
         // Act
-        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>();
+        result.ShouldHaveValidationErrorFor(x => x.Update.CharacterId);
     }
 
     [Theory]
-    [InlineData(null, "Attribute must have a value")]
-    [InlineData(int.MinValue, "Attribute cannot go below 0 or above 3")]
-    [InlineData(int.MaxValue, "Attribute cannot go below 0 or above 3")]
+    [InlineData(null, "'Update Cute' must not be empty.")]
+    [InlineData(int.MinValue, "Attribute can only be between 0 and 3 inclusively.")]
+    [InlineData(int.MaxValue, "Attribute can only be between 0 and 3 inclusively.")]
     public async Task Validator_ShouldThrowAsync_WhenCuteIsSelectedAndValueIsInvalid(int? value, string exceptionMessage)
     {
         // Arrange
         var updateContext = Fakes.GenerateValidationContext(cute: value, attributeOption: AttributeOption.cute);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>(exceptionMessage);
+        result
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.Cute))
+            .WithErrorMessage(exceptionMessage)
+            .WithSeverity(Severity.Error);
     }
 
     [Fact]
@@ -67,42 +71,51 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Cunning = 3;
 
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Another attribute is assigned that value. Reduce that first and try again");
+        result
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.Cute))
+            .WithErrorMessage("Another attribute is assigned that value. Reduce that first and try again.")
+            .WithSeverity(Severity.Error);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData(int.MinValue)]
-    [InlineData(int.MaxValue)]
-    public async Task Validator_ShouldThrowAsync_WhenLevelIsInvalid(int? level)
+    [InlineData(null, "'Update Level' must not be empty.")]
+    [InlineData(int.MinValue, "Level can only be between 1 and 10 inclusively.")]
+    [InlineData(int.MaxValue, "Level can only be between 1 and 10 inclusively.")]
+    public async Task Validator_ShouldThrowAsync_WhenLevelIsInvalid(int? level, string exceptionMessage)
     {
         // Arrange
         var updateContext = Fakes.GenerateValidationContext(level: level, attributeOption: AttributeOption.level);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Level can only be between 1 and 10 inclusively");
+        result
+            .ShouldHaveValidationErrorFor(x=>x.Update.Level)
+            .WithErrorMessage(exceptionMessage)
+            .WithSeverity(Severity.Error);
     }
     
     [Theory]
-    [InlineData(null)]
-    [InlineData(int.MinValue)]
-    [InlineData(int.MaxValue)]
-    public async Task Validator_ShouldThrowAsync_WhenOwiesIsInvalid(int? owies)
+    [InlineData(null, "'Update Current Owies' must not be empty.")]
+    [InlineData(int.MinValue, "Owies can only be between 0 and 5 inclusively.")]
+    [InlineData(int.MaxValue, "Owies can only be between 0 and 5 inclusively.")]
+    public async Task Validator_ShouldThrowAsync_WhenOwiesIsInvalid(int? owies, string exceptionMessage)
     {
         // Arrange
-        var updateContext = Fakes.GenerateValidationContext(owies: owies, attributeOption: AttributeOption.owies);
+        var updateContext = Fakes.GenerateValidationContext(owies: owies, attributeOption: AttributeOption.currentowies);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Owies can only be between 0 and 5 inclusively");
+        result
+            .ShouldHaveValidationErrorFor(x=>x.Update.CurrentOwies)
+            .WithErrorMessage(exceptionMessage)
+            .WithSeverity(Severity.Error);
     }
 
     [Fact]
@@ -112,10 +125,13 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(currentTreats: -5, attributeOption: AttributeOption.currenttreats);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Current treats can't be negative");
+        result
+            .ShouldHaveValidationErrorFor(x=>x.Update.CurrentTreats)
+            .WithErrorMessage("Current treats can't be negative.")
+            .WithSeverity(Severity.Error);
     }
 
     [Fact]
@@ -125,20 +141,23 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(flawChange:null, attributeOption: AttributeOption.flaw);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Value cannot be null");
+        result
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.FlawChange))
+            .WithErrorMessage("'Update FlawChange' cannot be null.")
+            .WithSeverity(Severity.Error);
     }
 
     [Theory]
-    [InlineData(19, 11, "Value of previous Id was out of range")]
-    [InlineData(71, 11, "Value of previous Id was out of range")]
-    [InlineData(-5, 11, "Value of previous Id was out of range")]
-    [InlineData(21, 29, "Value of new Id was out of range")]
-    [InlineData(21, 99, "Value of new Id was out of range")]
-    [InlineData(21, -5, "Value of new Id was out of range")]
-    public async Task Validator_ShouldThrowAsync_WhenFlawChangeIdsAreOutOfRange(int previousId, int newId, string exceptionMessage)
+    [InlineData(19, 11, "PreviousId","Value of FlawChange {0} was out of range.")]
+    [InlineData(71, 11, "PreviousId","Value of FlawChange {0} was out of range.")]
+    [InlineData(-5, 11, "PreviousId","Value of FlawChange {0} was out of range.")]
+    [InlineData(21, 29, "NewId", "Value of FlawChange {0} was out of range.")]
+    [InlineData(21, 99, "NewId", "Value of FlawChange {0} was out of range.")]
+    [InlineData(21, -5, "NewId", "Value of FlawChange {0} was out of range.")]
+    public async Task Validator_ShouldThrowAsync_WhenFlawChangeIdsAreOutOfRange(int previousId, int newId, string fieldName, string exceptionMessage)
     {
         // Arrange
         var flawChange = new EndowmentChange()
@@ -150,10 +169,13 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(flawChange:flawChange, attributeOption: AttributeOption.flaw);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>(exceptionMessage);
+        result
+            .ShouldHaveValidationErrorFor($"{nameof(AttributeUpdate.FlawChange)}.{fieldName}")
+            .WithErrorMessage(string.Format(exceptionMessage, fieldName))
+            .WithSeverity(Severity.Error);
     }
     
     [Fact]
@@ -163,20 +185,23 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(talentChange:null, attributeOption: AttributeOption.talent);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Value cannot be null");
+        result
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.TalentChange))
+            .WithErrorMessage("'Update TalentChange' cannot be null.")
+            .WithSeverity(Severity.Error);
     }
 
     [Theory]
-    [InlineData(19, 11, "Value of previous Id was out of range")]
-    [InlineData(71, 11, "Value of previous Id was out of range")]
-    [InlineData(-5, 11, "Value of previous Id was out of range")]
-    [InlineData(21, 29, "Value of new Id was out of range")]
-    [InlineData(21, 99, "Value of new Id was out of range")]
-    [InlineData(21, -5, "Value of new Id was out of range")]
-    public async Task Validator_ShouldThrowAsync_WhenTalentChangeIdsAreOutOfRange(int previousId, int newId, string exceptionMessage)
+    [InlineData(19, 11, "PreviousId","Value of TalentChange {0} was out of range.")]
+    [InlineData(71, 11, "PreviousId","Value of TalentChange {0} was out of range.")]
+    [InlineData(-5, 11, "PreviousId","Value of TalentChange {0} was out of range.")]
+    [InlineData(21, 29, "NewId", "Value of TalentChange {0} was out of range.")]
+    [InlineData(21, 99, "NewId", "Value of TalentChange {0} was out of range.")]
+    [InlineData(21, -5, "NewId", "Value of TalentChange {0} was out of range.")]
+    public async Task Validator_ShouldThrowAsync_WhenTalentChangeIdsAreOutOfRange(int previousId, int newId, string fieldName, string exceptionMessage)
     {
         // Arrange
         var talentChange = new EndowmentChange()
@@ -189,10 +214,13 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Talents.Add(new Talent{Id = 66, Description = "Test", Name = "test", IsCustom = false});
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>(exceptionMessage);
+        result
+            .ShouldHaveValidationErrorFor($"{nameof(AttributeUpdate.TalentChange)}.{fieldName}")
+            .WithErrorMessage(string.Format(exceptionMessage, fieldName))
+            .WithSeverity(Severity.Error);
     }
 
     [Fact]
@@ -210,10 +238,62 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Talents.Add(new Talent{Id = 21, Description = "Test", Name = "Test", IsCustom = false});
 
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Talent already present on character. Choose another");
+        result
+            .ShouldHaveValidationErrorFor("TalentChange.NewId")
+            .WithErrorMessage("Talent '21' already present on character. Choose another.")
+            .WithSeverity(Severity.Error);
+    }
+
+    [Fact]
+    public async Task Validator_ShouldThrowAsync_WhenTalentIsAddedAndCharacterIsNotTheRightLevel()
+    {
+        // Arrange
+        var talentChange = new EndowmentChange()
+                           {
+                               NewId = 21,
+                               PreviousId = 21
+                           };
+
+        var updateContext = Fakes.GenerateValidationContext(talentChange: talentChange, attributeOption: AttributeOption.talent);
+        updateContext.Character.Level = 4;
+        updateContext.Character.Talents.Add(new Talent{Id = 11, Name = "Test", Description = "TestTEst", IsCustom = false});
+        
+        // Act
+        TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor("TalentChange.NewId")
+            .WithErrorMessage("Character is not level 5 or above. Cannot add new Talent.")
+            .WithSeverity(Severity.Error);
+    }
+
+    [Fact]
+    public async Task Validator_ShouldThrowAsync_WhenTalentIsAddedAndCharacterAlreadyHasMax()
+    {
+        // Arrange
+        var talentChange = new EndowmentChange()
+                           {
+                               NewId = 21,
+                               PreviousId = 21
+                           };
+
+        var updateContext = Fakes.GenerateValidationContext(talentChange: talentChange, attributeOption: AttributeOption.talent);
+        updateContext.Character.Level = 6;
+        updateContext.Character.Talents.Add(new Talent{Id = 11, Name = "Test", Description = "TestTEst", IsCustom = false});
+        updateContext.Character.Talents.Add(new Talent{Id = 31, Name = "Test", Description = "TestTEst", IsCustom = false});
+        
+        // Act
+        TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor("TalentChange.NewId")
+            .WithErrorMessage("Characters cannot have more than two Talents.")
+            .WithSeverity(Severity.Error);
     }
     
     [Fact]
@@ -223,20 +303,23 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(magicalPowerChange:null, attributeOption: AttributeOption.magicalpower);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Value cannot be null");
+        result
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.MagicalPowerChange))
+            .WithErrorMessage("'Update MagicalPowerChange' cannot be null.")
+            .WithSeverity(Severity.Error);
     }
 
     [Theory]
-    [InlineData(19, 11, "Value of previous Id was out of range")]
-    [InlineData(71, 11, "Value of previous Id was out of range")]
-    [InlineData(-5, 11, "Value of previous Id was out of range")]
-    [InlineData(21, 29, "Value of new Id was out of range")]
-    [InlineData(21, 99, "Value of new Id was out of range")]
-    [InlineData(21, -5, "Value of new Id was out of range")]
-    public async Task Validator_ShouldThrowAsync_WhenMagicalPowerChangeIdsAreOutOfRange(int previousId, int newId, string exceptionMessage)
+    [InlineData(19, 11, "PreviousId","Value of MagicalPowerChange {0} was out of range.")]
+    [InlineData(71, 11, "PreviousId","Value of MagicalPowerChange {0} was out of range.")]
+    [InlineData(-5, 11, "PreviousId","Value of MagicalPowerChange {0} was out of range.")]
+    [InlineData(21, 29, "NewId", "Value of MagicalPowerChange {0} was out of range.")]
+    [InlineData(21, 99, "NewId", "Value of MagicalPowerChange {0} was out of range.")]
+    [InlineData(21, -5, "NewId", "Value of MagicalPowerChange {0} was out of range.")]
+    public async Task Validator_ShouldThrowAsync_WhenMagicalPowerChangeIdsAreOutOfRange(int previousId, int newId, string fieldName, string exceptionMessage)
     {
         // Arrange
         var magicalPowerChange = new EndowmentChange()
@@ -249,33 +332,15 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.MagicalPowers.Add(new MagicalPower{Id = 66, Name = "test", Description = "test", IsCustom = false});
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>(exceptionMessage);
+        result
+            .ShouldHaveValidationErrorFor($"{nameof(AttributeUpdate.MagicalPowerChange)}.{fieldName}")
+            .WithErrorMessage(string.Format(exceptionMessage, fieldName))
+            .WithSeverity(Severity.Error);
     }
     
-    [Fact]
-    public async Task Validator_ShouldThrowAsync_WhenMagicalPowerIsNotFound()
-    {
-        // Arrange
-        var magicalPowerChange = new EndowmentChange()
-                           {
-                               NewId = 21,
-                               PreviousId = 11
-                           };
-        
-        var updateContext = Fakes.GenerateValidationContext(magicalPowerChange:magicalPowerChange, attributeOption: AttributeOption.magicalpower);
-
-        updateContext.Character.MagicalPowers.Add(new MagicalPower{Id = 22, Description = "Test", Name = "Test", IsCustom = false, BonusFeatures = [new MagicalPower{Id = 21, Description = "Test", Name = "Test", IsCustom = false}]});
-        
-        // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
-
-        // Assert
-        await action.Should().ThrowAsync<ValidationException>("Magical Power not present on character. Choose another");
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -300,10 +365,37 @@ public class AttributeUpdateValidatorTests
         }
 
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>("Magical Power already present on character. Choose another");
+        result
+            .ShouldHaveValidationErrorFor("MagicalPowerChange.NewId")
+            .WithErrorMessage("Magical Power '21' already present on character. Choose another.")
+            .WithSeverity(Severity.Error);
+    }
+
+    [Fact]
+    public async Task Validator_ShouldThrowAsync_WhenMagicalPowerIsAddedAndCharacterIsNotTheRightLevel()
+    {
+        // Arrange
+        var magicalPowerChange = new EndowmentChange()
+                                 {
+                                     NewId = 21,
+                                     PreviousId = 21
+                                 };
+
+        var updateContext = Fakes.GenerateValidationContext(magicalPowerChange:magicalPowerChange, attributeOption: AttributeOption.magicalpower);
+        updateContext.Character.Level = 7;
+        updateContext.Character.MagicalPowers.Add(new MagicalPower{Id = 22, Name = "Test", Description = "TestTest", IsCustom = false, BonusFeatures = []});
+        
+        // Act
+        var result = await _sut.TestValidateAsync(updateContext);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor("MagicalPowerChange.NewId")
+            .WithErrorMessage("Character is not level 8 or above. Cannot add new Magical Power.")
+            .WithSeverity(Severity.Error);
     }
     
     [Fact]
@@ -315,10 +407,10 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Cunning = 0;
 
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
@@ -332,10 +424,10 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Fierce = 0;
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
@@ -349,10 +441,10 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Fierce = 0;
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
     
     [Fact]
@@ -366,10 +458,10 @@ public class AttributeUpdateValidatorTests
         updateContext.Character.Fierce = 0;
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
     
     [Fact]
@@ -379,23 +471,23 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(level:3, attributeOption: AttributeOption.level);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
     
     [Fact]
     public async Task Validator_ShouldNotThrowAsync_WhenOwiesInformationIsCorrect()
     {
         // Arrange
-        var updateContext = Fakes.GenerateValidationContext(owies:3, attributeOption: AttributeOption.owies);
+        var updateContext = Fakes.GenerateValidationContext(owies:3, attributeOption: AttributeOption.currentowies);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
     
     [Fact]
@@ -405,10 +497,10 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(currentTreats:3, attributeOption: AttributeOption.currenttreats);
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
@@ -424,10 +516,10 @@ public class AttributeUpdateValidatorTests
         var updateContext = Fakes.GenerateValidationContext(flawChange: flawUpdate, attributeOption: AttributeOption.flaw);
 
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Theory]
@@ -451,10 +543,10 @@ public class AttributeUpdateValidatorTests
         }
         
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Theory]
@@ -465,20 +557,25 @@ public class AttributeUpdateValidatorTests
         // Arrange
         var magicalPowerUpdate = new EndowmentChange
                                  {
-                                     PreviousId = 41,
-                                     NewId = 31
+                                     NewId = 31,
+                                     PreviousId = 41
                                  };
+        
         var updateContext = Fakes.GenerateValidationContext(magicalPowerChange: magicalPowerUpdate, attributeOption: AttributeOption.magicalpower);
 
         if (hasNested)
         {
             updateContext.Character.MagicalPowers.Add(new MagicalPower{Id = 21, Name = "Test", Description = "test", BonusFeatures = [new MagicalPower{Id = 41, Name = "Test", Description = "test", IsCustom = false}], IsCustom = false});
         }
+        else
+        {
+            updateContext.Character.MagicalPowers.Add(new MagicalPower{Id = 41, Name = "Test", Description = "Test", IsCustom = false, BonusFeatures = []});
+        }
 
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(updateContext);
+        var result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        await action.Should().NotThrowAsync();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 }

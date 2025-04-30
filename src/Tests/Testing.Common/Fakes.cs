@@ -110,7 +110,7 @@ public static class Fakes
                                      Level = level,
                                      MagicalPowerChange = magicalPowerChange,
                                      TalentChange = talentChange,
-                                     Owies = owies
+                                     CurrentOwies = owies
                                  };
 
         AttributeUpdateValidationContext fakeContext = new()

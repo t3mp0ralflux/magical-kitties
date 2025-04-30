@@ -265,7 +265,7 @@ public static class ContractMapping
                    FlawChange = request.FlawChange?.ToUpdate(),
                    TalentChange = request.TalentChange?.ToUpdate(),
                    MagicalPowerChange = request.MagicalPowerChange?.ToUpdate(),
-                   Owies = request.Owies,
+                   CurrentOwies = request.CurrentOwies,
                    CurrentTreats = request.CurrentTreats
                };
     }

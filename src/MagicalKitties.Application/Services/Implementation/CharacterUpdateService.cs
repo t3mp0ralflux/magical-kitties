@@ -59,20 +59,78 @@ public class CharacterUpdateService : ICharacterUpdateService
         
         // also validates if someone has put two threes or two ones for some reason.
         await _attributeUpdateValidator.ValidateAndThrowAsync(validationContext, token);
-
-        // TODO: Update this to handle MagicalPowers so it doesn't suck. Needs to handle a Sub magical power update.
-        return update.AttributeOption switch
+        
+        switch (update.AttributeOption)
         {
-            AttributeOption.cunning => await _characterUpdateRepository.UpdateCunningAsync(update, ApplicationAssumptions.CunningAttributeId, token),
-            AttributeOption.cute => await _characterUpdateRepository.UpdateCuteAsync(update, ApplicationAssumptions.CuteAttributeId, token),
-            AttributeOption.fierce => await _characterUpdateRepository.UpdateFierceAsync(update, ApplicationAssumptions.FierceAttributeId, token),
-            AttributeOption.level => await _characterUpdateRepository.UpdateLevelAsync(update, token),
-            AttributeOption.flaw => await _characterUpdateRepository.UpdateFlawAsync(update, token),
-            AttributeOption.talent => await _characterUpdateRepository.UpdateTalentAsync(update, token),
-            AttributeOption.magicalpower => await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token),
-            AttributeOption.owies => await _characterUpdateRepository.UpdateOwiesAsync(update, token),
-            AttributeOption.currenttreats => await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token),
-            _ => throw new ValidationException("Selected attribute option not valid")
-        };
+            case AttributeOption.cunning:
+                if (character.Cunning == update.Cunning)
+                {
+                    return true; // no need to update
+                }
+                
+                return await _characterUpdateRepository.UpdateCunningAsync(update, token);
+            case AttributeOption.cute:
+                if (character.Cute == update.Cute)
+                {
+                    return true;
+                }
+
+                return await _characterUpdateRepository.UpdateCuteAsync(update, token);
+            case AttributeOption.fierce:
+                if (character.Fierce == update.Fierce)
+                {
+                    return true;
+                }
+
+                return await _characterUpdateRepository.UpdateFierceAsync(update, token);
+            case AttributeOption.level:
+                if (character.Level == update.Level)
+                {
+                    return true;
+                }
+
+                return await _characterUpdateRepository.UpdateLevelAsync(update, token);
+            case AttributeOption.flaw:
+                if (character.Flaw is null)
+                {
+                    return await _characterUpdateRepository.CreateFlawAsync(update, token);
+                }
+
+                if (character.Flaw.Id == update.FlawChange!.NewId)
+                {
+                    return true;
+                }
+                return await _characterUpdateRepository.UpdateFlawAsync(update, token);
+            case AttributeOption.talent:
+                if (character.Talents.Count == 0 || character.Talents.FirstOrDefault(x => x.Id == update.TalentChange!.PreviousId) is null)
+                {
+                    return await _characterUpdateRepository.CreateTalentAsync(update, token);
+                }
+
+                return await _characterUpdateRepository.UpdateTalentAsync(update, token);
+            case AttributeOption.magicalpower:
+                if (character.MagicalPowers.Count == 0 || character.MagicalPowers.FirstOrDefault(x => x.Id == update.MagicalPowerChange!.PreviousId) is null)
+                {
+                    return await _characterUpdateRepository.CreateMagicalPowerAsync(update, token);
+                }
+                
+                return await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token);
+            case AttributeOption.currentowies:
+                if (character.CurrentOwies == update.CurrentOwies)
+                {
+                    return true; // no need to update
+                }
+
+                return await _characterUpdateRepository.UpdateOwiesAsync(update, token);
+            case AttributeOption.currenttreats:
+                if (character.CurrentTreats == update.CurrentTreats)
+                {
+                    return true; // no need to update
+                }
+
+                return await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
+            default:
+                throw new ValidationException("Selected attribute option not valid");
+        }
     }
 }

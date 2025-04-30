@@ -34,14 +34,14 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
         RuleFor(x => x.Update.Level)
             .NotNull()
             .InclusiveBetween(1,10)
-            .WithMessage("Level can only be between 1 and 10 inclusively")
+            .WithMessage("Level can only be between 1 and 10 inclusively.")
             .When(x => x.Update.AttributeOption == AttributeOption.level);
 
-        RuleFor(x => x.Update.Owies)
+        RuleFor(x => x.Update.CurrentOwies)
             .NotNull()
             .InclusiveBetween(0, 5)
-            .WithMessage("Owies can only be between 0 and 5 inclusively")
-            .When(x=>x.Update.AttributeOption == AttributeOption.owies);
+            .WithMessage("Owies can only be between 0 and 5 inclusively.")
+            .When(x=>x.Update.AttributeOption == AttributeOption.currentowies);
         
         RuleFor(x => x.Update.CurrentTreats)
             .NotNull()
@@ -65,14 +65,21 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
 
     private static void ValidateAttribute(int? value, ValidationContext<AttributeUpdateValidationContext> context)
     {
-        string fieldName = context.InstanceToValidate.Update.AttributeOption.ToString();
+        string fieldName = context.InstanceToValidate.Update.AttributeOption switch
+        {
+            AttributeOption.cunning => nameof(AttributeUpdate.Cunning),
+            AttributeOption.cute => nameof(AttributeUpdate.Cute),
+            AttributeOption.fierce => nameof(AttributeUpdate.Fierce),
+            _ => string.Empty
+        };
+
         switch (value)
         {
             case null:
-                context.AddFailure(new ValidationFailure(fieldName, "Attribute must have a value"));
+                context.AddFailure(new ValidationFailure(fieldName, $"'Update {fieldName}' must not be empty."));
                 return;
             case < 0 or > 3:
-                context.AddFailure(new ValidationFailure(fieldName, "Attributes cannot go below 0 or above 3"));
+                context.AddFailure(new ValidationFailure(fieldName, "Attribute can only be between 0 and 3 inclusively."));
                 return;
         }
         
@@ -93,44 +100,58 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
         if (stats
             .Where(stat => stat.Key != context.InstanceToValidate.Update.AttributeOption) // not the same option
             .Where(stat => stat.Value != 0) // not zero. don't care about three zeroes 
-            .Any(stat => stat.Value == value.Value)) // care cause it's a match
+            .Any(stat => stat.Value == value.Value)) // care 'cause it's a match
         {
-            context.AddFailure(new ValidationFailure(fieldName, "Another attribute is assigned that value. Reduce that first and try again"));
+            context.AddFailure(new ValidationFailure(fieldName, "Another attribute is assigned that value. Reduce that first and try again."));
         }
     }
 
     private static void ValidateEndowment(EndowmentChange? value, ValidationContext<AttributeUpdateValidationContext> context)
     {
+        string fieldName = context.InstanceToValidate.Update.AttributeOption switch
+        {
+            AttributeOption.flaw => nameof(AttributeUpdate.FlawChange),
+            AttributeOption.talent => nameof(AttributeUpdate.TalentChange),
+            AttributeOption.magicalpower => nameof(AttributeUpdate.MagicalPowerChange),
+            _ => string.Empty
+        };
+        
         switch (context.InstanceToValidate.Update.AttributeOption)
         {
             case AttributeOption.flaw:
                 if (value is null)
                 {
-                    context.AddFailure(new ValidationFailure(context.InstanceToValidate.Update.AttributeOption.ToString(), "Value cannot be null"));
+                    context.AddFailure(new ValidationFailure(fieldName, $"'Update {fieldName}' cannot be null."));
                     return;
                 }
 
                 if (IdRangeIsInvalid(value.PreviousId))
                 {
-                    context.AddFailure(new ValidationFailure("FlawChange.PreviousId", "Value of previous Id was out range"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.PreviousId", $"Value of {fieldName} PreviousId was out of range."));
                     return;
                 }
                 
                 if (IdRangeIsInvalid(value.NewId))
                 {
-                    context.AddFailure(new ValidationFailure("FlawChange.NewId", "Value of new Id was out range"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", $"Value of {fieldName} NewId was out of range."));
                 }
                 break;
             case AttributeOption.talent:
                 if (value is null)
                 {
-                    context.AddFailure(new ValidationFailure(context.InstanceToValidate.Update.AttributeOption.ToString(), "Value cannot be null"));
+                    context.AddFailure(new ValidationFailure(fieldName, $"'Update {fieldName}' cannot be null."));
                     return;
                 }
                 
                 if (IdRangeIsInvalid(value.NewId))
                 {
-                    context.AddFailure(new ValidationFailure("TalentChange.NewId", "Value of new Id was out range"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", $"Value of {fieldName} NewId was out of range."));
+                    return;
+                }
+                
+                if (IdRangeIsInvalid(value.PreviousId))
+                {
+                    context.AddFailure(new ValidationFailure($"{fieldName}.PreviousId", $"Value of {fieldName} PreviousId was out of range."));
                     return;
                 }
                 
@@ -140,70 +161,83 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
                     return; 
                 }
                 
-                if (IdRangeIsInvalid(value.PreviousId))
+                // duplicate
+                if (context.InstanceToValidate.Character.Talents.FirstOrDefault(x => x.Id == value.NewId) is not null)
                 {
-                    context.AddFailure(new ValidationFailure("TalentChange.PreviousId", "Value of previous Id was out range"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", $"Talent '{value.NewId}' already present on character. Choose another."));
                     return;
                 }
 
-                if (context.InstanceToValidate.Character.Talents.FirstOrDefault(x => x.Id == value.NewId) is not null)
+                bool previousTalentExists = context.InstanceToValidate.Character.Talents.FirstOrDefault(x => x.Id == value.PreviousId) is not null;
+                
+                // adding new one against restrictions
+                if (context.InstanceToValidate.Character.Talents.Count == 2 && !previousTalentExists)
                 {
-                    context.AddFailure(new ValidationFailure("TalentChange.NewId", "Talent already present on character. Choose another"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Characters cannot have more than two Talents."));
                     return;
                 }
-                
-                if (context.InstanceToValidate.Character.Talents.FirstOrDefault(x => x.Id == value.PreviousId) is null)
+                    
+                if (context.InstanceToValidate.Character.Talents.Count == 1 && context.InstanceToValidate.Character.Level < 5 && !previousTalentExists)
                 {
-                    context.AddFailure(new ValidationFailure("TalentChange.PreviousId", "Talent not present on character. Choose another"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Character is not level 5 or above. Cannot add new Talent."));
                 }
                 
                 return;
             case AttributeOption.magicalpower:
                 if (value is null)
                 {
-                    context.AddFailure(new ValidationFailure(context.InstanceToValidate.Update.AttributeOption.ToString(), "Value cannot be null"));
+                    context.AddFailure(new ValidationFailure(fieldName, $"'Update {fieldName}' cannot be null."));
                     return;
                 }
 
                 if (IdRangeIsInvalid(value.NewId))
                 {
-                    context.AddFailure(new ValidationFailure("PreviousId", "Value of previous Id was out range."));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", $"Value of {fieldName} NewId was out of range."));
                     return;
                 }
-                
+
+                if (IdRangeIsInvalid(value.PreviousId))
+                {
+                    context.AddFailure(new ValidationFailure($"{fieldName}.PreviousId", $"Value of {fieldName} PreviousId was out of range."));
+                    return;
+                }
+
                 // if it's empty, nothing else to see here
                 if (context.InstanceToValidate.Character.MagicalPowers.Count == 0)
                 {
-                    return; 
-                }
-                
-                if (IdRangeIsInvalid(value.PreviousId))
-                {
-                    context.AddFailure(new ValidationFailure("PreviousId", "Value of previous Id was out range."));
                     return;
                 }
                 
-                if (context.InstanceToValidate.Character.MagicalPowers.FirstOrDefault(x => x.Id == value.PreviousId) is null)
-                {
-                    if (context.InstanceToValidate.Character.MagicalPowers.Any(x => x.BonusFeatures.FirstOrDefault(y => y.Id == value.PreviousId) is null))
-                    {
-                        context.AddFailure(new ValidationFailure("MagicalPower.PreviousId", "Magical Power not present on character. Choose another"));
-                        return;
-                    }
-                }
-                
-                if (context.InstanceToValidate.Character.MagicalPowers.FirstOrDefault(x => x.Id == value.NewId) is not null 
+                // duplicates
+                if (context.InstanceToValidate.Character.MagicalPowers.FirstOrDefault(x => x.Id == value.NewId) is not null
                     || context.InstanceToValidate.Character.MagicalPowers.Any(x => x.BonusFeatures.FirstOrDefault(y => y.Id == value.NewId) is not null))
                 {
-                    context.AddFailure(new ValidationFailure("MagicalPower.NewId", "Magical Power already present on character. Choose another"));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", $"Magical Power '{value.NewId}' already present on character. Choose another."));
+                    return;
                 }
 
-                break;
+                bool previousMagicalPowerExists = context.InstanceToValidate.Character.MagicalPowers.FirstOrDefault(x => x.Id == value.PreviousId) is not null
+                                                  || context.InstanceToValidate.Character.MagicalPowers.Any(x => x.BonusFeatures.FirstOrDefault(y => y.Id == value.PreviousId) is not null);
+                
+                
+                // adding new one against restrictions
+                if (context.InstanceToValidate.Character.MagicalPowers.Count == 2 && !previousMagicalPowerExists)
+                {
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Characters cannot have more than two Magical Powers."));
+                    return;
+                }
+
+                if (context.InstanceToValidate.Character.MagicalPowers.Count == 1 && context.InstanceToValidate.Character.Level < 8 && !previousMagicalPowerExists)
+                {
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Character is not level 8 or above. Cannot add new Magical Power."));
+                }
+                
+                return;
             case AttributeOption.cunning:
             case AttributeOption.cute:
             case AttributeOption.fierce:
             case AttributeOption.level:
-            case AttributeOption.owies:
+            case AttributeOption.currentowies:
             case AttributeOption.currenttreats:
             default:
                 return; // don't care, not us.
