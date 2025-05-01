@@ -52,7 +52,7 @@ public class HumanController : ControllerBase
 
         HumanResponse response = human.ToResponse();
 
-        return CreatedAtAction(nameof(Get), characterId, new { response });
+        return CreatedAtAction(nameof(Get),new { id = human.Id }, new { response });
 
     }
 
