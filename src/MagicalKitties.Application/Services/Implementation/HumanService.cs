@@ -3,7 +3,7 @@ using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Repositories;
 
-namespace MagicalKitties.Application.Services;
+namespace MagicalKitties.Application.Services.Implementation;
 
 public class HumanService : IHumanService
 {

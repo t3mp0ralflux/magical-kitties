@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Repositories;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using NSubstitute;
 using NSubstitute.Core;

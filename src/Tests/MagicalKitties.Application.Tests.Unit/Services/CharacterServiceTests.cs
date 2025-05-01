@@ -194,56 +194,6 @@ public class CharacterServiceTests
     }
 
     [Fact]
-    public async Task UpdateAsync_ShouldReturnFalse_WhenAccountIsNotFound()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account);
-
-        _characterRepository.ExistsByIdAsync(character.Id).Returns(false);
-
-        // Act
-        bool result = await _sut.UpdateAsync(character);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldReturnFalse_WhenDatabaseFailsToUpdate()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account);
-
-        _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
-        _characterRepository.UpdateAsync(Arg.Any<Character>()).Returns(false);
-
-        // Act
-        bool result = await _sut.UpdateAsync(character);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldReturnTrue_WhenCharacterIsUpdated()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account);
-
-        _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
-        _characterRepository.UpdateAsync(Arg.Any<Character>()).Returns(true);
-
-        // Act
-        bool result = await _sut.UpdateAsync(character);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
     public async Task DeleteAsync_ShouldReturnFalse_WhenCharacterIsNotFound()
     {
         // Arrange

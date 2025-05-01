@@ -2,10 +2,10 @@
 
 public class HumanProblemUpdateRequest
 {
-    public required Guid CharacterId { get; set; }
-    public required Guid ProblemId { get; set; }
-    public required string Source { get; set; }
-    public required string Emotion { get; set; }
-    public required int Rank { get; set; }
-    public required bool Solved { get; set; }
+    public required Guid HumanId { get; init; }
+    public required Guid ProblemId { get; init; }
+    public string? Source { get; init; }
+    public string? Emotion { get; init; }
+    public int? Rank { get; init; }
+    public bool? Solved { get; init; }
 }

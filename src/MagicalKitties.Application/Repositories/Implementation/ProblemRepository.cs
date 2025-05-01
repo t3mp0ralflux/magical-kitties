@@ -3,6 +3,7 @@ using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;

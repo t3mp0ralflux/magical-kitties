@@ -2,12 +2,12 @@
 
 public class ProblemUpdate
 {
-    public ProblemOption ProblemOption { get; set; }
-    public required Guid HumanId { get; set; }
-    public required Guid ProblemId { get; set; }
-    public required string? Source { get; set; }
-    public required string? Emotion { get; set; }
-    public required int? Rank { get; set; }
-    public required bool? Solved { get; set; }
+    public ProblemOption ProblemOption { get; init; }
+    public required Guid HumanId { get; init; }
+    public required Guid ProblemId { get; init; }
+    public required string? Source { get; init; }
+    public required string? Emotion { get; init; }
+    public required int? Rank { get; init; }
+    public required bool? Solved { get; init; }
     
 }

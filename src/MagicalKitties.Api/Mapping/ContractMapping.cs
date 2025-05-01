@@ -385,7 +385,7 @@ public static class ContractMapping
         return new MKAppHumans.Updates.ProblemUpdate
                {
                    ProblemOption = (MKAppHumans.Updates.ProblemOption)problem,
-                   HumanId = request.CharacterId,
+                   HumanId = request.HumanId,
                    ProblemId = request.ProblemId,
                    Source = request.Source,
                    Emotion = request.Emotion,

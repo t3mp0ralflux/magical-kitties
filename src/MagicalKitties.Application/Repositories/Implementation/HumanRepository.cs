@@ -4,6 +4,7 @@ using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -95,21 +96,24 @@ public class HumanRepository : IHumanRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-        IEnumerable<Human?> result = await connection.QueryAsyncWithRetry<Human, List<Problem>>(new CommandDefinition($"""
+        string shouldIncludeDeleted = includeDeleted ? string.Empty : "and h.deleted_utc is null";
+        IEnumerable<Human> result = await connection.QueryAsyncWithRetry<Human, List<Problem>>(new CommandDefinition($"""
                                                                                                                        select {HumanFields},
-                                                                                                                       (select json_agg({ProblemFields})
-                                                                                                                       from problem
+                                                                                                                       (select json_agg(p.*)
+                                                                                                                       from problem p
                                                                                                                        where human_id = @id) as problems
                                                                                                                        from human h
                                                                                                                        where h.id = @id
                                                                                                                        {shouldIncludeDeleted}
-                                                                                                                       """, new {}, cancellationToken: token), (human, problems) =>
-                                                                                                                                                                   {
-                                                                                                                                                                       human.Problems = problems;
+                                                                                                                       """, new
+                                                                                                                            {
+                                                                                                                                id
+                                                                                                                            }, cancellationToken: token), (human, problems) =>
+                                                                                                                                                          {
+                                                                                                                                                              human.Problems = problems;
 
-                                                                                                                                                                       return human;
-                                                                                                                                                                   }, "problems");
+                                                                                                                                                              return human;
+                                                                                                                                                          }, "problems");
 
         return result.FirstOrDefault();
     }

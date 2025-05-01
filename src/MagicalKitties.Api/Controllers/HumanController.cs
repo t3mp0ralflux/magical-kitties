@@ -57,7 +57,10 @@ public class HumanController : ControllerBase
     }
 
     [HttpPost(ApiEndpoints.Humans.CreateProblem)]
-    public async Task<IActionResult> CreateProblem(Guid humanId, CancellationToken token)
+    [ProducesResponseType<OkObjectResult>(StatusCodes.Status201Created)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateProblem([FromRoute]Guid humanId, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -75,7 +78,7 @@ public class HumanController : ControllerBase
     [ProducesResponseType<HumanResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get(Guid id, CancellationToken token)
+    public async Task<IActionResult> Get([FromRoute]Guid id, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 

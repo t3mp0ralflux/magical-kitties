@@ -1,4 +1,4 @@
-﻿namespace MagicalKitties.Application.Services.Implementation;
+﻿namespace MagicalKitties.Application.Services;
 
 public interface IDateTimeProvider
 {
