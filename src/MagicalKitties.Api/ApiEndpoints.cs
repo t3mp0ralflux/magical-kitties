@@ -52,6 +52,19 @@ public static class ApiEndpoints
         public const string Update = Base;
     }
 
+    public static class Humans
+    {
+        private const string Base = $"{ApiBase}/Humans";
+        public const string Create = Base;
+        public const string Delete = $"{Base}/{{id:guid}}";
+        public const string Get = $"{Base}/{{id:guid}}";
+        public const string GetAll = Base;
+        public const string Update = Base;
+        public const string CreateProblem = $"{Base}/problem";
+        public const string DeleteProblem = $"{Base}/problem/{{id:guid}}";
+        public const string UpdateProblem = $"{Base}/problem";
+    }
+
     public static class Talents
     {
         private const string Base = $"{ApiBase}/Talents";

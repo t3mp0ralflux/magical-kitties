@@ -87,7 +87,17 @@ create table if not exists human(
     character_id UUID references character(id),
     name text not null,
     description text not null,
-    problems json not null
+    deleted_utc timestamp null
+);
+
+create table if not exists problem(
+    id UUID primary key,
+    human_id UUID references human(id),
+    source text not null,
+    emotion text not null,
+    rank numeric not null,
+    solved bool not null,
+    deleted_utc timestamp null
 );
 
 create table if not exists charactermagicalpower(

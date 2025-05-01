@@ -1,6 +1,4 @@
-﻿using FluentValidation.Results;
-using Grpc.Core;
-using MagicalKitties.Api.Auth;
+﻿using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters.Updates;
@@ -50,6 +48,10 @@ public class CharacterUpdateController : ControllerBase
     }
 
     [HttpPut(ApiEndpoints.Characters.UpdateAttribute)]
+    [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<NotFoundObjectResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAttribute([FromRoute]MKCtrCharacterRequests.AttributeOption attribute, [FromBody]CharacterAttributeUpdateRequest request, CancellationToken token)
     {
         Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);

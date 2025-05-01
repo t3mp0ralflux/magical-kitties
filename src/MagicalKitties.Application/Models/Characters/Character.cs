@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 

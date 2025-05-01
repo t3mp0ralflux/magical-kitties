@@ -2,7 +2,7 @@
 
 public class AttributeUpdate
 {
-    public AttributeOption AttributeOption { get; init; }
+    public required AttributeOption AttributeOption { get; init; }
     public required Guid AccountId { get; init; }
     public required Guid CharacterId { get; init; }
     public required int? Cute { get; init; }

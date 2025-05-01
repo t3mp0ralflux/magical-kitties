@@ -5,6 +5,8 @@ using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
+using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
@@ -14,16 +16,20 @@ using MagicalKitties.Contracts.Requests.Endowments.Flaws;
 using MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
 using MagicalKitties.Contracts.Requests.GlobalSetting;
+using MagicalKitties.Contracts.Requests.Humans;
 using MagicalKitties.Contracts.Responses.Account;
 using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.GlobalSetting;
+using MagicalKitties.Contracts.Responses.Humans;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
 using MKCtr = MagicalKitties.Contracts.Models;
 using MKCtrCharacterRequests = MagicalKitties.Contracts.Requests.Characters;
-using MKAppCharacterRequests = MagicalKitties.Application.Models.Characters;
+using MKAppCharacters = MagicalKitties.Application.Models.Characters;
+using MKCtrHumanRequests = MagicalKitties.Contracts.Requests.Humans;
+using MKAppHumans = MagicalKitties.Application.Models.Humans;
 
 namespace MagicalKitties.Api.Mapping;
 
@@ -188,34 +194,6 @@ public static class ContractMapping
                    Fierce = character.Fierce
                };
     }
-
-    public static HumanResponse ToResponse(this Human human)
-    {
-        return new HumanResponse
-               {
-                   Id = human.Id,
-                   Name = human.Name,
-                   Description = human.Description,
-                   Problems = human.Problems.ToResponse()
-               };
-    }
-
-    public static ProblemResponse ToResponse(this Problem problem)
-    {
-        return new ProblemResponse
-               {
-                   Id = problem.Id,
-                   Source = problem.Source,
-                   Emotion = problem.Emotion.Value,
-                   Rank = problem.Rank,
-                   Solved = problem.Solved
-               };
-    }
-
-    public static List<ProblemResponse> ToResponse(this List<Problem> problems)
-    {
-        return problems.Select(x => x.ToResponse()).ToList();
-    }
     
     public static GetAllCharactersOptions ToOptions(this GetAllCharactersRequest request, Guid accountId)
     {
@@ -237,11 +215,11 @@ public static class ContractMapping
 
     #region CharacterUpdates
 
-    public static DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOption descriptionOption)
+    public static MKAppCharacters.Updates.DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOption descriptionOption)
     {
-        return new DescriptionUpdate
+        return new MKAppCharacters.Updates.DescriptionUpdate
                {
-                   DescriptionOption = (MKAppCharacterRequests.Updates.DescriptionOption)descriptionOption,
+                    DescriptionOption = (MKAppCharacters.Updates.DescriptionOption)descriptionOption,
                     AccountId = accountId,
                     CharacterId = request.CharacterId,
                     Name = request.Name,
@@ -255,7 +233,7 @@ public static class ContractMapping
     {
         return new AttributeUpdate
                {
-                   AttributeOption = (MKAppCharacterRequests.Updates.AttributeOption)attributeOption,
+                   AttributeOption = (MKAppCharacters.Updates.AttributeOption)attributeOption,
                    AccountId = accountId,
                    CharacterId = request.CharacterId,
                    Cunning = request.Cunning,
@@ -335,6 +313,84 @@ public static class ContractMapping
                    Page = request.Page,
                    PageSize = request.PageSize,
                    SortField = request.SortBy
+               };
+    }
+
+    #endregion
+
+    #region Humans
+
+    public static GetAllHumansOptions ToOptions(this GetAllHumansRequest request)
+    {
+        return new GetAllHumansOptions
+               {
+                   CharacterId = request.CharacterId,
+                   Name = request.Name,
+                   Page = request.Page,
+                   PageSize = request.PageSize,
+                   SortField = request.SortBy,
+                   SortOrder = request.SortBy is null ? SortOrder.unordered : request.SortBy.StartsWith('-') ? SortOrder.descending : SortOrder.ascending
+               };
+    }
+
+    public static HumanResponse ToResponse(this Human human)
+    {
+        return new HumanResponse
+               {
+                   Id = human.Id,
+                   CharacterId = human.CharacterId,
+                   Name = human.Name,
+                   Description = human.Description,
+                   Problems = human.Problems.Select(ToResponse).ToList()
+               };
+    }
+
+    public static HumansResponse ToGetAllResponse(this IEnumerable<Human> humans, int page, int pageSize, int total)
+    {
+        return new HumansResponse
+               {
+                   Items = humans.Select(ToResponse).ToList(),
+                   Page = page,
+                   PageSize = pageSize,
+                   Total = total
+               };
+    }
+
+    public static ProblemResponse ToResponse(this Problem problem)
+    {
+        return new ProblemResponse
+               {
+                   Id = problem.Id,
+                   HumanId = problem.HumanId,
+                   Source = problem.Source,
+                   Emotion = problem.Emotion,
+                   Rank = problem.Rank,
+                   Solved = problem.Solved
+               };
+    }
+
+    public static MKAppHumans.Updates.DescriptionUpdate ToUpdate(this HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
+    {
+        return new MKAppHumans.Updates.DescriptionUpdate()
+               {
+                   DescriptionOption = (MKAppHumans.Updates.DescriptionOption)description,
+                   HumanId = request.CharacterId,
+                   Name = request.Name,
+                   Description = request.Description
+               };
+    }
+
+    public static MKAppHumans.Updates.ProblemUpdate ToUpdate(this HumanProblemUpdateRequest request, MKCtrHumanRequests.ProblemOption problem)
+    {
+        return new MKAppHumans.Updates.ProblemUpdate
+               {
+                   ProblemOption = (MKAppHumans.Updates.ProblemOption)problem,
+                   HumanId = request.CharacterId,
+                   ProblemId = request.ProblemId,
+                   Source = request.Source,
+                   Emotion = request.Emotion,
+                   Rank = request.Rank,
+                   Solved = request.Solved
                };
     }
 

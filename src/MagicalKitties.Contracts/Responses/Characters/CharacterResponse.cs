@@ -1,4 +1,5 @@
 ﻿using MagicalKitties.Contracts.Responses.Flaws;
+using MagicalKitties.Contracts.Responses.Humans;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
 

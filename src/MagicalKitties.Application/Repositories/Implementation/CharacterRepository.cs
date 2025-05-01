@@ -17,8 +17,8 @@ public class CharacterRepository : ICharacterRepository
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
-    public const string CharacterFields = "c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown";
-    public const string CharacterStatFields = "cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries, cs.cute, cs.cunning, cs.fierce";
+    private const string CharacterFields = "c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown";
+    private const string CharacterStatFields = "cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries, cs.cute, cs.cunning, cs.fierce";
 
     public CharacterRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
@@ -120,10 +120,14 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                 and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
                                                                                                                 and c.deleted_utc is null
                                                                                                                 {orderClause}
+                                                                                                                limit @pageSize
+                                                                                                                offset @pageOffset
                                                                                                                 """, new
                                                                                                                      {
                                                                                                                          options.AccountId,
-                                                                                                                         Name = options.Name?.ToLowerInvariant()
+                                                                                                                         Name = options.Name?.ToLowerInvariant(),
+                                                                                                                         pageSize = options.PageSize,
+                                                                                                                         pageOffset = (options.Page - 1) * options.PageSize
                                                                                                                      }, cancellationToken: token));
         return results;
     }
@@ -159,30 +163,7 @@ public class CharacterRepository : ICharacterRepository
 
         return result > 0;
     }
-
-    public async Task<bool> UpdateAsync(Character character, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        // note: don't update the dead
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set name = @Name, updated_utc = @UpdatedUtc
-                                                                                  where id = @Id
-                                                                                  and deleted_utc is null
-                                                                                  """, new
-                                                                                       {
-                                                                                           character.Name,
-                                                                                           character.Id,
-                                                                                           character.UpdatedUtc
-                                                                                       }, cancellationToken: token));
-
-        transaction.Commit();
-
-        return result > 0;
-    }
-
+    
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);

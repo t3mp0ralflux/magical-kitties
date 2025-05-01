@@ -28,6 +28,11 @@ public class CharacterService : ICharacterService
         return result;
     }
 
+    public Task<bool> ExistsByIdAsync(Guid characterId, CancellationToken token = default)
+    {
+        return _characterRepository.ExistsByIdAsync(characterId, token);
+    }
+
     public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, CancellationToken token = default)
     {
         Character? result = await _characterRepository.GetByIdAsync(accountId, id, cancellationToken: token);
@@ -46,19 +51,7 @@ public class CharacterService : ICharacterService
     {
         return await _characterRepository.GetCountAsync(options, token);
     }
-
-    public async Task<bool> UpdateAsync(Character character, CancellationToken token = default)
-    {
-        bool exists = await _characterRepository.ExistsByIdAsync(character.Id, token);
-
-        if (!exists)
-        {
-            return false; // not found
-        }
-
-        return await _characterRepository.UpdateAsync(character, token);
-    }
-
+    
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
         bool exists = await _characterRepository.ExistsByIdAsync(id, token);

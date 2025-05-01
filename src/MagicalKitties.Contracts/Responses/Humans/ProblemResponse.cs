@@ -1,8 +1,9 @@
-﻿namespace MagicalKitties.Contracts.Responses.Characters;
+﻿namespace MagicalKitties.Contracts.Responses.Humans;
 
 public class ProblemResponse
 {
-    public required int Id { get; set; }
+    public required Guid Id { get; set; }
+    public required Guid HumanId { get; set; }
     public required string Source { get; set; }
     public required string Emotion { get; set; }
     public required int Rank { get; set; }
