@@ -344,4 +344,24 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
 
         return result > 0;
     }
+
+    public async Task<bool> UpdateCurrentInjuriesAsync(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update characterstat
+                                                                                  set current_injuries = @CurrentInjuries
+                                                                                  where character_id = @CharacterId
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.CurrentInjuries,
+                                                                                           update.CharacterId
+                                                                                       }, cancellationToken: token));
+        
+        transaction.Commit();
+
+        return result > 0;
+    }
 }

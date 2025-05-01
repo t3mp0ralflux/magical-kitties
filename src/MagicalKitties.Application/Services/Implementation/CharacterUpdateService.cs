@@ -129,6 +129,13 @@ public class CharacterUpdateService : ICharacterUpdateService
                 }
 
                 return await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
+            case AttributeOption.currentinjuries:
+                if (character.CurrentInjuries == update.CurrentInjuries)
+                {
+                    return true; // no need to update
+                }
+
+                return await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update, token);
             default:
                 throw new ValidationException("Selected attribute option not valid");
         }

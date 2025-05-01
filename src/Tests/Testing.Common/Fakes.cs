@@ -92,7 +92,7 @@ public static class Fakes
         return fakeCharacter;
     }
 
-    public static AttributeUpdateValidationContext GenerateValidationContext(Guid? accountId = null, Guid? characterId = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? owies = null)
+    public static AttributeUpdateValidationContext GenerateValidationContext(Guid? accountId = null, Guid? characterId = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null)
     {
         Account account = GenerateAccount();
         Character character = GenerateCharacter(account);
@@ -110,7 +110,8 @@ public static class Fakes
                                      Level = level,
                                      MagicalPowerChange = magicalPowerChange,
                                      TalentChange = talentChange,
-                                     CurrentOwies = owies
+                                     CurrentOwies = currentOwies,
+                                     CurrentInjuries = currentInjuries
                                  };
 
         AttributeUpdateValidationContext fakeContext = new()

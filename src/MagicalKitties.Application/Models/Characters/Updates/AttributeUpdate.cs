@@ -2,7 +2,7 @@
 
 public class AttributeUpdate
 {
-    public AttributeOption AttributeOption { get; set; }
+    public AttributeOption AttributeOption { get; init; }
     public required Guid AccountId { get; init; }
     public required Guid CharacterId { get; init; }
     public required int? Cute { get; init; }
@@ -14,6 +14,7 @@ public class AttributeUpdate
     public required EndowmentChange? MagicalPowerChange { get; init; }
     public required int? CurrentOwies { get; init; }
     public required int? CurrentTreats { get; init; }
+    public required int? CurrentInjuries { get; init; }
 }
 
 public class EndowmentChange

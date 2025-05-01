@@ -10,5 +10,6 @@ public enum AttributeOption
     talent,
     magicalpower,
     currentowies,
-    currenttreats
+    currenttreats,
+    currentinjuries
 }

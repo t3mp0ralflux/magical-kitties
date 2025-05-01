@@ -46,8 +46,14 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
         RuleFor(x => x.Update.CurrentTreats)
             .NotNull()
             .GreaterThanOrEqualTo(0)
-            .WithMessage("Current treats can't be negative.")
+            .WithMessage("Current Treats can't be negative.")
             .When(x=>x.Update.AttributeOption == AttributeOption.currenttreats);
+
+        RuleFor(x => x.Update.CurrentInjuries)
+            .NotNull()
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("Current Injuries can't be negative.")
+            .When(x => x.Update.AttributeOption == AttributeOption.currentinjuries);
         
         RuleFor(x => x.Update.FlawChange)
             .Custom(ValidateEndowment)

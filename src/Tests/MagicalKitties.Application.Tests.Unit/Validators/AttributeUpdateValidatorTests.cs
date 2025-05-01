@@ -106,7 +106,7 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenOwiesIsInvalid(int? owies, string exceptionMessage)
     {
         // Arrange
-        var updateContext = Fakes.GenerateValidationContext(owies: owies, attributeOption: AttributeOption.currentowies);
+        var updateContext = Fakes.GenerateValidationContext(currentOwies: owies, attributeOption: AttributeOption.currentowies);
         
         // Act
         var result = await _sut.TestValidateAsync(updateContext);
@@ -130,7 +130,23 @@ public class AttributeUpdateValidatorTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x=>x.Update.CurrentTreats)
-            .WithErrorMessage("Current treats can't be negative.")
+            .WithErrorMessage("Current Treats can't be negative.")
+            .WithSeverity(Severity.Error);
+    }
+    
+    [Fact]
+    public async Task Validator_ShouldThrowAsync_WhenCurrentInjuriesIsInvalid()
+    {
+        // Arrange
+        var updateContext = Fakes.GenerateValidationContext(currentInjuries: -5, attributeOption: AttributeOption.currentinjuries);
+        
+        // Act
+        var result = await _sut.TestValidateAsync(updateContext);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x=>x.Update.CurrentInjuries)
+            .WithErrorMessage("Current Injuries can't be negative.")
             .WithSeverity(Severity.Error);
     }
 
@@ -481,7 +497,7 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenOwiesInformationIsCorrect()
     {
         // Arrange
-        var updateContext = Fakes.GenerateValidationContext(owies:3, attributeOption: AttributeOption.currentowies);
+        var updateContext = Fakes.GenerateValidationContext(currentOwies:3, attributeOption: AttributeOption.currentowies);
         
         // Act
         var result = await _sut.TestValidateAsync(updateContext);
