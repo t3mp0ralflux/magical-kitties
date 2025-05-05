@@ -19,8 +19,6 @@ public static class DapperExtensions
     ];
 
     private static readonly AsyncRetryPolicy RetryPolicy = Policy
-                                                           // .Handle<NpgsqlException>()
-                                                           // .Or<TimeoutException>()
                                                            .HandleInner<TimeoutException>()
                                                            .OrInner<SocketException>()
                                                            .WaitAndRetryAsync(RetryTimes, (exception, timeSpan, retryCount, context) =>

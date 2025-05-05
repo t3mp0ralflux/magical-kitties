@@ -6,6 +6,7 @@ using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
@@ -20,6 +21,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 {
     private readonly AccountRepository _accountRepository;
     private readonly CharacterUpdateRepository _characterUpdateRepository;
+    private readonly HumanRepository _humanRepository;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
@@ -29,6 +31,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         _sut = new CharacterRepository(dbConnectionFactory, _dateTimeProvider);
         _accountRepository = new AccountRepository(dbConnectionFactory, _dateTimeProvider);
         _characterUpdateRepository = new CharacterUpdateRepository(dbConnectionFactory, _dateTimeProvider);
+        _humanRepository = new HumanRepository(dbConnectionFactory, _dateTimeProvider);
     }
 
     public CharacterRepository _sut { get; set; }
@@ -96,7 +99,10 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        Character character = Fakes
+                              .GenerateCharacter(account)
+                              .WithBaselineData()
+                              .WithHumanData();
 
         DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);
@@ -127,6 +133,16 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(currentInjuriesUpdate);
         await _characterUpdateRepository.UpdateCurrentOwiesAsync(currentOwiesUpdate);
         await _characterUpdateRepository.UpdateCurrentTreatsAsync(currentTreatsUpdate);
+
+        foreach (Human human in character.Humans)
+        {
+            await _humanRepository.CreateAsync(human);
+
+            foreach (Problem problem in human.Problems)
+            {
+                await _humanRepository.CreateProblemAsync(human.Id, problem);
+            }
+        }
 
         // Act
         var result = await _sut.GetByIdAsync(account.Id, character.Id);

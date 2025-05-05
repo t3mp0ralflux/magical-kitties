@@ -4,6 +4,7 @@ using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
+using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Models.Talents;
@@ -171,6 +172,38 @@ public static class Fakes
         character.CurrentInjuries = 1;
 
         return character;
+    }
+
+    public static Character WithHumanData(this Character character)
+    {
+        List<Human> humanCollection = Enumerable.Range(1,3).Select(_=> GenerateHuman(character.Id)).ToList();
+        
+        foreach (Human human in humanCollection)
+        {
+            Faker<Problem> problemFaker = new Faker<Problem>()
+                                           .RuleFor(x=>x.Id, _ => Guid.NewGuid())
+                                           .RuleFor(x=>x.HumanId, _ => human.Id)
+                                           .RuleFor(x=>x.Rank, f => f.Random.Int(1,5))
+                                           .RuleFor(x=>x.Source, f => f.Lorem.Word())
+                                           .RuleFor(x=>x.Emotion, f=>f.Lorem.Word());
+
+            human.Problems = problemFaker.Generate(3);
+        }
+        
+        character.Humans = humanCollection;
+            
+        return character;
+    }
+
+    public static Human GenerateHuman(Guid characterId)
+    {
+        var fakeHuman = new Faker<Human>()
+                        .RuleFor(x => x.Id, _ => Guid.NewGuid())
+                        .RuleFor(x => x.CharacterId, _ => characterId)
+                        .RuleFor(x => x.Name, f => f.Person.FullName)
+                        .RuleFor(x=>x.Description, f=>f.Lorem.Sentences(3));
+
+        return fakeHuman;
     }
 
     public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Guid characterId, AttributeOption option)
