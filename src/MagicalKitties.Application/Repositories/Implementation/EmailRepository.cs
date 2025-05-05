@@ -2,6 +2,7 @@
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models.System;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;

@@ -4,5 +4,5 @@ namespace MagicalKitties.Application.Models.MagicalPowers;
 
 public class MagicalPower : Endowment
 {
-    public List<MagicalPower> BonusFeatures { get; init; }
+    public List<MagicalPower> BonusFeatures { get; init; } = [];
 }

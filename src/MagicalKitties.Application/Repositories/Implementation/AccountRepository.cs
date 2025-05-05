@@ -4,6 +4,7 @@ using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;

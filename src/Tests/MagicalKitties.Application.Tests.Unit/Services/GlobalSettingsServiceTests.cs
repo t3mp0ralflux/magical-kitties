@@ -2,6 +2,7 @@
 using FluentValidation;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Repositories;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;

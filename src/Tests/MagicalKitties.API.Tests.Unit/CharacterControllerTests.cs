@@ -11,7 +11,6 @@ using MagicalKitties.Contracts.Responses.Characters;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using Testing.Common;
-using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
 
 namespace MagicalKitties.API.Tests.Unit;
 
@@ -55,32 +54,14 @@ public class CharacterControllerTests
                                                  AccountId = account.Id,
                                                  Username = account.Username,
                                                  Name = $"{account.Username}'s Unnamed Character",
-                                                 Attributes =
-                                                 [
-                                                     new Attribute
-                                                     {
-                                                         Id = Guid.Parse(ApplicationAssumptions.CuteAttributeId),
-                                                         Name = "Cute",
-                                                         Value = 0
-                                                     },
-                                                     new Attribute
-                                                     {
-                                                         Id = Guid.Parse(ApplicationAssumptions.CunningAttributeId),
-                                                         Name = "Cunning",
-                                                         Value = 0
-                                                     },
-                                                     new Attribute
-                                                     {
-                                                         Id = Guid.Parse(ApplicationAssumptions.FierceAttributeId),
-                                                         Name = "Fierce",
-                                                         Value = 0
-                                                     }
-                                                 ],
                                                  CurrentOwies = 0,
                                                  CurrentInjuries = 0,
                                                  CurrentTreats = 0,
                                                  MaxOwies = 2,
-                                                 StartingTreats = 2
+                                                 StartingTreats = 2,
+                                                 Cunning = 0,
+                                                 Cute = 0,
+                                                 Fierce = 0
                                              }.ToResponse();
 
         // Act
@@ -90,9 +71,7 @@ public class CharacterControllerTests
         result.StatusCode.Should().Be(201);
         result.ActionName.Should().Be(nameof(_sut.Get));
         result.Value.Should().BeEquivalentTo(expectedResponse, options => options
-                                                                          .Excluding(x => x.Id)
-                                                                          .For(x => x.Attributes)
-                                                                          .Exclude(y => y.Id));
+                                                                          .Excluding(x => x.Id));
     }
 
     [Fact]
@@ -133,7 +112,7 @@ public class CharacterControllerTests
 
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterService.GetByIdAsync(character.Id).Returns(character);
+        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
 
         CharacterResponse expectedResponse = character.ToResponse();
 
@@ -225,75 +204,7 @@ public class CharacterControllerTests
         result.StatusCode.Should().Be(200);
         result.Value.Should().BeEquivalentTo(expectedResponse);
     }
-
-    [Fact]
-    public async Task Update_ShouldReturnUnauthorized_WhenAccountIsNotFound()
-    {
-        // Arrange
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns((Account?)null);
-
-        CharacterUpdateRequest request = new()
-                                         {
-                                             Id = Guid.NewGuid(),
-                                             Name = string.Empty
-                                         };
-
-        // Act
-        UnauthorizedResult result = (UnauthorizedResult)await _sut.Update(request, CancellationToken.None);
-
-        // Assert
-        result.StatusCode.Should().Be(401);
-    }
-
-    [Fact]
-    public async Task Update_ShouldReturnNotFound_WhenCharacterIsNotFound()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
-
-        _characterService.UpdateAsync(Arg.Any<Character>()).Returns(false);
-
-        CharacterUpdateRequest request = new()
-                                         {
-                                             Id = Guid.NewGuid(),
-                                             Name = string.Empty
-                                         };
-
-        // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Update(request, CancellationToken.None);
-
-        // Assert
-        result.StatusCode.Should().Be(404);
-    }
-
-    [Fact]
-    public async Task Update_ShouldReturnUpdatedCharacter_WhenCharacterIsFound()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
-
-        _characterService.UpdateAsync(Arg.Any<Character>()).Returns(true);
-
-        CharacterUpdateRequest request = new()
-                                         {
-                                             Id = Guid.NewGuid(),
-                                             Name = "Steve"
-                                         };
-
-        CharacterResponse expectedResponse = request.ToCharacter(account).ToResponse();
-
-        // Act
-        OkObjectResult result = (OkObjectResult)await _sut.Update(request, CancellationToken.None);
-
-        // Assert
-        result.StatusCode.Should().Be(200);
-        result.Value.Should().BeEquivalentTo(expectedResponse);
-    }
-
+    
     [Fact]
     public async Task Delete_ShouldReturnUnauthorized_WhenAccountIsNotFound()
     {
@@ -311,9 +222,7 @@ public class CharacterControllerTests
     public async Task Delete_ShouldReturnNotFound_WhenCharacterIsNotFound()
     {
         // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.ExistsByEmailAsync(Arg.Any<string?>()).Returns(true);
 
         _characterService.DeleteAsync(Guid.NewGuid()).Returns(false);
 
@@ -329,9 +238,7 @@ public class CharacterControllerTests
     {
         // Arrange
         // Arrange
-        Account account = Fakes.GenerateAccount();
-
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.ExistsByEmailAsync(Arg.Any<string?>()).Returns(true);
 
         Guid characterId = Guid.NewGuid();
 

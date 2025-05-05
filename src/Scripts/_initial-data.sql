@@ -12,7 +12,7 @@ insert into globalsetting(id, name, value)
 values('a8c45217-1a04-4c42-9989-cefb5cdf09a2', 'service_account_username', 'magicalkittyservice');
 
 insert into globalsetting(id, name, value)
-values('545c30a9-f23d-4366-9c7f-10d7b24c4700', 'activation_email_format', '<p>Your activation link is:</p><p>{0}</p><p>For security reasons, do not share this link with anyone. This link will stop working after {1} minutes.</p><p>To keep future security messages like this from going to spam or junk email, Add no-reply@mail.magicalkitties.com to your approved or safe sender list.</p><p>If you did not make this request, contact us. Please do not respond to this email.</p>')
+values('545c30a9-f23d-4366-9c7f-10d7b24c4700', 'activation_email_format', '<p>Your activation link is:</p><p>{0}</p><p>For security reasons, do not share this link with anyone. This link will stop working after {1} minutes.</p><p>To keep future security messages like this from going to spam or junk email, Add no-reply@mail.magicalkitties.com to your approved or safe sender list.</p><p>If you did not make this request, contact us. Please do not respond to this email.</p>');
 
 commit;
 

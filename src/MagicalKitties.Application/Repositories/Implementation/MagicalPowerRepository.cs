@@ -55,13 +55,11 @@ public class MagicalPowerRepository : IMagicalPowerRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        int result = await connection.QuerySingleOrDefaultAsyncWithRetry<int>(new CommandDefinition("""
-                                                                                                    select count(id)
+        return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
+                                                                                                    select exists(select 1
                                                                                                     from magicalpower
-                                                                                                    where id = @id
+                                                                                                    where id = @id)
                                                                                                     """, new { id }, cancellationToken: token));
-
-        return result > 0;
     }
 
     public async Task<IEnumerable<MagicalPower>> GetAllAsync(GetAllMagicalPowersOptions options, CancellationToken token = default)

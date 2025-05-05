@@ -24,14 +24,13 @@ public class ApplicationApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        StringBuilder? sb = new();
+        
         foreach (string file in Directory.GetFiles("../../../../../scripts").Order())
         {
             string script = await File.ReadAllTextAsync(file);
-            sb.AppendLine(script);
+            await _dbContainer.ExecScriptAsync(script);
         }
 
-        await _dbContainer.ExecScriptAsync(sb.ToString());
     }
 
     public async Task DisposeAsync()

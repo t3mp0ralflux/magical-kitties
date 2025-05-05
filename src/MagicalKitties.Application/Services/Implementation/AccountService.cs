@@ -172,8 +172,13 @@ public class AccountService : IAccountService
         return await _accountRepository.ExistsByIdAsync(id, token);
     }
 
-    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken token = default)
+    public async Task<bool> ExistsByEmailAsync(string? email, CancellationToken token = default)
     {
+        if (email is null)
+        {
+            return false;
+        }
+        
         return await _accountRepository.ExistsByEmailAsync(email, token);
     }
 

@@ -5,7 +5,11 @@ using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
+using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -16,15 +20,18 @@ namespace MagicalKitties.Application.Tests.Integration;
 public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 {
     private readonly AccountRepository _accountRepository;
+    private readonly CharacterUpdateRepository _characterUpdateRepository;
+    private readonly HumanRepository _humanRepository;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
-    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
-        _dbConnectionFactory = apiFactory.Services.GetRequiredService<IDbConnectionFactory>();
+        IDbConnectionFactory dbConnectionFactory = apiFactory.Services.GetRequiredService<IDbConnectionFactory>();
 
-        _sut = new CharacterRepository(_dbConnectionFactory, _dateTimeProvider);
-        _accountRepository = new AccountRepository(_dbConnectionFactory, _dateTimeProvider);
+        _sut = new CharacterRepository(dbConnectionFactory, _dateTimeProvider);
+        _accountRepository = new AccountRepository(dbConnectionFactory, _dateTimeProvider);
+        _characterUpdateRepository = new CharacterUpdateRepository(dbConnectionFactory, _dateTimeProvider);
+        _humanRepository = new HumanRepository(dbConnectionFactory, _dateTimeProvider);
     }
 
     public CharacterRepository _sut { get; set; }
@@ -44,7 +51,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? createdCharacter = await _sut.GetByIdAsync(character.Id);
+        Character? createdCharacter = await _sut.GetByIdAsync(account.Id, character.Id);
         createdCharacter.Should().NotBeNull();
         createdCharacter.Should().BeEquivalentTo(character);
     }
@@ -60,14 +67,14 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(account.Id,Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
     }
 
     [SkipIfEnvironmentMissingFact]
-    public async Task GetByIdAsync_ShouldReturnCharacter_WhenIdIsFound()
+    public async Task GetByIdAsync_ShouldReturnBasicCharacter_WhenIdIsFound()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -80,10 +87,69 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(character.Id);
+        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
         // Assert
         result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
+    }
+
+    [SkipIfEnvironmentMissingFact]
+    public async Task GetByIdAsync_ShouldReturnFullCharacterInformation_WhenIdIsFound()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes
+                              .GenerateCharacter(account)
+                              .WithBaselineData()
+                              .WithHumanData();
+
+        DateTime now = DateTime.UtcNow;
+        _dateTimeProvider.GetUtcNow().Returns(now);
+
+        await _accountRepository.CreateAsync(account);
+        await _sut.CreateAsync(character);
+
+        AttributeUpdate cunningUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.cunning);
+        AttributeUpdate cuteUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.cute);
+        AttributeUpdate fierceUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.fierce);
+        AttributeUpdate levelUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.level);
+        AttributeUpdate flawUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.flaw);
+        AttributeUpdate talentUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.talent);
+        AttributeUpdate magicalPowerUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.magicalpower);
+        AttributeUpdate currentInjuriesUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.currentinjuries);
+        AttributeUpdate currentOwiesUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.currentowies);
+        AttributeUpdate currentTreatsUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.currenttreats);
+
+        await _characterUpdateRepository.UpdateLevelAsync(levelUpdate);
+        await _characterUpdateRepository.UpdateCunningAsync(cunningUpdate);
+        await _characterUpdateRepository.UpdateCuteAsync(cuteUpdate);
+        await _characterUpdateRepository.UpdateFierceAsync(fierceUpdate);
+        
+        await _characterUpdateRepository.CreateFlawAsync(flawUpdate);
+        await _characterUpdateRepository.CreateTalentAsync(talentUpdate);
+        await _characterUpdateRepository.CreateMagicalPowerAsync(magicalPowerUpdate);
+
+        await _characterUpdateRepository.UpdateCurrentInjuriesAsync(currentInjuriesUpdate);
+        await _characterUpdateRepository.UpdateCurrentOwiesAsync(currentOwiesUpdate);
+        await _characterUpdateRepository.UpdateCurrentTreatsAsync(currentTreatsUpdate);
+
+        foreach (Human human in character.Humans)
+        {
+            await _humanRepository.CreateAsync(human);
+
+            foreach (Problem problem in human.Problems)
+            {
+                await _humanRepository.CreateProblemAsync(human.Id, problem);
+            }
+        }
+
+        // Act
+        var result = await _sut.GetByIdAsync(account.Id, character.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+
         result.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
     }
 
@@ -270,52 +336,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
     }
-
-    [Fact]
-    public async Task UpdateAsync_ShouldUpdateCharacter_WhenUpdatesAreMade()
-    {
-        // // Arrange
-        // Account account = Fakes.GenerateAccount();
-        // Character character = Fakes.GenerateCharacter(account);
-        //
-        // DateTime now = DateTime.UtcNow;
-        // _dateTimeProvider.GetUtcNow().Returns(now);
-        //
-        // await _accountRepository.CreateAsync(account);
-        // await _sut.CreateAsync(character);
-        //
-        // Character update = new()
-        //                    {
-        //                        Id = character.Id,
-        //                        AccountId = account.Id,
-        //                        Name = "Bingus",
-        //                        Username = account.Username,
-        //                        CreatedUtc = now,
-        //                        UpdatedUtc = now,
-        //                        Characteristics = new Characteristic
-        //                                          {
-        //                                              Age = "420",
-        //                                              Eyes = "Present",
-        //                                              Faith = "Yes",
-        //                                              Gender = "All",
-        //                                              Hair = "Long and luscious",
-        //                                              Height = "Miniscule",
-        //                                              Skin = "Scaly",
-        //                                              Weight = "Heckin' Chonker"
-        //                                          }
-        //                    };
-        //
-        // // Act
-        // bool result = await _sut.UpdateAsync(update);
-        //
-        // // Assert
-        // result.Should().BeTrue();
-        //
-        // Character? updatedCharacter = await _sut.GetByIdAsync(update.Id);
-        // updatedCharacter.Should().NotBeNull();
-        // updatedCharacter.Should().BeEquivalentTo(update, options => options.Using<DateTime>(x=>x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
-    }
-
+    
     [SkipIfEnvironmentMissingFact]
     public async Task DeleteAsync_ShouldReturnFalse_WhenCharacterIsNotDeleted()
     {
@@ -349,7 +370,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? deletedCharacter = await _sut.GetByIdAsync(character.Id, true);
+        Character? deletedCharacter = await _sut.GetByIdAsync(account.Id, character.Id, true);
 
         deletedCharacter.Should().NotBeNull();
         deletedCharacter.DeletedUtc.Should().NotBeNull();
@@ -364,11 +385,5 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         yield return [account, character, character.Name.ToLowerInvariant()];
         yield return [account, character, character.Name.ToUpperInvariant()];
         yield return [account, character, character.Name.RandomizeCasing()];
-    }
-
-    public async void Dispose()
-    {
-        IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync();
-        await connection.ExecuteAsync("delete from character");
     }
 }

@@ -5,6 +5,8 @@ using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
+using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
@@ -14,15 +16,20 @@ using MagicalKitties.Contracts.Requests.Endowments.Flaws;
 using MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
 using MagicalKitties.Contracts.Requests.GlobalSetting;
+using MagicalKitties.Contracts.Requests.Humans;
 using MagicalKitties.Contracts.Responses.Account;
 using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Characters;
 using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.GlobalSetting;
+using MagicalKitties.Contracts.Responses.Humans;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
-using Attribute = MagicalKitties.Application.Models.Characters.Attribute;
-using ctr = MagicalKitties.Contracts.Models;
+using MKCtr = MagicalKitties.Contracts.Models;
+using MKCtrCharacterRequests = MagicalKitties.Contracts.Requests.Characters;
+using MKAppCharacters = MagicalKitties.Application.Models.Characters;
+using MKCtrHumanRequests = MagicalKitties.Contracts.Requests.Humans;
+using MKAppHumans = MagicalKitties.Application.Models.Humans;
 
 namespace MagicalKitties.Api.Mapping;
 
@@ -67,8 +74,8 @@ public static class ContractMapping
                    LastName = account.LastName,
                    Email = account.Email,
                    UserName = account.Username,
-                   AccountRole = (ctr.AccountRole)account.AccountRole,
-                   AccountStatus = (ctr.AccountStatus)account.AccountStatus,
+                   AccountRole = (MKCtr.AccountRole)account.AccountRole,
+                   AccountStatus = (MKCtr.AccountStatus)account.AccountStatus,
                    LastLogin = account.LastLoginUtc
                };
     }
@@ -145,18 +152,6 @@ public static class ContractMapping
     #endregion
 
     #region Characters
-
-    public static Character ToCharacter(this CharacterUpdateRequest request, Account account)
-    {
-        return new Character
-               {
-                   Id = request.Id,
-                   AccountId = account.Id,
-                   Name = request.Name,
-                   Username = account.Username
-               };
-    }
-
     public static CharactersResponse ToGetAllResponse(this IEnumerable<Character> characters, int page, int pageSize, int total)
     {
         return new CharactersResponse
@@ -181,10 +176,9 @@ public static class ContractMapping
                    Id = character.Id,
                    AccountId = character.AccountId,
                    Name = character.Name,
-                   Attributes = character.Attributes.ToResponse(),
                    Flaw = character.Flaw?.ToResponse(),
                    Talents = character.Talents.Select(ToResponse).ToList(),
-                   //MagicalPowers = character.MagicalPowers.ToResponse(),
+                   MagicalPowers = character.MagicalPowers.Select(ToResponse).ToList(),
                    CurrentInjuries = character.CurrentInjuries,
                    CurrentOwies = character.CurrentOwies,
                    MaxOwies = character.MaxOwies,
@@ -193,54 +187,14 @@ public static class ContractMapping
                    CurrentXp = character.CurrentXp,
                    Description = character.Description,
                    Hometown = character.Hometown,
-                   Human = character.Human?.ToResponse(),
-                   Level = character.Level
+                   Human = character.Humans.Select(ToResponse).ToList(),
+                   Level = character.Level,
+                   Cunning = character.Cunning,
+                   Cute = character.Cute,
+                   Fierce = character.Fierce
                };
     }
-
-    public static HumanResponse ToResponse(this Human human)
-    {
-        return new HumanResponse
-               {
-                   Id = human.Id,
-                   Name = human.Name,
-                   Description = human.Description,
-                   Problems = human.Problems.ToResponse()
-               };
-    }
-
-    public static ProblemResponse ToResponse(this Problem problem)
-    {
-        return new ProblemResponse
-               {
-                   Id = problem.Id,
-                   Source = problem.Source,
-                   Emotion = problem.Emotion.Value,
-                   Rank = problem.Rank,
-                   Solved = problem.Solved
-               };
-    }
-
-    public static List<ProblemResponse> ToResponse(this List<Problem> problems)
-    {
-        return problems.Select(x => x.ToResponse()).ToList();
-    }
-
-    public static AttributeResponse ToResponse(this Attribute attribute)
-    {
-        return new AttributeResponse
-               {
-                   Id = attribute.Id,
-                   Name = attribute.Name,
-                   Value = attribute.Value
-               };
-    }
-
-    public static List<AttributeResponse> ToResponse(this List<Attribute> attributes)
-    {
-        return attributes.Select(x => x.ToResponse()).ToList();
-    }
-
+    
     public static GetAllCharactersOptions ToOptions(this GetAllCharactersRequest request, Guid accountId)
     {
         return new GetAllCharactersOptions
@@ -257,66 +211,50 @@ public static class ContractMapping
                };
     }
 
-    public static LevelUpdate ToUpdate(this CharacterLevelUpdateRequest request)
+    #endregion
+
+    #region CharacterUpdates
+
+    public static MKAppCharacters.Updates.DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOption descriptionOption)
     {
-        return new LevelUpdate
+        return new MKAppCharacters.Updates.DescriptionUpdate
                {
+                    DescriptionOption = (MKAppCharacters.Updates.DescriptionOption)descriptionOption,
+                    AccountId = accountId,
+                    CharacterId = request.CharacterId,
+                    Name = request.Name,
+                    Description = request.Description,
+                    Hometown = request.Hometown,
+                    XP = request.XP
+               };
+    }
+
+    public static AttributeUpdate ToUpdate(this CharacterAttributeUpdateRequest request, Guid accountId, MKCtrCharacterRequests.AttributeOption attributeOption)
+    {
+        return new AttributeUpdate
+               {
+                   AttributeOption = (MKAppCharacters.Updates.AttributeOption)attributeOption,
+                   AccountId = accountId,
                    CharacterId = request.CharacterId,
-                   Level = request.Level
+                   Cunning = request.Cunning,
+                   Cute = request.Cute,
+                   Fierce = request.Fierce,
+                   Level = request.Level,
+                   FlawChange = request.FlawChange?.ToUpdate(),
+                   TalentChange = request.TalentChange?.ToUpdate(),
+                   MagicalPowerChange = request.MagicalPowerChange?.ToUpdate(),
+                   CurrentOwies = request.CurrentOwies,
+                   CurrentTreats = request.CurrentTreats,
+                   CurrentInjuries = request.CurrentInjuries
                };
     }
 
-    public static FlawUpdate ToUpdate(this CharacterFlawUpdateRequest request)
+    public static EndowmentChange ToUpdate(this EndowmentChangeRequest request)
     {
-        return new FlawUpdate
+        return new EndowmentChange
                {
-                   CharacterId = request.CharacterId,
-                   FlawId = request.FlawId
-               };
-    }
-
-    public static TalentUpdate ToUpdate(this CharacterTalentUpdateRequest request)
-    {
-        return new TalentUpdate
-               {
-                   CharacterId = request.CharacterId,
-                   TalentId = request.TalentId
-               };
-    }
-
-    public static MagicalPowerUpdate ToUpdate(this CharacterMagicalPowerUpdateRequest request)
-    {
-        return new MagicalPowerUpdate
-               {
-                   CharacterId = request.CharacterId,
-                   MagicalPowerId = request.MagicalPowerId
-               };
-    }
-
-    public static CharacterUpdateResponse ToResponse(this LevelUpdate update, string message)
-    {
-        return new CharacterUpdateResponse
-               {
-                   CharacterId = update.CharacterId,
-                   Message = message
-               };
-    }
-
-    public static CharacterUpdateResponse ToResponse(this FlawUpdate update, string message)
-    {
-        return new CharacterUpdateResponse
-               {
-                   CharacterId = update.CharacterId,
-                   Message = message
-               };
-    }
-
-    public static CharacterUpdateResponse ToResponse(this TalentUpdate update, string message)
-    {
-        return new CharacterUpdateResponse
-               {
-                   CharacterId = update.CharacterId,
-                   Message = message
+                   PreviousId = request.PreviousId,
+                   NewId = request.NewId
                };
     }
 
@@ -375,6 +313,84 @@ public static class ContractMapping
                    Page = request.Page,
                    PageSize = request.PageSize,
                    SortField = request.SortBy
+               };
+    }
+
+    #endregion
+
+    #region Humans
+
+    public static GetAllHumansOptions ToOptions(this GetAllHumansRequest request)
+    {
+        return new GetAllHumansOptions
+               {
+                   CharacterId = request.CharacterId,
+                   Name = request.Name,
+                   Page = request.Page,
+                   PageSize = request.PageSize,
+                   SortField = request.SortBy,
+                   SortOrder = request.SortBy is null ? SortOrder.unordered : request.SortBy.StartsWith('-') ? SortOrder.descending : SortOrder.ascending
+               };
+    }
+
+    public static HumanResponse ToResponse(this Human human)
+    {
+        return new HumanResponse
+               {
+                   Id = human.Id,
+                   CharacterId = human.CharacterId,
+                   Name = human.Name,
+                   Description = human.Description,
+                   Problems = human.Problems.Select(ToResponse).ToList()
+               };
+    }
+
+    public static HumansResponse ToGetAllResponse(this IEnumerable<Human> humans, int page, int pageSize, int total)
+    {
+        return new HumansResponse
+               {
+                   Items = humans.Select(ToResponse).ToList(),
+                   Page = page,
+                   PageSize = pageSize,
+                   Total = total
+               };
+    }
+
+    public static ProblemResponse ToResponse(this Problem problem)
+    {
+        return new ProblemResponse
+               {
+                   Id = problem.Id,
+                   HumanId = problem.HumanId,
+                   Source = problem.Source,
+                   Emotion = problem.Emotion,
+                   Rank = problem.Rank,
+                   Solved = problem.Solved
+               };
+    }
+
+    public static MKAppHumans.Updates.DescriptionUpdate ToUpdate(this HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
+    {
+        return new MKAppHumans.Updates.DescriptionUpdate()
+               {
+                   DescriptionOption = (MKAppHumans.Updates.DescriptionOption)description,
+                   HumanId = request.CharacterId,
+                   Name = request.Name,
+                   Description = request.Description
+               };
+    }
+
+    public static MKAppHumans.Updates.ProblemUpdate ToUpdate(this HumanProblemUpdateRequest request, MKCtrHumanRequests.ProblemOption problem)
+    {
+        return new MKAppHumans.Updates.ProblemUpdate
+               {
+                   ProblemOption = (MKAppHumans.Updates.ProblemOption)problem,
+                   HumanId = request.HumanId,
+                   ProblemId = request.ProblemId,
+                   Source = request.Source,
+                   Emotion = request.Emotion,
+                   Rank = request.Rank,
+                   Solved = request.Solved
                };
     }
 
@@ -472,7 +488,7 @@ public static class ContractMapping
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
                    IsCustom = magicalPower.IsCustom,
-                   BonusFeatures = magicalPower.BonusFeatures?.Select(ToResponse).ToList()
+                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
                };
     }
 

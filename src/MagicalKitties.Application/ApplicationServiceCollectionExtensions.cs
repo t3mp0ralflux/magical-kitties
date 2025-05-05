@@ -18,9 +18,12 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IGlobalSettingsRepository, GlobalSettingsRepository>();
         services.AddSingleton<IEmailRepository, EmailRepository>();
         services.AddSingleton<ICharacterRepository, CharacterRepository>();
+        services.AddSingleton<ICharacterUpdateRepository, CharacterUpdateRepository>();
         services.AddSingleton<IFlawRepository, FlawRepository>();
         services.AddSingleton<ITalentRepository, TalentRepository>();
         services.AddSingleton<IMagicalPowerRepository, MagicalPowerRepository>();
+        services.AddSingleton<IHumanRepository, HumanRepository>();
+        services.AddSingleton<IProblemRepository, ProblemRepository>();
 
         #endregion
 
@@ -31,24 +34,18 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IGlobalSettingsService, GlobalSettingsService>();
         services.AddSingleton<IEmailService, EmailService>();
         services.AddSingleton<ICharacterService, CharacterService>();
+        services.AddSingleton<ICharacterUpdateService, CharacterUpdateService>();
         services.AddSingleton<IFlawService, FlawService>();
         services.AddSingleton<ITalentService, TalentService>();
         services.AddSingleton<IMagicalPowerService, MagicalPowerService>();
+        services.AddSingleton<IHumanService, HumanService>();
 
         #endregion
 
-        #region Validators
-
-        services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Singleton); // set to singleton as it'll be one.
-
-        #endregion
-
-        #region Other
+        services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Transient); // set to singleton as it'll be one.
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
-
-        #endregion
 
         return services;
     }

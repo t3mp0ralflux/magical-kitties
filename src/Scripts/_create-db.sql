@@ -50,8 +50,7 @@ create table if not exists character(
     updated_utc timestamp not null,
     deleted_utc timestamp null,
     description text not null,
-    hometown text not null,
-    attributes json not null
+    hometown text not null
 );
 
 create table if not exists characterstat(
@@ -63,7 +62,10 @@ create table if not exists characterstat(
     current_owies numeric not null default 0,
     starting_treats numeric not null default 2,
     current_treats numeric not null default 0,
-    current_injuries numeric not null default 0
+    current_injuries numeric not null default 0,
+    cute numeric not null default 0,
+    cunning numeric not null default 0,
+    fierce numeric not null default 0
 );
 
 create table if not exists characterflaw(
@@ -76,7 +78,8 @@ create table if not exists characterflaw(
 create table if not exists charactertalent(
     id UUID primary key,
     character_id UUID references character(id),
-    talent_id numeric references talent(id)
+    talent_id numeric references talent(id),
+    UNIQUE(character_id, talent_id)
 );
 
 create table if not exists human(
@@ -84,7 +87,17 @@ create table if not exists human(
     character_id UUID references character(id),
     name text not null,
     description text not null,
-    problems json not null
+    deleted_utc timestamp null
+);
+
+create table if not exists problem(
+    id UUID primary key,
+    human_id UUID references human(id),
+    source text not null,
+    emotion text not null,
+    rank numeric not null,
+    solved bool not null,
+    deleted_utc timestamp null
 );
 
 create table if not exists charactermagicalpower(

@@ -1,18 +1,20 @@
 ﻿using System.Data;
-using System.Text.Json;
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
+using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
-using MagicalKitties.Application.Services.Implementation;
+using MagicalKitties.Application.Services;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class CharacterRepository : ICharacterRepository
 {
+    private const string CharacterFields = "c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown";
+    private const string CharacterStatFields = "cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries, cs.cute, cs.cunning, cs.fierce";
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
@@ -28,8 +30,8 @@ public class CharacterRepository : ICharacterRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown, attributes)
-                                                                                  values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown, @Attributes)
+                                                                                  insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown)
+                                                                                  values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown)
                                                                                   """, new
                                                                                        {
                                                                                            character.Id,
@@ -39,8 +41,7 @@ public class CharacterRepository : ICharacterRepository
                                                                                            CreatedUtc = _dateTimeProvider.GetUtcNow(),
                                                                                            UpdatedUtc = _dateTimeProvider.GetUtcNow(),
                                                                                            character.Description,
-                                                                                           character.Hometown,
-                                                                                           Attributes = new JsonParameter(JsonSerializer.Serialize(character.Attributes))
+                                                                                           character.Hometown
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -60,33 +61,67 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken token = default)
+    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
-        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>>(new CommandDefinition($"""
-                                                                                                               select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
-                                                                                                               cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries,
-                                                                                                               (select to_json(f.*)
-                                                                                                                from flaw f
-                                                                                                                right join characterflaw cf on f.id = cf.flaw_id
-                                                                                                                where character_id = @id) as flaw,
-                                                                                                               (select json_agg(t.*)
-                                                                                                               from talent t
-                                                                                                               inner join charactertalent ct on t.id = ct.talent_id
-                                                                                                               where character_id = @id) as talents
-                                                                                                               from character c
-                                                                                                               inner join characterstat cs on c.id = cs.character_id
-                                                                                                               where c.id = @id
-                                                                                                               {shouldIncludeDeleted}
-                                                                                                               """, new { id }, cancellationToken: token), (character, flaw, talents) =>
-                                                                                                                                                           {
-                                                                                                                                                               character.Flaw = flaw;
-                                                                                                                                                               character.Talents = talents;
+        IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>, List<MagicalPower>, List<Human>>(new CommandDefinition($"""
+                                                                                                                                                                    select {CharacterFields}, {CharacterStatFields},
+                                                                                                                                                                    (select to_json(f.*)
+                                                                                                                                                                     from flaw f
+                                                                                                                                                                     right join characterflaw cf on f.id = cf.flaw_id
+                                                                                                                                                                     where character_id = @id) as flaw,
+                                                                                                                                                                    (select json_agg(t.*)
+                                                                                                                                                                    from talent t
+                                                                                                                                                                    inner join charactertalent ct on t.id = ct.talent_id
+                                                                                                                                                                    where character_id = @id) as talents,
+                                                                                                                                                                    (select json_agg(mp.*)
+                                                                                                                                                                     from magicalpower mp
+                                                                                                                                                                     inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
+                                                                                                                                                                     where character_id = @id) as magicalpowers,
+                                                                                                                                                                    (select json_agg(
+                                                                                                                                                                                     json_build_object(
+                                                                                                                                                                                        'id', h.id,
+                                                                                                                                                                                        'character_id', h.character_id,
+                                                                                                                                                                                        'name', h.name,
+                                                                                                                                                                                        'description', h.description,
+                                                                                                                                                                                        'characterId', h.character_id,
+                                                                                                                                                                                        'problems', problems
+                                                                                                                                                                                     )
+                                                                                                                                                                            )
+                                                                                                                                                                    from human h
+                                                                                                                                                                    join (
+                                                                                                                                                                        select
+                                                                                                                                                                            p.human_id,
+                                                                                                                                                                            json_agg (
+                                                                                                                                                                                    json_build_object(
+                                                                                                                                                                                            'id', p.id,
+                                                                                                                                                                                            'human_id', p.human_id,
+                                                                                                                                                                                            'source', p.source,
+                                                                                                                                                                                            'solved', p.solved,
+                                                                                                                                                                                            'emotion', p.emotion,
+                                                                                                                                                                                            'rank', p.rank
+                                                                                                                                                                                    )
+                                                                                                                                                                            ) problems
+                                                                                                                                                                        from problem p
+                                                                                                                                                                        group by p.human_id
+                                                                                                                                                                    ) p on h.id = p.human_id
+                                                                                                                                                                    where h.character_id = @id) humans
+                                                                                                                                                                    from character c
+                                                                                                                                                                    inner join characterstat cs on c.id = cs.character_id
+                                                                                                                                                                    where c.id = @id
+                                                                                                                                                                    and c.account_id = @accountId
+                                                                                                                                                                    {shouldIncludeDeleted}
+                                                                                                                                                                    """, new { id, accountId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
+                                                                                                                                                                                                                                       {
+                                                                                                                                                                                                                                           character.Flaw = flaw;
+                                                                                                                                                                                                                                           character.Talents = talents;
+                                                                                                                                                                                                                                           character.MagicalPowers = magicalPowers;
+                                                                                                                                                                                                                                           character.Humans = humans;
 
-                                                                                                                                                               return character;
-                                                                                                                                                           }, "flaw,talents");
+                                                                                                                                                                                                                                           return character;
+                                                                                                                                                                                                                                       }, "flaw,talents,magicalpowers,humans");
         return result.FirstOrDefault();
     }
 
@@ -102,18 +137,21 @@ public class CharacterRepository : ICharacterRepository
         }
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
-                                                                                                                select c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, c.attributes,
-                                                                                                                cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries
+                                                                                                                select {CharacterFields}, {CharacterStatFields}
                                                                                                                 from character c
                                                                                                                 inner join characterstat cs on c.id = cs.character_id
                                                                                                                 where c.account_id = @AccountId
                                                                                                                 and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
                                                                                                                 and c.deleted_utc is null
                                                                                                                 {orderClause}
+                                                                                                                limit @pageSize
+                                                                                                                offset @pageOffset
                                                                                                                 """, new
                                                                                                                      {
                                                                                                                          options.AccountId,
-                                                                                                                         Name = options.Name?.ToLowerInvariant()
+                                                                                                                         Name = options.Name?.ToLowerInvariant(),
+                                                                                                                         pageSize = options.PageSize,
+                                                                                                                         pageOffset = (options.Page - 1) * options.PageSize
                                                                                                                      }, cancellationToken: token));
         return results;
     }
@@ -150,29 +188,6 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateAsync(Character character, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        // note: don't update the dead
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set name = @Name, updated_utc = @UpdatedUtc
-                                                                                  where id = @Id
-                                                                                  and deleted_utc is null
-                                                                                  """, new
-                                                                                       {
-                                                                                           character.Name,
-                                                                                           character.Id,
-                                                                                           character.UpdatedUtc
-                                                                                       }, cancellationToken: token));
-
-        transaction.Commit();
-
-        return result > 0;
-    }
-
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -187,66 +202,6 @@ public class CharacterRepository : ICharacterRepository
                                                                                            DeletedUtc = _dateTimeProvider.GetUtcNow(),
                                                                                            id
                                                                                        }, cancellationToken: token));
-        transaction.Commit();
-
-        return result > 0;
-    }
-
-    public async Task<bool> UpdateLevelAsync(LevelUpdate update, CancellationToken token)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update characterstat
-                                                                                  set level = @Level
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           update.Level
-                                                                                       }));
-
-        transaction.Commit();
-
-        return result > 0;
-    }
-
-    public async Task<bool> UpdateFlawAsync(FlawUpdate update, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set flaw_id = @FlawId
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           update.FlawId
-                                                                                       }, cancellationToken: token));
-
-        transaction.Commit();
-
-        return result > 0;
-    }
-
-    public async Task<bool> UpdateTalentAsync(TalentUpdate update, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set talent_id = @TalentId
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           update.TalentId
-                                                                                       }, cancellationToken: token));
-
         transaction.Commit();
 
         return result > 0;
