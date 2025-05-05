@@ -455,7 +455,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateOwiesAsync(AttributeUpdate update, CancellationToken token = default)
+    public async Task<bool> UpdateCurrentOwiesAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();

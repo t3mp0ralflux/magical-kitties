@@ -121,7 +121,7 @@ public class CharacterUpdateService : ICharacterUpdateService
                     return true; // no need to update
                 }
 
-                return await _characterUpdateRepository.UpdateOwiesAsync(update, token);
+                return await _characterUpdateRepository.UpdateCurrentOwiesAsync(update, token);
             case AttributeOption.currenttreats:
                 if (character.CurrentTreats == update.CurrentTreats)
                 {

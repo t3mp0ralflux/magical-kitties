@@ -2,8 +2,11 @@
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
+using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.System;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Validators.Characters;
 
 namespace Testing.Common;
@@ -90,6 +93,116 @@ public static class Fakes
                                          .RuleFor(x => x.Fierce, _ => 0);
 
         return fakeCharacter;
+    }
+
+    public static Character WithBaselineData(this Character character)
+    {
+        character.Cunning = 3;
+        character.Cute = 2;
+        character.Fierce = 1;
+        character.Level = 5;
+        character.Flaw = new Flaw
+                         {
+                             Id = 11,
+                             Name = "Amnesia",
+                             Description = "You are missing a part of your past, having lost some or all of your memory.",
+                             IsCustom = false
+                         };
+        character.Talents =
+        [
+            new Talent
+            {
+                Id = 22,
+                Name = "Claws",
+                Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
+                IsCustom = false
+            }
+        ];
+        character.MagicalPowers =
+        [
+            new MagicalPower
+            {
+                Id = 33,
+                Name = "Invisibility",
+                Description = "You can turn invisible. Nobody can see you, but they can still hear, smell, and touch you. Objects you wear or carry are still visible.",
+                IsCustom = false,
+                BonusFeatures =
+                [
+                    new MagicalPower
+                    {
+                        Id = 1,
+                        Name = "Share Invisibility",
+                        Description = "You can also make friends near you invisible.",
+                        IsCustom = false
+                    },
+                    new MagicalPower
+                    {
+                        Id = 2,
+                        Name = "Object Invisibility",
+                        Description = "You can turn any object you touch invisible.",
+                        IsCustom = false
+                    },
+                    new MagicalPower
+                    {
+                        Id = 3,
+                        Name = "See Invisibility",
+                        Description = "You can see other creatures who are invisible.",
+                        IsCustom = false
+                    },
+                    new MagicalPower
+                    {
+                        Id = 4,
+                        Name = "Soundless",
+                        Description = "In addition to being invisible, you also make no sound.",
+                        IsCustom = false
+                    },
+                    new MagicalPower
+                    {
+                        Id = 5,
+                        Name = "Scentless",
+                        Description = "In addition to being invisible, you also can't be detected by smell.",
+                        IsCustom = false
+                    }
+                ]
+            }
+        ];
+        character.CurrentOwies = 2;
+        character.CurrentTreats = 6;
+        character.CurrentInjuries = 1;
+
+        return character;
+    }
+
+    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Guid characterId, AttributeOption option)
+    {
+        return new AttributeUpdate
+               {
+                   AccountId = accountId,
+                   AttributeOption = option,
+                   CharacterId = characterId,
+                   Cunning = 3,
+                   Cute = 2,
+                   Fierce = 1,
+                   Level = 5,
+                   FlawChange = new EndowmentChange
+                                {
+                                    NewId = 11,
+                                    PreviousId = 11
+                                },
+                   TalentChange = new EndowmentChange
+                                  {
+                                      NewId = 22,
+                                      PreviousId = 22
+                                  },
+                   MagicalPowerChange = new EndowmentChange
+                                        {
+                                            NewId = 33,
+                                            PreviousId = 33
+                                        },
+                   CurrentOwies = 2,
+                   CurrentTreats = 6,
+                   CurrentInjuries = 1
+               };
     }
 
     public static AttributeUpdateValidationContext GenerateValidationContext(Guid? accountId = null, Guid? characterId = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null)
