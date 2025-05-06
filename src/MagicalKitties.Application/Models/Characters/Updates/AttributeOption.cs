@@ -11,5 +11,6 @@ public enum AttributeOption
     magicalpower,
     currentowies,
     currenttreats,
-    currentinjuries
+    currentinjuries,
+    incapacitated
 }

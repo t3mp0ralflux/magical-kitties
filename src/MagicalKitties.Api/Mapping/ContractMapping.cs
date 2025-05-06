@@ -243,7 +243,8 @@ public static class ContractMapping
                    MagicalPowerChange = request.MagicalPowerChange?.ToUpdate(),
                    CurrentOwies = request.CurrentOwies,
                    CurrentTreats = request.CurrentTreats,
-                   CurrentInjuries = request.CurrentInjuries
+                   CurrentInjuries = request.CurrentInjuries,
+                   Incapacitated = request.Incapacitated
                };
     }
 

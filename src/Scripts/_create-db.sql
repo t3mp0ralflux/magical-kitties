@@ -65,7 +65,8 @@ create table if not exists characterstat(
     current_injuries numeric not null default 0,
     cute numeric not null default 0,
     cunning numeric not null default 0,
-    fierce numeric not null default 0
+    fierce numeric not null default 0,
+    incapacitated bool default false not null
 );
 
 create table if not exists characterflaw(
