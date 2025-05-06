@@ -2,7 +2,6 @@
 
 public class DescriptionUpdate
 {
-    public DescriptionOption DescriptionOption { get; init; }
     public required Guid CharacterId { get; init; }
     public required Guid AccountId { get; init; }
     public string? Name { get; init; }

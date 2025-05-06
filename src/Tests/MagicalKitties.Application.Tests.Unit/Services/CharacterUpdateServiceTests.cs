@@ -12,7 +12,7 @@ public class CharacterUpdateServiceTests
 {
     private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
     private readonly ICharacterUpdateRepository _characterUpdateRepository = Substitute.For<ICharacterUpdateRepository>();
-    private readonly IValidator<DescriptionUpdate> _descriptionValidator = Substitute.For<IValidator<DescriptionUpdate>>();
+    private readonly IValidator<DescriptionUpdateValidationContext> _descriptionValidator = Substitute.For<IValidator<DescriptionUpdateValidationContext>>();
     private readonly IValidator<AttributeUpdateValidationContext> _updateValidator = Substitute.For<IValidator<AttributeUpdateValidationContext>>();
     
     public CharacterUpdateService _sut;
@@ -33,7 +33,7 @@ public class CharacterUpdateServiceTests
                                    };
 
         // Act
-        bool result = await _sut.UpdateDescriptionAsync(update);
+        bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.name, update);
 
         // Assert
         result.Should().BeFalse();
@@ -48,14 +48,13 @@ public class CharacterUpdateServiceTests
         DescriptionUpdate update = new()
                                    {
                                        AccountId = Guid.NewGuid(),
-                                       CharacterId = Guid.NewGuid(),
-                                       DescriptionOption = (DescriptionOption)o
+                                       CharacterId = Guid.NewGuid()
                                    };
 
         _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
 
         // Act
-        Func<Task<bool>> action = async () => await _sut.UpdateDescriptionAsync(update);
+        Func<Task<bool>> action = async () => await _sut.UpdateDescriptionAsync((DescriptionOption)o, update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>("Selected description option is not valid");
@@ -69,7 +68,6 @@ public class CharacterUpdateServiceTests
                                    {
                                        AccountId = Guid.NewGuid(),
                                        CharacterId = Guid.NewGuid(),
-                                       DescriptionOption = DescriptionOption.name,
                                        Name = "Test"
                                    };
 
@@ -77,7 +75,7 @@ public class CharacterUpdateServiceTests
         _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
 
         // Act
-        bool result = await _sut.UpdateDescriptionAsync(update);
+        bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.name, update);
 
         // Assert
         result.Should().BeTrue();
@@ -96,7 +94,6 @@ public class CharacterUpdateServiceTests
                                    {
                                        AccountId = Guid.NewGuid(),
                                        CharacterId = Guid.NewGuid(),
-                                       DescriptionOption = DescriptionOption.description,
                                        Description = "Test"
                                    };
 
@@ -104,7 +101,7 @@ public class CharacterUpdateServiceTests
         _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
 
         // Act
-        bool result = await _sut.UpdateDescriptionAsync(update);
+        bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.description, update);
 
         // Assert
         result.Should().BeTrue();
@@ -123,7 +120,6 @@ public class CharacterUpdateServiceTests
                                    {
                                        AccountId = Guid.NewGuid(),
                                        CharacterId = Guid.NewGuid(),
-                                       DescriptionOption = DescriptionOption.hometown,
                                        Hometown = "Test"
                                    };
 
@@ -131,7 +127,7 @@ public class CharacterUpdateServiceTests
         _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
 
         // Act
-        bool result = await _sut.UpdateDescriptionAsync(update);
+        bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.hometown, update);
 
         // Assert
         result.Should().BeTrue();
@@ -150,7 +146,6 @@ public class CharacterUpdateServiceTests
                                    {
                                        AccountId = Guid.NewGuid(),
                                        CharacterId = Guid.NewGuid(),
-                                       DescriptionOption = DescriptionOption.xp,
                                        XP = 69
                                    };
 
@@ -158,7 +153,7 @@ public class CharacterUpdateServiceTests
         _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
 
         // Act
-        bool result = await _sut.UpdateDescriptionAsync(update);
+        bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.xp, update);
 
         // Assert
         result.Should().BeTrue();

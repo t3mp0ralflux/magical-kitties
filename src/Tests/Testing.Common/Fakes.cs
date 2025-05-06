@@ -206,12 +206,11 @@ public static class Fakes
         return fakeHuman;
     }
 
-    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Guid characterId, AttributeOption option)
+    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Guid characterId)
     {
         return new AttributeUpdate
                {
                    AccountId = accountId,
-                   AttributeOption = option,
                    CharacterId = characterId,
                    Cunning = 3,
                    Cute = 2,
@@ -250,7 +249,6 @@ public static class Fakes
                                      Cunning = cunning,
                                      Cute = cute,
                                      Fierce = fierce,
-                                     AttributeOption = attributeOption ?? AttributeOption.cunning,
                                      CurrentTreats = currentTreats,
                                      FlawChange = flawChange,
                                      Level = level,
@@ -262,6 +260,7 @@ public static class Fakes
 
         AttributeUpdateValidationContext fakeContext = new()
                                                        {
+                                                           Option = attributeOption ?? AttributeOption.cunning,
                                                            Character = character,
                                                            Update = update
                                                        };

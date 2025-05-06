@@ -1,15 +1,15 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Specialized;
 using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Characters.Updates;
-using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Validators.Characters;
-using NSubstitute;
 
 namespace MagicalKitties.Application.Tests.Unit.Validators;
 
 public class CharacterDescriptionUpdateValidatorTests
 {
-    public DescriptionUpdateValidator _sut;
+    public readonly DescriptionUpdateValidator _sut;
 
     public CharacterDescriptionUpdateValidatorTests()
     {
@@ -20,135 +20,170 @@ public class CharacterDescriptionUpdateValidatorTests
     public async Task Validator_ShouldThrowError_WhenNameIsMissing()
     {
         // Arrange
-        var descriptionUpdate = new DescriptionUpdate()
-                                {
-                                    DescriptionOption = DescriptionOption.name,
-                                    AccountId = Guid.NewGuid(),
-                                    CharacterId = Guid.NewGuid()
-                                };
+        DescriptionUpdate descriptionUpdate = new()
+                                              {
+                                                  AccountId = Guid.NewGuid(),
+                                                  CharacterId = Guid.NewGuid()
+                                              };
+
+        DescriptionUpdateValidationContext validationContext = new()
+                                                               {
+                                                                   Option = DescriptionOption.name,
+                                                                   Update = descriptionUpdate
+                                                               };
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(descriptionUpdate);
+        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(validationContext);
 
         // Assert
-        var result = await action.Should().ThrowAsync<ValidationException>();
+        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
 
-        var errors = result.Subject.FirstOrDefault()?.Errors.ToList();
+        List<ValidationFailure>? errors = result.Subject.FirstOrDefault()?.Errors.ToList();
         errors.Should().ContainSingle();
 
-        var error = errors.First();
+        ValidationFailure error = errors.First();
         error.PropertyName.Should().Be("Name");
         error.ErrorMessage.Should().Be("Name cannot be empty");
     }
-    
+
     [Fact]
     public async Task Validator_ShouldThrowError_WhenXPIsMissing()
     {
         // Arrange
-        var descriptionUpdate = new DescriptionUpdate()
-                                {
-                                    DescriptionOption = DescriptionOption.xp,
-                                    AccountId = Guid.NewGuid(),
-                                    CharacterId = Guid.NewGuid()
-                                };
+        DescriptionUpdate descriptionUpdate = new()
+                                              {
+                                                  AccountId = Guid.NewGuid(),
+                                                  CharacterId = Guid.NewGuid()
+                                              };
+
+        DescriptionUpdateValidationContext validationContext = new()
+                                                               {
+                                                                   Option = DescriptionOption.xp,
+                                                                   Update = descriptionUpdate
+                                                               };
+
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(descriptionUpdate);
+        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(validationContext);
 
         // Assert
-        var result = await action.Should().ThrowAsync<ValidationException>();
+        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
 
-        var errors = result.Subject.FirstOrDefault()?.Errors.ToList();
+        List<ValidationFailure>? errors = result.Subject.FirstOrDefault()?.Errors.ToList();
         errors.Should().ContainSingle();
 
-        var error = errors.First();
+        ValidationFailure error = errors.First();
         error.PropertyName.Should().Be("XP");
         error.ErrorMessage.Should().Be("XP cannot be empty");
     }
-    
+
     [Fact]
     public async Task Validator_ShouldThrowError_WhenXPIsNegative()
     {
         // Arrange
-        var descriptionUpdate = new DescriptionUpdate()
-                                {
-                                    DescriptionOption = DescriptionOption.xp,
-                                    AccountId = Guid.NewGuid(),
-                                    CharacterId = Guid.NewGuid(),
-                                    XP = -42069
-                                };
+        DescriptionUpdate descriptionUpdate = new()
+                                              {
+                                                  AccountId = Guid.NewGuid(),
+                                                  CharacterId = Guid.NewGuid(),
+                                                  XP = -42069
+                                              };
+
+        DescriptionUpdateValidationContext validationContext = new()
+                                                               {
+                                                                   Option = DescriptionOption.xp,
+                                                                   Update = descriptionUpdate
+                                                               };
+
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(descriptionUpdate);
+        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(validationContext);
 
         // Assert
-        var result = await action.Should().ThrowAsync<ValidationException>();
+        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
 
-        var errors = result.Subject.FirstOrDefault()?.Errors.ToList();
+        List<ValidationFailure>? errors = result.Subject.FirstOrDefault()?.Errors.ToList();
         errors.Should().ContainSingle();
 
-        var error = errors.First();
+        ValidationFailure error = errors.First();
         error.PropertyName.Should().Be("XP");
         error.ErrorMessage.Should().Be("XP cannot be negative");
     }
-    
+
     [Fact]
     public async Task Validator_ShouldThrowError_WhenXPIsHuge()
     {
         // Arrange
-        var descriptionUpdate = new DescriptionUpdate()
-                                {
-                                    DescriptionOption = DescriptionOption.xp,
-                                    AccountId = Guid.NewGuid(),
-                                    CharacterId = Guid.NewGuid(),
-                                    XP = int.MaxValue
-                                };
+        DescriptionUpdate descriptionUpdate = new()
+                                              {
+                                                  AccountId = Guid.NewGuid(),
+                                                  CharacterId = Guid.NewGuid(),
+                                                  XP = int.MaxValue
+                                              };
+
+        DescriptionUpdateValidationContext validationContext = new()
+                                                               {
+                                                                   Option = DescriptionOption.xp,
+                                                                   Update = descriptionUpdate
+                                                               };
+
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(descriptionUpdate);
+        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(validationContext);
 
         // Assert
-        var result = await action.Should().ThrowAsync<ValidationException>();
+        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
 
-        var errors = result.Subject.FirstOrDefault()?.Errors.ToList();
+        List<ValidationFailure>? errors = result.Subject.FirstOrDefault()?.Errors.ToList();
         errors.Should().ContainSingle();
 
-        var error = errors.First();
+        ValidationFailure error = errors.First();
         error.PropertyName.Should().Be("XP");
         error.ErrorMessage.Should().Be("XP value exceeds game capacity");
     }
-    
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     public async Task Validator_ShouldNotThrowError_WhenDescriptionIsNullOrWhitespace(string? description)
     {
         // Arrange
-        var descriptionUpdate = new DescriptionUpdate()
-                                {
-                                    DescriptionOption = DescriptionOption.description,
-                                    AccountId = Guid.NewGuid(),
-                                    CharacterId = Guid.NewGuid(),
-                                    Description = description
-                                };
+        DescriptionUpdate descriptionUpdate = new()
+                                              {
+                                                  AccountId = Guid.NewGuid(),
+                                                  CharacterId = Guid.NewGuid(),
+                                                  Description = description
+                                              };
+
+        DescriptionUpdateValidationContext validationContext = new()
+                                                               {
+                                                                   Option = DescriptionOption.description,
+                                                                   Update = descriptionUpdate
+                                                               };
+
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(descriptionUpdate);
+        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(validationContext);
 
         // Assert
         await action.Should().NotThrowAsync<ValidationException>();
     }
-    
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     public async Task Validator_ShouldNotThrowError_WhenHometownIsNullOrWhitespace(string? hometown)
     {
         // Arrange
-        var descriptionUpdate = new DescriptionUpdate()
-                                {
-                                    DescriptionOption = DescriptionOption.description,
-                                    AccountId = Guid.NewGuid(),
-                                    CharacterId = Guid.NewGuid(),
-                                    Hometown = hometown
-                                };
+        DescriptionUpdate descriptionUpdate = new()
+                                              {
+                                                  AccountId = Guid.NewGuid(),
+                                                  CharacterId = Guid.NewGuid(),
+                                                  Hometown = hometown
+                                              };
+
+        DescriptionUpdateValidationContext validationContext = new()
+                                                               {
+                                                                   Option = DescriptionOption.hometown,
+                                                                   Update = descriptionUpdate
+                                                               };
+
         // Act
-        var action = async () => await _sut.ValidateAndThrowAsync(descriptionUpdate);
+        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(validationContext);
 
         // Assert
         await action.Should().NotThrowAsync<ValidationException>();

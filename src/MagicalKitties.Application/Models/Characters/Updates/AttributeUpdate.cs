@@ -2,19 +2,18 @@
 
 public class AttributeUpdate
 {
-    public required AttributeOption AttributeOption { get; init; }
     public required Guid AccountId { get; init; }
     public required Guid CharacterId { get; init; }
-    public required int? Cute { get; init; }
-    public required int? Cunning { get; init; }
-    public required int? Fierce { get; init; }
-    public required int? Level { get; init; }
-    public required EndowmentChange? FlawChange { get; init; }
-    public required EndowmentChange? TalentChange { get; init; }
-    public required EndowmentChange? MagicalPowerChange { get; init; }
-    public required int? CurrentOwies { get; init; }
-    public required int? CurrentTreats { get; init; }
-    public required int? CurrentInjuries { get; init; }
+    public int? Cute { get; init; }
+    public int? Cunning { get; init; }
+    public int? Fierce { get; init; }
+    public int? Level { get; init; }
+    public EndowmentChange? FlawChange { get; init; }
+    public EndowmentChange? TalentChange { get; init; }
+    public EndowmentChange? MagicalPowerChange { get; init; }
+    public int? CurrentOwies { get; init; }
+    public int? CurrentTreats { get; init; }
+    public int? CurrentInjuries { get; init; }
 }
 
 public class EndowmentChange
