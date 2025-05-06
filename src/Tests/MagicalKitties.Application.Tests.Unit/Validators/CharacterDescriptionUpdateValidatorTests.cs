@@ -178,7 +178,7 @@ public class CharacterDescriptionUpdateValidatorTests
 
         DescriptionUpdateValidationContext validationContext = new()
                                                                {
-                                                                   Option = DescriptionOption.xp,
+                                                                   Option = DescriptionOption.hometown,
                                                                    Update = descriptionUpdate
                                                                };
 
