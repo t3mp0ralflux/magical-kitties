@@ -10,10 +10,10 @@ public class CharacterUpdateService : ICharacterUpdateService
 {
     private readonly ICharacterRepository _characterRepository;
     private readonly ICharacterUpdateRepository _characterUpdateRepository;
-    private readonly IValidator<DescriptionUpdate> _descriptionUpdateValidator;
+    private readonly IValidator<DescriptionUpdateValidationContext> _descriptionUpdateValidator;
     private readonly IValidator<AttributeUpdateValidationContext> _attributeUpdateValidator;
 
-    public CharacterUpdateService(ICharacterRepository characterRepository, ICharacterUpdateRepository characterUpdateRepository, IValidator<DescriptionUpdate> descriptionUpdateValidator, IValidator<AttributeUpdateValidationContext> attributeUpdateValidator)
+    public CharacterUpdateService(ICharacterRepository characterRepository, ICharacterUpdateRepository characterUpdateRepository, IValidator<DescriptionUpdateValidationContext> descriptionUpdateValidator, IValidator<AttributeUpdateValidationContext> attributeUpdateValidator)
     {
         _characterRepository = characterRepository;
         _characterUpdateRepository = characterUpdateRepository;
@@ -21,7 +21,7 @@ public class CharacterUpdateService : ICharacterUpdateService
         _attributeUpdateValidator = attributeUpdateValidator;
     }
 
-    public async Task<bool> UpdateDescriptionAsync(DescriptionUpdate update, CancellationToken token = default)
+    public async Task<bool> UpdateDescriptionAsync(DescriptionOption option, DescriptionUpdate update, CancellationToken token = default)
     {
         bool characterExists = await _characterRepository.ExistsByIdAsync(update.CharacterId, token);
 
@@ -29,10 +29,16 @@ public class CharacterUpdateService : ICharacterUpdateService
         {
             return false;
         }
-        
-        await _descriptionUpdateValidator.ValidateAndThrowAsync(update, token);
 
-        return update.DescriptionOption switch
+        DescriptionUpdateValidationContext validationContext = new DescriptionUpdateValidationContext
+                                                               {
+                                                                   Option = option,
+                                                                   Update = update
+                                                               };
+        
+        await _descriptionUpdateValidator.ValidateAndThrowAsync(validationContext, token);
+
+        return option switch
         {
             DescriptionOption.name => await _characterUpdateRepository.UpdateNameAsync(update, token), // validated above. won't be null here.
             DescriptionOption.description => await _characterUpdateRepository.UpdateDescriptionAsync(update, token),
@@ -42,7 +48,7 @@ public class CharacterUpdateService : ICharacterUpdateService
         };
     }
 
-    public async Task<bool> UpdateAttributeAsync(AttributeUpdate update, CancellationToken token = default)
+    public async Task<bool> UpdateAttributeAsync(AttributeOption option, AttributeUpdate update, CancellationToken token = default)
     {
         Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId, cancellationToken: token);
 
@@ -53,6 +59,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
         AttributeUpdateValidationContext validationContext = new AttributeUpdateValidationContext
                                                              {
+                                                                 Option = option,
                                                                  Character = character,
                                                                  Update = update
                                                              };
@@ -60,7 +67,7 @@ public class CharacterUpdateService : ICharacterUpdateService
         // also validates if someone has put two threes or two ones for some reason.
         await _attributeUpdateValidator.ValidateAndThrowAsync(validationContext, token);
         
-        switch (update.AttributeOption)
+        switch (option)
         {
             case AttributeOption.cunning:
                 if (character.Cunning == update.Cunning)
@@ -139,5 +146,33 @@ public class CharacterUpdateService : ICharacterUpdateService
             default:
                 throw new ValidationException("Selected attribute option not valid");
         }
+    }
+
+    public async Task<bool> Reset(Guid accountId, Guid characterId, CancellationToken token = default)
+    {
+        Character? character = await _characterRepository.GetByIdAsync(accountId, characterId, cancellationToken: token);
+
+        if (character is null)
+        {
+            return false;
+        }
+
+        AttributeUpdate update = new AttributeUpdate
+                                 {
+                                     AccountId = accountId,
+                                     CharacterId = characterId,
+                                     CurrentOwies = 0,
+                                     CurrentInjuries = 0,
+                                     CurrentTreats = character.StartingTreats
+                                 };
+        
+        // reset current owies, treats, injuries.
+        await _characterUpdateRepository.UpdateCurrentOwiesAsync(update, token);
+        
+        await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update, token);
+        
+        await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
+
+        return true;
     }
 }

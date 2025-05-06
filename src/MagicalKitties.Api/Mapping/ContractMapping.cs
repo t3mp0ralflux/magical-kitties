@@ -215,11 +215,10 @@ public static class ContractMapping
 
     #region CharacterUpdates
 
-    public static MKAppCharacters.Updates.DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId, MKCtrCharacterRequests.DescriptionOption descriptionOption)
+    public static MKAppCharacters.Updates.DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId)
     {
         return new MKAppCharacters.Updates.DescriptionUpdate
                {
-                    DescriptionOption = (MKAppCharacters.Updates.DescriptionOption)descriptionOption,
                     AccountId = accountId,
                     CharacterId = request.CharacterId,
                     Name = request.Name,
@@ -229,11 +228,10 @@ public static class ContractMapping
                };
     }
 
-    public static AttributeUpdate ToUpdate(this CharacterAttributeUpdateRequest request, Guid accountId, MKCtrCharacterRequests.AttributeOption attributeOption)
+    public static AttributeUpdate ToUpdate(this CharacterAttributeUpdateRequest request, Guid accountId)
     {
         return new AttributeUpdate
                {
-                   AttributeOption = (MKAppCharacters.Updates.AttributeOption)attributeOption,
                    AccountId = accountId,
                    CharacterId = request.CharacterId,
                    Cunning = request.Cunning,

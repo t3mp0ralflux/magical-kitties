@@ -4,37 +4,37 @@ using MagicalKitties.Application.Models.Characters.Updates;
 
 namespace MagicalKitties.Application.Validators.Characters;
 
-public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdate>
+public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdateValidationContext>
 {
     public DescriptionUpdateValidator()
     {
-        RuleFor(x => x.AccountId).NotNull().NotEqual(Guid.Empty);
-        RuleFor(x => x.CharacterId).NotNull().NotEqual(Guid.Empty);
+        RuleFor(x => x.Update.AccountId).NotNull().NotEqual(Guid.Empty);
+        RuleFor(x => x.Update.CharacterId).NotNull().NotEqual(Guid.Empty);
         RuleFor(x => x).Custom((update, context) =>
                                {
-                                   switch (update.DescriptionOption)
+                                   switch (update.Option)
                                    {
                                        case DescriptionOption.name:
-                                           if (string.IsNullOrWhiteSpace(update.Name))
+                                           if (string.IsNullOrWhiteSpace(update.Update.Name))
                                            {
-                                               context.AddFailure(new ValidationFailure(nameof(update.Name), "Name cannot be empty"));
+                                               context.AddFailure(new ValidationFailure(nameof(update.Update.Name), "Name cannot be empty"));
                                            }
 
                                            break;
                                        case DescriptionOption.xp:
-                                           if (!update.XP.HasValue)
+                                           if (!update.Update.XP.HasValue)
                                            {
-                                               context.AddFailure(new ValidationFailure(nameof(update.XP), "XP cannot be empty"));
+                                               context.AddFailure(new ValidationFailure(nameof(update.Update.XP), "XP cannot be empty"));
                                                break;
                                            }
 
-                                           switch (update.XP.Value)
+                                           switch (update.Update.XP.Value)
                                            {
                                                case < 0:
-                                                   context.AddFailure(new ValidationFailure(nameof(update.XP), "XP cannot be negative"));
+                                                   context.AddFailure(new ValidationFailure(nameof(update.Update.XP), "XP cannot be negative"));
                                                    break;
                                                case > 100:
-                                                   context.AddFailure(new ValidationFailure(nameof(update.XP), "XP value exceeds game capacity"));
+                                                   context.AddFailure(new ValidationFailure(nameof(update.Update.XP), "XP value exceeds game capacity"));
                                                    break;
                                            }
 
@@ -48,4 +48,10 @@ public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdate>
                                    }
                                });
     }
+}
+
+public class DescriptionUpdateValidationContext
+{
+    public required DescriptionOption Option { get; init; }
+    public required DescriptionUpdate Update { get; init; }
 }

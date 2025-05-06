@@ -1,16 +1,12 @@
-﻿using System.Data;
-using Dapper;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Humans;
-using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Testing.Common;
@@ -21,8 +17,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 {
     private readonly AccountRepository _accountRepository;
     private readonly CharacterUpdateRepository _characterUpdateRepository;
-    private readonly HumanRepository _humanRepository;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
+    private readonly HumanRepository _humanRepository;
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
@@ -67,7 +63,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(account.Id,Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(account.Id, Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -110,29 +106,20 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _accountRepository.CreateAsync(account);
         await _sut.CreateAsync(character);
 
-        AttributeUpdate cunningUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.cunning);
-        AttributeUpdate cuteUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.cute);
-        AttributeUpdate fierceUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.fierce);
-        AttributeUpdate levelUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.level);
-        AttributeUpdate flawUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.flaw);
-        AttributeUpdate talentUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.talent);
-        AttributeUpdate magicalPowerUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.magicalpower);
-        AttributeUpdate currentInjuriesUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.currentinjuries);
-        AttributeUpdate currentOwiesUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.currentowies);
-        AttributeUpdate currentTreatsUpdate = Fakes.GenerateAttributeUpdate(account.Id, character.Id, AttributeOption.currenttreats);
+        AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
 
-        await _characterUpdateRepository.UpdateLevelAsync(levelUpdate);
-        await _characterUpdateRepository.UpdateCunningAsync(cunningUpdate);
-        await _characterUpdateRepository.UpdateCuteAsync(cuteUpdate);
-        await _characterUpdateRepository.UpdateFierceAsync(fierceUpdate);
-        
-        await _characterUpdateRepository.CreateFlawAsync(flawUpdate);
-        await _characterUpdateRepository.CreateTalentAsync(talentUpdate);
-        await _characterUpdateRepository.CreateMagicalPowerAsync(magicalPowerUpdate);
+        await _characterUpdateRepository.UpdateLevelAsync(update);
+        await _characterUpdateRepository.UpdateCunningAsync(update);
+        await _characterUpdateRepository.UpdateCuteAsync(update);
+        await _characterUpdateRepository.UpdateFierceAsync(update);
 
-        await _characterUpdateRepository.UpdateCurrentInjuriesAsync(currentInjuriesUpdate);
-        await _characterUpdateRepository.UpdateCurrentOwiesAsync(currentOwiesUpdate);
-        await _characterUpdateRepository.UpdateCurrentTreatsAsync(currentTreatsUpdate);
+        await _characterUpdateRepository.CreateFlawAsync(update);
+        await _characterUpdateRepository.CreateTalentAsync(update);
+        await _characterUpdateRepository.CreateMagicalPowerAsync(update);
+
+        await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update);
+        await _characterUpdateRepository.UpdateCurrentOwiesAsync(update);
+        await _characterUpdateRepository.UpdateCurrentTreatsAsync(update);
 
         foreach (Human human in character.Humans)
         {
@@ -145,7 +132,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         }
 
         // Act
-        var result = await _sut.GetByIdAsync(account.Id, character.Id);
+        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -175,7 +162,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                           };
 
         // Act
-        IEnumerable<Character> result = await _sut.GetAllAsync(options);
+        List<Character> result = (await _sut.GetAllAsync(options)).ToList();
 
         // Assert
         result.Should().NotBeNull();
@@ -336,7 +323,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
     }
-    
+
     [SkipIfEnvironmentMissingFact]
     public async Task DeleteAsync_ShouldReturnFalse_WhenCharacterIsNotDeleted()
     {

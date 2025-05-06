@@ -4,6 +4,7 @@ namespace MagicalKitties.Application.Services;
 
 public interface ICharacterUpdateService
 {
-    Task<bool> UpdateDescriptionAsync(DescriptionUpdate update, CancellationToken token = default);
-    Task<bool> UpdateAttributeAsync(AttributeUpdate update, CancellationToken token = default);
+    Task<bool> UpdateDescriptionAsync(DescriptionOption option, DescriptionUpdate update, CancellationToken token = default);
+    Task<bool> UpdateAttributeAsync(AttributeOption option, AttributeUpdate update, CancellationToken token = default);
+    Task<bool> Reset(Guid accountId, Guid characterId, CancellationToken token = default);
 }

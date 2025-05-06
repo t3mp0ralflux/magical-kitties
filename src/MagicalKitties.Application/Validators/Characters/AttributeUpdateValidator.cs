@@ -21,57 +21,57 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
         
         RuleFor(x => x.Update.Cute)
             .Custom(ValidateAttribute)
-            .When(x => x.Update.AttributeOption == AttributeOption.cute);
+            .When(x => x.Option == AttributeOption.cute);
         
         RuleFor(x => x.Update.Cunning)
             .Custom(ValidateAttribute)
-            .When(x => x.Update.AttributeOption == AttributeOption.cunning);
+            .When(x => x.Option == AttributeOption.cunning);
         
         RuleFor(x => x.Update.Fierce)
             .Custom(ValidateAttribute)
-            .When(x => x.Update.AttributeOption == AttributeOption.fierce);
+            .When(x => x.Option == AttributeOption.fierce);
         
         RuleFor(x => x.Update.Level)
             .NotNull()
             .InclusiveBetween(1,10)
             .WithMessage("Level can only be between 1 and 10 inclusively.")
-            .When(x => x.Update.AttributeOption == AttributeOption.level);
+            .When(x => x.Option == AttributeOption.level);
 
         RuleFor(x => x.Update.CurrentOwies)
             .NotNull()
             .InclusiveBetween(0, 5)
             .WithMessage("Owies can only be between 0 and 5 inclusively.")
-            .When(x=>x.Update.AttributeOption == AttributeOption.currentowies);
+            .When(x=>x.Option == AttributeOption.currentowies);
         
         RuleFor(x => x.Update.CurrentTreats)
             .NotNull()
             .GreaterThanOrEqualTo(0)
             .WithMessage("Current Treats can't be negative.")
-            .When(x=>x.Update.AttributeOption == AttributeOption.currenttreats);
+            .When(x=>x.Option == AttributeOption.currenttreats);
 
         RuleFor(x => x.Update.CurrentInjuries)
             .NotNull()
             .GreaterThanOrEqualTo(0)
             .WithMessage("Current Injuries can't be negative.")
-            .When(x => x.Update.AttributeOption == AttributeOption.currentinjuries);
+            .When(x => x.Option == AttributeOption.currentinjuries);
         
         RuleFor(x => x.Update.FlawChange)
             .Custom(ValidateEndowment)
-            .When(x=>x.Update.AttributeOption == AttributeOption.flaw);
+            .When(x=>x.Option == AttributeOption.flaw);
         
         RuleFor(x => x.Update.TalentChange)
             .Custom(ValidateEndowment)
-            .When(x=>x.Update.AttributeOption == AttributeOption.talent);
+            .When(x=>x.Option == AttributeOption.talent);
         
         RuleFor(x => x.Update.MagicalPowerChange)
             .Custom(ValidateEndowment)
-            .When(x=>x.Update.AttributeOption == AttributeOption.magicalpower);
+            .When(x=>x.Option == AttributeOption.magicalpower);
         
     }
 
     private static void ValidateAttribute(int? value, ValidationContext<AttributeUpdateValidationContext> context)
     {
-        string fieldName = context.InstanceToValidate.Update.AttributeOption switch
+        string fieldName = context.InstanceToValidate.Option switch
         {
             AttributeOption.cunning => nameof(AttributeUpdate.Cunning),
             AttributeOption.cute => nameof(AttributeUpdate.Cute),
@@ -104,7 +104,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
         // this is in case someone uses the API instead of the UI to change their information. Base values can only be 1,2,3 uniquely.
         // Upgrades are handled in the upgrade section and shown on the UI, NOT HERE.
         if (stats
-            .Where(stat => stat.Key != context.InstanceToValidate.Update.AttributeOption) // not the same option
+            .Where(stat => stat.Key != context.InstanceToValidate.Option) // not the same option
             .Where(stat => stat.Value != 0) // not zero. don't care about three zeroes 
             .Any(stat => stat.Value == value.Value)) // care 'cause it's a match
         {
@@ -114,7 +114,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
 
     private static void ValidateEndowment(EndowmentChange? value, ValidationContext<AttributeUpdateValidationContext> context)
     {
-        string fieldName = context.InstanceToValidate.Update.AttributeOption switch
+        string fieldName = context.InstanceToValidate.Option switch
         {
             AttributeOption.flaw => nameof(AttributeUpdate.FlawChange),
             AttributeOption.talent => nameof(AttributeUpdate.TalentChange),
@@ -122,7 +122,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
             _ => string.Empty
         };
         
-        switch (context.InstanceToValidate.Update.AttributeOption)
+        switch (context.InstanceToValidate.Option)
         {
             case AttributeOption.flaw:
                 if (value is null)
@@ -245,6 +245,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
             case AttributeOption.level:
             case AttributeOption.currentowies:
             case AttributeOption.currenttreats:
+            case AttributeOption.currentinjuries:
             default:
                 return; // don't care, not us.
         }
@@ -266,6 +267,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
 
 public class AttributeUpdateValidationContext
 {
-    public required AttributeUpdate Update { get; set; }
-    public required Character Character { get; set; }
+    public required AttributeOption Option { get; init; }
+    public required AttributeUpdate Update { get; init; }
+    public required Character Character { get; init; }
 }
