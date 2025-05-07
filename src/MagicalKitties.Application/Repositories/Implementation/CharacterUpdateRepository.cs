@@ -137,15 +137,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -170,15 +162,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -203,15 +187,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -236,15 +212,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -269,15 +237,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -302,15 +262,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -335,15 +287,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -370,15 +314,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -403,15 +339,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -439,15 +367,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -472,15 +392,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -505,15 +417,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
         
         transaction.Commit();
@@ -538,19 +442,49 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           update.CharacterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
-            
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
+        
         transaction.Commit();
 
         return result > 0;
     }
+
+    public async Task<bool> UpdateIncapacitatedStatus(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using var transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update characterstat
+                                                                                  set incapacitated = @Incapacitated
+                                                                                  where character_id = @CharacterId
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.Incapacitated,
+                                                                                           update.CharacterId
+                                                                                       }, cancellationToken: token));
+        
+        if (result > 0)
+        {
+            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+        }
+        
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    private async Task<int> UpdateCharacterUpdateUtcAsync(Guid characterId, IDbConnection connection, CancellationToken token)
+    {
+        return await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set updated_utc = @Now
+                                                                                  where id = @characterId
+                                                                                  """, new
+                                                                                       {
+                                                                                           characterId,
+                                                                                           Now = _dateTimeProvider.GetUtcNow()
+                                                                          }, cancellationToken: token));
+    } 
 }

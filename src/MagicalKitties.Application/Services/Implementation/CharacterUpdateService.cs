@@ -143,6 +143,13 @@ public class CharacterUpdateService : ICharacterUpdateService
                 }
 
                 return await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update, token);
+            case AttributeOption.incapacitated:
+                if (character.Incapacitated == update.Incapacitated)
+                {
+                    return true;
+                }
+
+                return await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);
             default:
                 throw new ValidationException("Selected attribute option not valid");
         }
@@ -163,7 +170,8 @@ public class CharacterUpdateService : ICharacterUpdateService
                                      CharacterId = characterId,
                                      CurrentOwies = 0,
                                      CurrentInjuries = 0,
-                                     CurrentTreats = character.StartingTreats
+                                     CurrentTreats = character.StartingTreats,
+                                     Incapacitated = false
                                  };
         
         // reset current owies, treats, injuries.
@@ -172,6 +180,8 @@ public class CharacterUpdateService : ICharacterUpdateService
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update, token);
         
         await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
+
+        await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);
 
         return true;
     }

@@ -14,6 +14,7 @@ public class CharacterAttributeUpdateRequest
     public int? CurrentOwies { get; init; }
     public int? CurrentTreats { get; init; }
     public int? CurrentInjuries { get; init; }
+    public bool? Incapacitated { get; init; }
 }
 
 public class EndowmentChangeRequest

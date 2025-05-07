@@ -91,7 +91,8 @@ public static class Fakes
                                          .RuleFor(x => x.StartingTreats, _ => 2)
                                          .RuleFor(x => x.Cunning, _ => 0)
                                          .RuleFor(x => x.Cute, _ => 0)
-                                         .RuleFor(x => x.Fierce, _ => 0);
+                                         .RuleFor(x => x.Fierce, _ => 0)
+                                         .RuleFor(x=>x.Incapacitated, _ => false);
 
         return fakeCharacter;
     }
