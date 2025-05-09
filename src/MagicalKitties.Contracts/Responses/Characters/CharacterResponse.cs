@@ -1,4 +1,5 @@
-﻿using MagicalKitties.Contracts.Responses.Flaws;
+﻿using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.Humans;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
@@ -20,12 +21,13 @@ public class CharacterResponse
 
     public required int Level { get; init; } = 1;
     public required int CurrentXp { get; init; }
-    public required int Cunning { get; set; }
-    public required int Cute { get; set; }
-    public required int Fierce { get; set; }
+    public required int Cunning { get; init; }
+    public required int Cute { get; init; }
+    public required int Fierce { get; init; }
     public required int MaxOwies { get; init; } = 2;
     public required int CurrentOwies { get; init; }
     public required int StartingTreats { get; init; } = 2;
     public required int CurrentTreats { get; init; }
     public required int CurrentInjuries { get; init; }
+    public required List<Upgrade> Upgrades { get; init; }
 }

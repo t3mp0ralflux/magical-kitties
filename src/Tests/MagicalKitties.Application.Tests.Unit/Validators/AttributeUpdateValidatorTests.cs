@@ -410,7 +410,7 @@ public class AttributeUpdateValidatorTests
         // Assert
         result
             .ShouldHaveValidationErrorFor("MagicalPowerChange.NewId")
-            .WithErrorMessage("Character is not level 8 or above. Cannot add new Magical Power.")
+            .WithErrorMessage("Character is not level 8 or above or Undead. Cannot add new Magical Power.")
             .WithSeverity(Severity.Error);
     }
     

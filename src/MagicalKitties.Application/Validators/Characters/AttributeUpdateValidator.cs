@@ -225,17 +225,26 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
                 bool previousMagicalPowerExists = context.InstanceToValidate.Character.MagicalPowers.FirstOrDefault(x => x.Id == value.PreviousId) is not null
                                                   || context.InstanceToValidate.Character.MagicalPowers.Any(x => x.BonusFeatures.FirstOrDefault(y => y.Id == value.PreviousId) is not null);
                 
+                // this is a special one. Undead can have a magical power as their bonus feature, which puts a wrench in the whole lvl 8+ can have two magical powers as they can have this at level 2.
+                bool isUndead = context.InstanceToValidate.Character.MagicalPowers.FirstOrDefault(x => x.Id == 65) is not null;
                 
                 // adding new one against restrictions
-                if (context.InstanceToValidate.Character.MagicalPowers.Count == 2 && !previousMagicalPowerExists)
+                if (context.InstanceToValidate.Character.MagicalPowers.Count == 1 && context.InstanceToValidate.Character.Level < 8 && !previousMagicalPowerExists && !isUndead)
+                {
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Character is not level 8 or above or Undead. Cannot add new Magical Power."));
+                    return;
+                }
+                
+                if (context.InstanceToValidate.Character.MagicalPowers.Count == 2 && !previousMagicalPowerExists && !isUndead)
                 {
                     context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Characters cannot have more than two Magical Powers."));
                     return;
                 }
 
-                if (context.InstanceToValidate.Character.MagicalPowers.Count == 1 && context.InstanceToValidate.Character.Level < 8 && !previousMagicalPowerExists)
+                // only for Undead if they try to add a fourth magical power.
+                if (context.InstanceToValidate.Character.MagicalPowers.Count == 3 && !previousMagicalPowerExists)
                 {
-                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Character is not level 8 or above. Cannot add new Magical Power."));
+                    context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Even the Undead cannot have four Magical Powers."));
                 }
                 
                 return;

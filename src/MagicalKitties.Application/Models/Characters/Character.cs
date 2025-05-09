@@ -21,8 +21,8 @@ public class Character
     
     [Column("deleted_utc")]
     public DateTime? DeletedUtc { get; set; }
-    public string Description { get; set; } = "";
-    public string Hometown { get; set; } = "";
+    public string Description { get; init; } = "";
+    public string Hometown { get; init; } = "";
     public Flaw? Flaw { get; set; }
     public List<Talent> Talents { get; set; } = [];
 
@@ -31,26 +31,25 @@ public class Character
     public int Level { get; set; } = 1;
     
     [Column("current_xp")]
-    public int CurrentXp { get; set; }
+    public int CurrentXp { get; init; }
     
     [Column("max_owies")]
-    public int MaxOwies { get; set; }
+    public int MaxOwies { get; init; }
     
     [Column("current_owies")]
     public int CurrentOwies { get; set; }
     
     [Column("starting_treats")]
-    public int StartingTreats { get; set; }
+    public int StartingTreats { get; init; }
     
     [Column("current_treats")]
     public int CurrentTreats { get; set; }
     
     [Column("current_injuries")]
     public int CurrentInjuries { get; set; }
-
     public bool Incapacitated { get; set; }
-
     public int Cunning { get; set; }
     public int Cute { get; set; }
     public int Fierce { get; set; }
+    public List<Upgrade> Upgrades { get; set; } = [];
 }

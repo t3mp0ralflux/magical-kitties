@@ -12,7 +12,6 @@ namespace MagicalKitties.Application.Tests.Unit.Services;
 
 public class GlobalSettingsServiceTests
 {
-    private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly IValidator<GetAllGlobalSettingsOptions> _globalSettingOptionsValidator = Substitute.For<IValidator<GetAllGlobalSettingsOptions>>();
     private readonly IGlobalSettingsRepository _globalSettingsRepository = Substitute.For<IGlobalSettingsRepository>();
     private readonly IValidator<GlobalSetting> _globalSettingValidator = Substitute.For<IValidator<GlobalSetting>>();
@@ -20,7 +19,7 @@ public class GlobalSettingsServiceTests
 
     public GlobalSettingsServiceTests()
     {
-        _sut = new GlobalSettingsService(_globalSettingsRepository, _globalSettingValidator, _globalSettingOptionsValidator, _dateTimeProvider, _memoryCache);
+        _sut = new GlobalSettingsService(_globalSettingsRepository, _globalSettingValidator, _globalSettingOptionsValidator, _memoryCache);
     }
 
     public GlobalSettingsService _sut { get; set; }
