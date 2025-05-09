@@ -134,7 +134,7 @@ values('36', 'Musical', 'You are talented at singing and playing musical instrum
 insert into talent(id, name, description, is_custom)
 values('41', 'Naturalist', 'You know a lot about nature and are good at growing things.', false);
 insert into talent(id, name, description, is_custom)
-values('42', 'Navigator', 'You hardly ever get lost and you know how to find your way from here to there, wherever that happens to be.', false);
+values('42', 'Navigator', 'You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.', false);
 insert into talent(id, name, description, is_custom)
 values('43', 'Night Vision', 'The night is your friend. You can easily see hwere you''re going, even in total darkness.', false);
 insert into talent(id, name, description, is_custom)
@@ -244,5 +244,59 @@ insert into magicalpower(id, name, description, is_custom, bonusfeatures)
 values('65', 'Undead', 'You exist halfway between life and death. You might be a zombie, a vampire, or some other form of undead that still has a physical body. You are also driven by an unnatural hunger. Vampires, for example, thirst for blood. Zombies crave brains. More-exotic undead might feed on moonlight or a strong emotion. Undead only recover from Injuries if they''re able to sate their unnatural hunger. At first, you can''t create other undead.', false, '[{"id": 1, "name": "Minions", "description":"You can create undead minions similar to yourself. These minions generally follow your commands, but sometimes get ideas of their own. Choose a secret cure for your minions.", "is_custom":false, "selected":false},{"id": 2, "name": "Supernatural Feat", "description":"Pick another Magical Power to be the Supernatural Feat made possible by your undead form. This can only be done once, but the selected Magical Power can be boosted with its own Bonus Features.", "is_custom":false, "selected":false}]');
 insert into magicalpower(id, name, description, is_custom, bonusfeatures)
 values('66', 'Zap', 'You''re able to control electricity. You can create an annoying static shock, shoot small lightning bolts from your paws, or provide power to a single small appliance.', false, '[{"id": 1, "name": "Blackout", "description":"You can cause an area up to the size of a city to lose power.", "is_custom":false, "selected":false},{"id": 2, "name": "Dynamo", "description":"You can give power to several objects, or as many appliances as you might find in a single home.", "is_custom":false, "selected":false}]');
+
+commit;
+
+-- upgrade choices
+begin transaction;
+
+insert into upgradechoice(id, name)
+values('d54036bb-a755-4d86-8774-78715bbf1d30', 'Gain a Bonus Feature for a Magical Power you have');
+insert into upgradechoice(id, name)
+values('6a244a6e-5fd9-4574-93e1-78193c7d85b6', 'Improve 1 Attribute (Max 3)');
+insert into upgradechoice(id, name)
+values('25b47167-600d-41c0-ad78-a404295d9bd8', 'Improve 1 Attribute (Max 4)');
+insert into upgradechoice(id, name)
+values('7712d17b-e553-402c-8467-4d9b2389956b', 'Increase Owie Limit +1');
+insert into upgradechoice(id, name)
+values('490b8218-01a7-4949-b993-9ce73061e749', 'Increase Kitty Treats +1');
+insert into upgradechoice(id, name)
+values('84725926-e714-4fee-8143-a05d58a24589', 'Gain Talent');
+insert into upgradechoice(id, name)
+values('ac4bffa2-396b-437d-9ea8-cb2788edac5d', 'New Magical Power');
+
+commit;
+
+-- upgrade rules
+begin transaction;
+
+insert into upgraderule(id, block, upgradechoice)
+values('dda028e5-f8e6-4f22-a9b0-efed0de91fbf', '1', 'd54036bb-a755-4d86-8774-78715bbf1d30');
+insert into upgraderule(id, block, upgradechoice)
+values('5e11dede-1478-4dbf-af98-ecba78cc7d53', '1', '6a244a6e-5fd9-4574-93e1-78193c7d85b6');
+insert into upgraderule(id, block, upgradechoice)
+values('0f25d541-85e4-4297-9b10-e6d47f0a1f53', '1', '7712d17b-e553-402c-8467-4d9b2389956b');
+insert into upgraderule(id, block, upgradechoice)
+values('b79ac91c-de56-44d5-b453-ece207c80690', '1', '490b8218-01a7-4949-b993-9ce73061e749');
+insert into upgraderule(id, block, upgradechoice)
+values('5e3915b0-f3eb-4735-849f-384d0a279b97', '2', '84725926-e714-4fee-8143-a05d58a24589');
+insert into upgraderule(id, block, upgradechoice)
+values('14db8501-62c8-458b-a374-e4e4f8b6544b', '2', 'd54036bb-a755-4d86-8774-78715bbf1d30');
+insert into upgraderule(id, block, upgradechoice)
+values('c4ce0ca2-e75c-4aa1-b794-095e54a7b9de', '2', '25b47167-600d-41c0-ad78-a404295d9bd8');
+insert into upgraderule(id, block, upgradechoice)
+values('a436397f-c3a2-4d8f-834e-6b85942d2dc8', '2', '7712d17b-e553-402c-8467-4d9b2389956b');
+insert into upgraderule(id, block, upgradechoice)
+values('6a14874f-9b9e-47d8-b1dc-d958b386ec40', '2', '490b8218-01a7-4949-b993-9ce73061e749');
+insert into upgraderule(id, block, upgradechoice)
+values('ce331a83-b83a-4f23-b170-03d87106fe9a', '3', 'ac4bffa2-396b-437d-9ea8-cb2788edac5d');
+insert into upgraderule(id, block, upgradechoice)
+values('5e1dce80-a7e0-4259-9474-0bca65f1ddeb', '3', 'd54036bb-a755-4d86-8774-78715bbf1d30');
+insert into upgraderule(id, block, upgradechoice)
+values('887daa20-a18e-46e8-839e-bedeb0ea1a57', '3', '25b47167-600d-41c0-ad78-a404295d9bd8');
+insert into upgraderule(id, block, upgradechoice)
+values('c532dc34-d6ef-48f1-96a9-a02604f1d609', '3', '7712d17b-e553-402c-8467-4d9b2389956b');
+insert into upgraderule(id, block, upgradechoice)
+values('34ba7894-b947-4764-8307-e21c729eacd0', '3', '490b8218-01a7-4949-b993-9ce73061e749');
 
 commit;

@@ -50,7 +50,8 @@ create table if not exists character(
     updated_utc timestamp not null,
     deleted_utc timestamp null,
     description text not null,
-    hometown text not null
+    hometown text not null,
+    upgrades json null
 );
 
 create table if not exists characterstat(
@@ -107,6 +108,18 @@ create table if not exists charactermagicalpower(
     magical_power_id numeric references magicalpower(id),
     selected_bonuses text,
     UNIQUE(character_id, magical_power_id)
+);
+
+create table if not exists upgradechoice(
+    id UUID primary key,
+    name text
+);
+
+create table if not exists upgraderule(
+    id UUID primary key,
+    block numeric not null,
+    upgradechoice UUID references upgradechoice(id),
+    UNIQUE(block, upgradechoice)
 );
 
 create table if not exists email(

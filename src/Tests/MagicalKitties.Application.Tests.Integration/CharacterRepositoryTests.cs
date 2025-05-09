@@ -19,6 +19,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     private readonly CharacterUpdateRepository _characterUpdateRepository;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly HumanRepository _humanRepository;
+    private readonly UpgradeRepository _upgradeRepository;
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
@@ -28,6 +29,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         _accountRepository = new AccountRepository(dbConnectionFactory, _dateTimeProvider);
         _characterUpdateRepository = new CharacterUpdateRepository(dbConnectionFactory, _dateTimeProvider);
         _humanRepository = new HumanRepository(dbConnectionFactory, _dateTimeProvider);
+        _upgradeRepository = new UpgradeRepository(dbConnectionFactory, _dateTimeProvider);
     }
 
     public CharacterRepository _sut { get; set; }
@@ -98,7 +100,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         Character character = Fakes
                               .GenerateCharacter(account)
                               .WithBaselineData()
-                              .WithHumanData();
+                              .WithHumanData()
+                              .WithUpgrades();
 
         DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);
@@ -107,6 +110,16 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
+        AttributeUpdate secondTalentUpdate = new AttributeUpdate
+                                             {
+                                                 AccountId = account.Id,
+                                                 CharacterId = character.Id,
+                                                 TalentChange = new EndowmentChange
+                                                                {
+                                                                    NewId = 42,
+                                                                    PreviousId = 42
+                                                                }
+                                             };
 
         await _characterUpdateRepository.UpdateLevelAsync(update);
         await _characterUpdateRepository.UpdateCunningAsync(update);
@@ -115,6 +128,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
         await _characterUpdateRepository.CreateFlawAsync(update);
         await _characterUpdateRepository.CreateTalentAsync(update);
+        await _characterUpdateRepository.CreateTalentAsync(secondTalentUpdate);
         await _characterUpdateRepository.CreateMagicalPowerAsync(update);
 
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update);
@@ -131,13 +145,20 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
             }
         }
 
+        await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
+
         // Act
         Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
         // Assert
         result.Should().NotBeNull();
 
-        result.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
+        result.Should().BeEquivalentTo(character, options =>
+                                                  {
+                                                      options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
+                                                      options.For(x => x.Upgrades).Exclude(x=>x.Choice);
+                                                      return options;
+                                                  });
     }
 
     [SkipIfEnvironmentMissingTheory]

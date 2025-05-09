@@ -35,6 +35,8 @@ public static class ApiEndpoints
         public const string UpdateDescription = $"{Base}/description/{{description}}";
         public const string UpdateAttribute = $"{Base}/attributes/{{attribute}}";
         public const string Reset = $"{Base}/{{id:guid}}/reset";
+        public const string UpsertUpgrade = $"{Base}/{{characterId:guid}}/upgrade/upsert";
+        public const string RemoveUpgrade = $"{Base}/{{characterId:guid}}/upgrade/remove";
     }
 
     public static class Flaws

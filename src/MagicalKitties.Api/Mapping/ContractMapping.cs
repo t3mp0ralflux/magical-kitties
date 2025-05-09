@@ -1,22 +1,18 @@
 ﻿using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
-using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
-using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Requests.Auth;
-using MagicalKitties.Contracts.Requests.Characters;
 using MagicalKitties.Contracts.Requests.Endowments.Flaws;
 using MagicalKitties.Contracts.Requests.Endowments.MagicalPowers;
 using MagicalKitties.Contracts.Requests.Endowments.Talents;
 using MagicalKitties.Contracts.Requests.GlobalSetting;
-using MagicalKitties.Contracts.Requests.Humans;
 using MagicalKitties.Contracts.Responses.Account;
 using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Characters;
@@ -25,6 +21,8 @@ using MagicalKitties.Contracts.Responses.GlobalSetting;
 using MagicalKitties.Contracts.Responses.Humans;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
+using DescriptionOption = MagicalKitties.Application.Models.Humans.Updates.DescriptionOption;
+using DescriptionUpdate = MagicalKitties.Application.Models.Characters.Updates.DescriptionUpdate;
 using MKCtr = MagicalKitties.Contracts.Models;
 using MKCtrCharacterRequests = MagicalKitties.Contracts.Requests.Characters;
 using MKAppCharacters = MagicalKitties.Application.Models.Characters;
@@ -152,7 +150,8 @@ public static class ContractMapping
     #endregion
 
     #region Characters
-    public static CharactersResponse ToGetAllResponse(this IEnumerable<Character> characters, int page, int pageSize, int total)
+
+    public static CharactersResponse ToGetAllResponse(this IEnumerable<MKAppCharacters.Character> characters, int page, int pageSize, int total)
     {
         return new CharactersResponse
                {
@@ -169,7 +168,7 @@ public static class ContractMapping
                };
     }
 
-    public static CharacterResponse ToResponse(this Character character)
+    public static CharacterResponse ToResponse(this MKAppCharacters.Character character)
     {
         return new CharacterResponse
                {
@@ -191,13 +190,14 @@ public static class ContractMapping
                    Level = character.Level,
                    Cunning = character.Cunning,
                    Cute = character.Cute,
-                   Fierce = character.Fierce
+                   Fierce = character.Fierce,
+                   Upgrades = character.Upgrades
                };
     }
-    
-    public static GetAllCharactersOptions ToOptions(this GetAllCharactersRequest request, Guid accountId)
+
+    public static MKAppCharacters.GetAllCharactersOptions ToOptions(this MKCtrCharacterRequests.GetAllCharactersRequest request, Guid accountId)
     {
-        return new GetAllCharactersOptions
+        return new MKAppCharacters.GetAllCharactersOptions
                {
                    AccountId = accountId,
                    Name = request.Name,
@@ -215,20 +215,20 @@ public static class ContractMapping
 
     #region CharacterUpdates
 
-    public static MKAppCharacters.Updates.DescriptionUpdate ToUpdate(this CharacterDescriptionUpdateRequest request, Guid accountId)
+    public static DescriptionUpdate ToUpdate(this MKCtrCharacterRequests.CharacterDescriptionUpdateRequest request, Guid accountId)
     {
-        return new MKAppCharacters.Updates.DescriptionUpdate
+        return new DescriptionUpdate
                {
-                    AccountId = accountId,
-                    CharacterId = request.CharacterId,
-                    Name = request.Name,
-                    Description = request.Description,
-                    Hometown = request.Hometown,
-                    XP = request.XP
+                   AccountId = accountId,
+                   CharacterId = request.CharacterId,
+                   Name = request.Name,
+                   Description = request.Description,
+                   Hometown = request.Hometown,
+                   XP = request.XP
                };
     }
 
-    public static AttributeUpdate ToUpdate(this CharacterAttributeUpdateRequest request, Guid accountId)
+    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, Guid accountId)
     {
         return new AttributeUpdate
                {
@@ -248,12 +248,48 @@ public static class ContractMapping
                };
     }
 
-    public static EndowmentChange ToUpdate(this EndowmentChangeRequest request)
+    public static EndowmentChange ToUpdate(this MKCtrCharacterRequests.EndowmentChangeRequest request)
     {
         return new EndowmentChange
                {
                    PreviousId = request.PreviousId,
                    NewId = request.NewId
+               };
+    }
+
+    public static MKAppCharacters.UpgradeRequest ToUpdate(this MKCtrCharacterRequests.UpgradeUpsertRequest request, Guid accountId, Guid characterId)
+    {
+        return new MKAppCharacters.UpgradeRequest
+               {
+                   AccountId = accountId,
+                   CharacterId = characterId,
+                   UpgradeOption = (UpgradeOption)request.UpgradeOption,
+                   Upgrade = new MKAppCharacters.Upgrade
+                             {
+                                 Id = request.UpgradeId,
+                                 Block = request.Level,
+                                 Level = request.Level,
+                                 Option = (AttributeOption)request.AttributeOption,
+                                 Choice = request.Value
+                             }
+               };
+    }
+
+    public static MKAppCharacters.UpgradeRequest ToUpdate(this MKCtrCharacterRequests.UpgradeRemoveRequest request, Guid accountId, Guid characterId)
+    {
+        return new MKAppCharacters.UpgradeRequest
+               {
+                   AccountId = accountId,
+                   CharacterId = characterId,
+                   UpgradeOption = (UpgradeOption)request.UpgradeOption,
+                   Upgrade = new MKAppCharacters.Upgrade
+                             {
+                                 Id = request.UpgradeId,
+                                 Block = -1,
+                                 Level = -1,
+                                 Option = AttributeOption.cunning, // doesn't matter
+                                 Choice = request.Value
+                             }
                };
     }
 
@@ -319,9 +355,9 @@ public static class ContractMapping
 
     #region Humans
 
-    public static GetAllHumansOptions ToOptions(this GetAllHumansRequest request)
+    public static MKAppHumans.GetAllHumansOptions ToOptions(this MKCtrHumanRequests.GetAllHumansRequest request)
     {
-        return new GetAllHumansOptions
+        return new MKAppHumans.GetAllHumansOptions
                {
                    CharacterId = request.CharacterId,
                    Name = request.Name,
@@ -332,7 +368,7 @@ public static class ContractMapping
                };
     }
 
-    public static HumanResponse ToResponse(this Human human)
+    public static HumanResponse ToResponse(this MKAppHumans.Human human)
     {
         return new HumanResponse
                {
@@ -344,7 +380,7 @@ public static class ContractMapping
                };
     }
 
-    public static HumansResponse ToGetAllResponse(this IEnumerable<Human> humans, int page, int pageSize, int total)
+    public static HumansResponse ToGetAllResponse(this IEnumerable<MKAppHumans.Human> humans, int page, int pageSize, int total)
     {
         return new HumansResponse
                {
@@ -355,7 +391,7 @@ public static class ContractMapping
                };
     }
 
-    public static ProblemResponse ToResponse(this Problem problem)
+    public static ProblemResponse ToResponse(this MKAppHumans.Problem problem)
     {
         return new ProblemResponse
                {
@@ -368,22 +404,22 @@ public static class ContractMapping
                };
     }
 
-    public static MKAppHumans.Updates.DescriptionUpdate ToUpdate(this HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
+    public static Application.Models.Humans.Updates.DescriptionUpdate ToUpdate(this MKCtrHumanRequests.HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
     {
-        return new MKAppHumans.Updates.DescriptionUpdate()
+        return new Application.Models.Humans.Updates.DescriptionUpdate
                {
-                   DescriptionOption = (MKAppHumans.Updates.DescriptionOption)description,
+                   DescriptionOption = (DescriptionOption)description,
                    HumanId = request.CharacterId,
                    Name = request.Name,
                    Description = request.Description
                };
     }
 
-    public static MKAppHumans.Updates.ProblemUpdate ToUpdate(this HumanProblemUpdateRequest request, MKCtrHumanRequests.ProblemOption problem)
+    public static ProblemUpdate ToUpdate(this MKCtrHumanRequests.HumanProblemUpdateRequest request, MKCtrHumanRequests.ProblemOption problem)
     {
-        return new MKAppHumans.Updates.ProblemUpdate
+        return new ProblemUpdate
                {
-                   ProblemOption = (MKAppHumans.Updates.ProblemOption)problem,
+                   ProblemOption = (ProblemOption)problem,
                    HumanId = request.HumanId,
                    ProblemId = request.ProblemId,
                    Source = request.Source,

@@ -1,6 +1,8 @@
-﻿using MagicalKitties.Api.Auth;
+﻿using FluentValidation;
+using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
+using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Characters;
@@ -18,11 +20,13 @@ public class CharacterUpdateController : ControllerBase
 {
     private readonly IAccountService _accountService;
     private readonly ICharacterUpdateService _characterUpdateService;
+    private readonly ICharacterUpgradeService _characterUpgradeService;
 
-    public CharacterUpdateController(IAccountService accountService, ICharacterUpdateService characterUpdateService)
+    public CharacterUpdateController(IAccountService accountService, ICharacterUpdateService characterUpdateService, ICharacterUpgradeService characterUpgradeService)
     {
         _accountService = accountService;
         _characterUpdateService = characterUpdateService;
+        _characterUpgradeService = characterUpgradeService;
     }
 
     [HttpPut(ApiEndpoints.Characters.UpdateDescription)]
@@ -91,5 +95,57 @@ public class CharacterUpdateController : ControllerBase
         }
 
         return Ok("Character reset successfully.");
+    }
+
+    [HttpPut(ApiEndpoints.Characters.UpsertUpgrade)]
+    [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ValidationException>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpsertUpgrade([FromRoute]Guid characterId, UpgradeUpsertRequest request, CancellationToken token)
+    {
+        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        UpgradeRequest update = request.ToUpdate(account.Id, characterId);
+
+        bool success = await _characterUpgradeService.UpsertUpgradeAsync(update, token);
+
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return Ok("Upgrade update was successful.");
+    }
+
+    [HttpPut(ApiEndpoints.Characters.RemoveUpgrade)]
+    [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ValidationException>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveUpgrade([FromRoute]Guid characterId, UpgradeRemoveRequest request, CancellationToken token)
+    {
+        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        UpgradeRequest update = request.ToUpdate(account.Id, characterId);
+
+        bool success = await _characterUpgradeService.RemoveUpgradeAsync(update, token);
+        
+        if (!success)
+        {
+            return NotFound();
+        }
+
+        return Ok("Upgrade update was successful.");
     }
 }
