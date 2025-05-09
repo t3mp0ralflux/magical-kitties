@@ -27,6 +27,8 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Human>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Problem>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<Upgrade>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(object), new JsonTypeHandler());
 
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
     }

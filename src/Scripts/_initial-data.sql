@@ -134,7 +134,7 @@ values('36', 'Musical', 'You are talented at singing and playing musical instrum
 insert into talent(id, name, description, is_custom)
 values('41', 'Naturalist', 'You know a lot about nature and are good at growing things.', false);
 insert into talent(id, name, description, is_custom)
-values('42', 'Navigator', 'You hardly ever get lost and you know how to find your way from here to there, wherever that happens to be.', false);
+values('42', 'Navigator', 'You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.', false);
 insert into talent(id, name, description, is_custom)
 values('43', 'Night Vision', 'The night is your friend. You can easily see hwere you''re going, even in total darkness.', false);
 insert into talent(id, name, description, is_custom)

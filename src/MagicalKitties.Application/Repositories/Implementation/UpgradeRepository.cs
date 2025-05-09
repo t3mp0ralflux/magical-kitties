@@ -3,16 +3,19 @@ using System.Text.Json;
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Services;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class UpgradeRepository : IUpgradeRepository
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public UpgradeRepository(IDbConnectionFactory dbConnectionFactory)
+    public UpgradeRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
         _dbConnectionFactory = dbConnectionFactory;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<List<UpgradeRule>> GetRulesAsync(CancellationToken token = default)
@@ -34,12 +37,13 @@ public class UpgradeRepository : IUpgradeRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update character
-                                                                                  set upgrades = @Upgrades
+                                                                                  set upgrades = @Upgrades, updated_utc = @Now
                                                                                   where id = @characterId
                                                                                   """, new
                                                                                        {
                                                                                            characterId,
-                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(upgrades))
+                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(upgrades)),
+                                                                                           Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
         
         transaction.Commit();

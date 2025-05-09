@@ -8,5 +8,5 @@ public class Upgrade
     public required int Block { get; init; }
     public required int Level { get; init; }
     public AttributeOption Option { get; set; }
-    public required object Choice { get; set; }
+    public object? Choice { get; set; }
 }
