@@ -2,7 +2,7 @@
 
 public class UpgradeRule
 {
-    public Guid Id { get; set; }
-    public int Block { get; set; }
-    public Guid UpgradeChoice { get; set; }
+    public required Guid Id { get; init; }
+    public required int Block { get; init; }
+    public required Guid UpgradeChoice { get; init; }
 }

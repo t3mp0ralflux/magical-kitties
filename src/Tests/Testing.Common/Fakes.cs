@@ -2,6 +2,7 @@
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Characters.Upgrades;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Models.Humans;
@@ -226,7 +227,11 @@ public static class Fakes
                                Block = 1,
                                Option = AttributeOption.magicalpowerbonus,
                                Level = 4,
-                               Choice = new { magicalPowerId = 33, bonusFeature = 3 }
+                               Choice = new BonusFeatureUpgrade
+                                                 {
+                                                     MagicalPowerId = 33,
+                                                     BonusFeatureId = 1
+                                                 }
                            };
         Upgrade upgrade5 = new()
                            {
@@ -234,7 +239,10 @@ public static class Fakes
                                Block = 2,
                                Option = AttributeOption.talent,
                                Level = 4,
-                               Choice = 42
+                               Choice = new GainTalentUpgrade
+                                        {
+                                            TalentId = 42
+                                        }
                            };
 
         character.Upgrades = [upgrade2, upgrade3, upgrade4, upgrade5];
@@ -313,5 +321,95 @@ public static class Fakes
                                                        };
 
         return fakeContext;
+    }
+
+    public static List<UpgradeRule> GenerateUpgradeRules()
+    {
+        return
+        [
+            new UpgradeRule
+            {
+                Id = Guid.NewGuid(),
+                Block = 1,
+                UpgradeChoice = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6")
+            },
+            new UpgradeRule
+            {
+                Id = Guid.NewGuid(),
+                Block = 1,
+                UpgradeChoice = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b")
+            },
+            new UpgradeRule
+            {
+                Id = Guid.NewGuid(),
+                Block = 1,
+                UpgradeChoice = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30")
+            },
+            new UpgradeRule
+            {
+                Id = Guid.NewGuid(),
+                Block = 2,
+                UpgradeChoice = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589")
+            }
+        ];
+    }
+
+    public static List<MagicalPower> GenerateMagicalPowers(int id = 11)
+    {
+        return
+        [
+            new MagicalPower
+            {
+                Id = id,
+                Name = "Test",
+                Description = "This is a test",
+                BonusFeatures = 
+                    [
+                        new MagicalPower
+                        {
+                            Id = 1,
+                            Name = "Bonus 1",
+                            Description = "Bonus 1 lives here",
+                            IsCustom = false
+                        },
+                        new MagicalPower
+                        {
+                            Id = 2,
+                            Name = "Bonus 2",
+                            Description = "Bonus 2 lives here",
+                            IsCustom = false
+                        }
+                    ],
+                IsCustom = false
+            }
+        ];
+    }
+
+    public static List<Talent> GenerateTalents()
+    {
+        return
+            [
+                new Talent
+                {
+                    Id = 22,
+                    Name = "Claws",
+                    Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
+                    IsCustom = false
+                },
+                new Talent
+                {
+                    Id = 42,
+                    Name = "Navigator",
+                    Description = "You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.",
+                    IsCustom = false
+                },
+                new Talent
+                {
+                    Id = 43,
+                    Name = "This is a test one",
+                    Description = "Eating stuff.",
+                    IsCustom = false
+                }
+            ];
     }
 }

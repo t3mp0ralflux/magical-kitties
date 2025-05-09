@@ -145,7 +145,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
             }
         }
 
-        await _upgradeRepository.UpsertUpgrades(character.Id, character.Upgrades);
+        await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
 
         // Act
         Character? result = await _sut.GetByIdAsync(account.Id, character.Id);

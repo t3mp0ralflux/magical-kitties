@@ -5,5 +5,5 @@ namespace MagicalKitties.Application.Repositories;
 public interface IUpgradeRepository
 {
     Task<List<UpgradeRule>> GetRulesAsync(CancellationToken token = default);
-    Task<bool> UpsertUpgrades(Guid characterId, List<Upgrade> upgrades, CancellationToken token = default);
+    Task<bool> UpsertUpgradesAsync(Guid characterId, List<Upgrade> upgrades, CancellationToken token = default);
 }

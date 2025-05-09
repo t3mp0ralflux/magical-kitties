@@ -35,89 +35,64 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         {
             return false;
         }
-
+        
         int characterBlock = GetLevelBlock(character.Level);
-        int upgradeBlock = GetLevelBlock(update.Upgrade.Block);
 
-        if (upgradeBlock > characterBlock)
+        if (update.Upgrade.Block > characterBlock)
         {
-            throw new ValidationException("Cannot add upgrade. Upgrade is higher than character's level.");
+            throw new ValidationException("Cannot add upgrade. Upgrade is higher than the character's level.");
         }
-
-        List<UpgradeRule> upgradeRules = await GetValuesCachedAsync("Rules", () => _upgradeRepository.GetRulesAsync(token));
-        List<MagicalPower> magicalPowers = (await GetValuesCachedAsync("MagicPowers", async () => await _magicalPowerRepository.GetAllAsync(new GetAllMagicalPowersOptions { Page = 1, PageSize = 99 }, token))).ToList();
-        List<Talent> talents = (await GetValuesCachedAsync("Talents", async () => await _talentRepository.GetAllAsync(new GetAllTalentsOptions { Page = 1, PageSize = 99 }, token))).ToList();
-
+        
         Upgrade? existingUpgrade = character.Upgrades.FirstOrDefault(x => x.Block == update.Upgrade.Block && x.Id == update.Upgrade.Id);
 
         // update
         if (existingUpgrade is not null)
         {
+            List<MagicalPower> magicalPowers = (await GetValuesCachedAsync("MagicPowers", async () => await _magicalPowerRepository.GetAllAsync(new GetAllMagicalPowersOptions { Page = 1, PageSize = 99 }, token))).ToList();
+            List<Talent> talents = (await GetValuesCachedAsync("Talents", async () => await _talentRepository.GetAllAsync(new GetAllTalentsOptions { Page = 1, PageSize = 99 }, token))).ToList();
+            
             switch (update.UpgradeOption)
             {
                 // attributes have to check level rules and see if they can update to that value or not.
                 case UpgradeOption.attribute3:
-                    ImproveAttributeFeatureUpgrade attributeMax3Update = (ImproveAttributeFeatureUpgrade)update.Upgrade.Choice;
-
-                    int max3PropertyValue = attributeMax3Update.AttributeOption switch
+                case UpgradeOption.attribute4:
+                    int maxPropertyValue = update.Upgrade.Option switch
                     {
                         AttributeOption.cunning => character.Cunning,
                         AttributeOption.cute => character.Cute,
                         AttributeOption.fierce => character.Fierce,
-                        _ => throw new ValidationException("Attribute upgrade option was not valid")
+                        _ => throw new ValidationException("Attribute upgrade option was not valid.")
                     };
 
-                    if (character.Level < 5)
+                    if (update.UpgradeOption == UpgradeOption.attribute3)
                     {
-                        if (max3PropertyValue + 1 > 3)
+                        if (character.Level < 5)
+                        {
+                            if (maxPropertyValue + 1 > 3)
+                            {
+                                throw new ValidationException($"Level {character.Level} characters cannot have any Attribute above 3.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (character.Level < 5)
+                        {
+                            throw new ValidationException("This upgrade is invalid for characters less than level 5.");
+                        }
+
+                        if (maxPropertyValue + 1 > 4)
                         {
                             throw new ValidationException($"Level {character.Level} characters cannot have an Attribute above 3.");
                         }
                     }
-
-                    ImproveAttributeFeatureUpgrade existingAttribute3UpgradeValue = (ImproveAttributeFeatureUpgrade)existingUpgrade.Choice;
-
-                    if (existingAttribute3UpgradeValue.AttributeOption == attributeMax3Update.AttributeOption)
+                    
+                    if (existingUpgrade.Option == update.Upgrade.Option)
                     {
                         break; // they're the same, no bother to do anything.
                     }
 
-                    existingAttribute3UpgradeValue.AttributeOption = attributeMax3Update.AttributeOption;
-
-                    existingUpgrade.Choice = existingAttribute3UpgradeValue;
-
-                    break;
-                case UpgradeOption.attribute4:
-                    ImproveAttributeFeatureUpgrade attributeMax4Update = (ImproveAttributeFeatureUpgrade)update.Upgrade.Choice;
-
-                    int max4PropertyValue = attributeMax4Update.AttributeOption switch
-                    {
-                        AttributeOption.cunning => character.Cunning,
-                        AttributeOption.cute => character.Cute,
-                        AttributeOption.fierce => character.Fierce,
-                        _ => throw new ValidationException("Attribute upgrade option was not valid")
-                    };
-
-                    if (character.Level < 5)
-                    {
-                        throw new ValidationException("This upgrade is invalid for characters less than level 5.");
-                    }
-
-                    if (max4PropertyValue + 1 > 4)
-                    {
-                        throw new ValidationException($"Level {character.Level} characters cannot have an Attribute above 3.");
-                    }
-
-                    ImproveAttributeFeatureUpgrade existingAttribute4UpgradeValue = (ImproveAttributeFeatureUpgrade)existingUpgrade.Choice;
-
-                    if (existingAttribute4UpgradeValue.AttributeOption == attributeMax4Update.AttributeOption)
-                    {
-                        break; // they're the same, no bother to do anything.
-                    }
-
-                    existingAttribute4UpgradeValue.AttributeOption = attributeMax4Update.AttributeOption;
-
-                    existingUpgrade.Choice = existingAttribute4UpgradeValue;
+                    existingUpgrade.Option = update.Upgrade.Option;
                     break;
 
                 case UpgradeOption.bonusFeature:
@@ -245,13 +220,14 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     throw new ValidationException("Upgrade option was not valid.");
             }
 
-            await _upgradeRepository.UpsertUpgrades(character.Id, character.Upgrades, token);
+            await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
 
             return true;
         }
 
         // adding new one
-        List<UpgradeRule> levelRules = upgradeRules.Where(x => x.Block <= upgradeBlock).ToList();
+        List<UpgradeRule> upgradeRules = await GetValuesCachedAsync("Rules", () => _upgradeRepository.GetRulesAsync(token));
+        List<UpgradeRule> levelRules = upgradeRules.Where(x => x.Block <= update.Upgrade.Block).ToList();
 
         if (levelRules.FirstOrDefault(x => x.UpgradeChoice == update.Upgrade.Id) is null)
         {
@@ -263,7 +239,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         
         character.Upgrades.Add(existingUpgrade);
 
-        return await _upgradeRepository.UpsertUpgrades(character.Id, character.Upgrades, token);
+        return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
     }
 
     public async Task<bool> RemoveUpgradeAsync(UpgradeRequest update, CancellationToken token = default)
@@ -306,7 +282,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
         character!.Upgrades.Remove(upgrade);
 
-        return await _upgradeRepository.UpsertUpgrades(character.Id, character.Upgrades, token);
+        return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
     }
 
     private int GetLevelBlock(int level)

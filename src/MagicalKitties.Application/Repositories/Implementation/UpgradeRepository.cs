@@ -30,7 +30,7 @@ public class UpgradeRepository : IUpgradeRepository
         return result.ToList();
     }
 
-    public async Task<bool> UpsertUpgrades(Guid characterId, List<Upgrade> upgrades, CancellationToken token = default)
+    public async Task<bool> UpsertUpgradesAsync(Guid characterId, List<Upgrade> upgrades, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
