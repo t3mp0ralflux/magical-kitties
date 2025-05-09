@@ -331,25 +331,29 @@ public static class Fakes
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6")
+                UpgradeChoice = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
+                Value = "Improve Attribute 3"
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b")
+                UpgradeChoice = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b"),
+                Value = "Increase Owie"
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30")
+                UpgradeChoice = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
+                Value = "Gain Bonus Feature"
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 2,
-                UpgradeChoice = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589")
+                UpgradeChoice = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
+                Value = "Gain Talent" // rude much?
             }
         ];
     }

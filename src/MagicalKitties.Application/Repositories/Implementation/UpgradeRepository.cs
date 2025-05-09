@@ -17,14 +17,15 @@ public class UpgradeRepository : IUpgradeRepository
         _dbConnectionFactory = dbConnectionFactory;
         _dateTimeProvider = dateTimeProvider;
     }
-
+    
     public async Task<List<UpgradeRule>> GetRulesAsync(CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         IEnumerable<UpgradeRule> result = await connection.QueryAsyncWithRetry<UpgradeRule>(new CommandDefinition("""
-                                                                                                                  select id, block, upgradechoice
-                                                                                                                  from upgraderule 
+                                                                                                                  select ur.id, ur.block, ur.upgradechoice, uc.name as Value 
+                                                                                                                  from upgradechoice uc 
+                                                                                                                  join upgraderule ur on uc.id = ur.upgradechoice
                                                                                                                   """, cancellationToken: token));
 
         return result.ToList();

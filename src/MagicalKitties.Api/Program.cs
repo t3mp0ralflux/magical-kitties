@@ -107,6 +107,12 @@ builder.Services.AddOutputCache(x =>
                                                                                                .SetVaryByQuery(["sortBy", "page", "pageSize"])
                                                                                                .Tag(ApiAssumptions.TagNames.MagicalPowers);
                                                                                           });
+                                    x.AddPolicy(ApiAssumptions.PolicyNames.Rules, c =>
+                                                                                  {
+                                                                                      c.Cache()
+                                                                                       .Expire(TimeSpan.FromHours(1))
+                                                                                       .Tag(ApiAssumptions.TagNames.Rules);
+                                                                                  });
                                 });
 
 builder.Services.AddControllers();
@@ -167,11 +173,5 @@ app.UseOutputCache();
 
 app.MapControllers();
 app.UseRateLimiter();
-
-// if (app.Environment.IsDevelopment())
-// {
-//     DbInitializer dbInitializer = app.Services.GetRequiredService<DbInitializer>();
-//     await dbInitializer.InitializeAsync();
-// }
 
 app.Run();

@@ -62,6 +62,12 @@ public static class ApiEndpoints
         public const string UpdateProblem = $"{Base}/problem/{{problem}}";
     }
 
+    public static class Rules
+    {
+        private const string Base = $"{ApiBase}/Rules";
+        public const string GetAll = Base;
+    }
+
     public static class Talents
     {
         private const string Base = $"{ApiBase}/Talents";
