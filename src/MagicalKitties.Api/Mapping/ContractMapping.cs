@@ -607,29 +607,29 @@ public static class ContractMapping
     {
         return new GameRulesResponse
                {
-                    MaxLevel = rules.MaxLevel,
-                    MinAttributeValue = rules.MinAttributeValue,
-                    MaxAttributeValue = rules.MaxAttributeValue,
-                    MinInjuries = rules.MinInjuries,
-                    MaxInjuries = rules.MaxInjuries,
-                    LevelExperiencePoints = rules.LevelExperiencePoints,
-                    Attributes = rules.Attributes,
-                    Flaws = rules.Flaws.Select(ToResponse),
-                    Talents = rules.Talents.Select(ToResponse),
-                    MagicalPowers = rules.MagicalPowers.Select(ToResponse),
-                    Upgrades =rules.Upgrades.Select(ToResponse),
-                    ProblemSource = rules.ProblemSource.Select(ToResponse),
-                    Emotion = rules.Emotion.Select(ToResponse),
-                    DiceRules = rules.DiceRules,
-                    DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
-                    DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
-                    RollComplications = rules.RollComplications,
-                    RollBonus = rules.RollBonus,
-                    RollSuperBonus = rules.RollSuperBonus,
-                    SpendingKittyTreats = rules.SpendingKittyTreats,
-                    Healing = rules.Healing,
-                    EndOfEpisodeInfo = rules.EndOfEpisodeInfo,
-                    EndEpisodeQuestions = rules.EndEpisodeQuestions
+                   MaxLevel = rules.MaxLevel,
+                   MinAttributeValue = rules.MinAttributeValue,
+                   MaxAttributeValue = rules.MaxAttributeValue,
+                   MinInjuries = rules.MinInjuries,
+                   MaxInjuries = rules.MaxInjuries,
+                   LevelExperiencePoints = rules.LevelExperiencePoints,
+                   Attributes = rules.Attributes,
+                   Flaws = rules.Flaws.Select(ToResponse),
+                   Talents = rules.Talents.Select(ToResponse),
+                   MagicalPowers = rules.MagicalPowers.Select(ToResponse),
+                   Upgrades = rules.Upgrades.Select(ToResponse),
+                   ProblemSource = rules.ProblemSource.Select(ToResponse),
+                   Emotion = rules.Emotion.Select(ToResponse),
+                   DiceRules = rules.DiceRules,
+                   DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
+                   DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
+                   RollComplications = rules.RollComplications,
+                   RollBonus = rules.RollBonus,
+                   RollSuperBonus = rules.RollSuperBonus,
+                   SpendingKittyTreats = rules.SpendingKittyTreats,
+                   Healing = rules.Healing,
+                   EndOfEpisodeInfo = rules.EndOfEpisodeInfo,
+                   EndEpisodeQuestions = rules.EndEpisodeQuestions
                };
     }
 
@@ -682,5 +682,6 @@ public static class ContractMapping
                    Enhancements = diceSuccess.Enhancements
                };
     }
+
     #endregion
 }

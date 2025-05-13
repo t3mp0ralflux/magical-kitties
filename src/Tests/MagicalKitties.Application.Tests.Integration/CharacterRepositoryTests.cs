@@ -110,7 +110,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
-        AttributeUpdate secondTalentUpdate = new AttributeUpdate
+        AttributeUpdate secondTalentUpdate = new()
                                              {
                                                  AccountId = account.Id,
                                                  CharacterId = character.Id,
@@ -156,7 +156,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         result.Should().BeEquivalentTo(character, options =>
                                                   {
                                                       options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
-                                                      options.For(x => x.Upgrades).Exclude(x=>x.Choice);
+                                                      options.For(x => x.Upgrades).Exclude(x => x.Choice);
                                                       return options;
                                                   });
     }

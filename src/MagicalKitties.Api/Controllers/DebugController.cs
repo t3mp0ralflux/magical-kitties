@@ -25,6 +25,6 @@ public class DebugController : ControllerBase
 
         return Ok(result);
     }
-    
+
 #endif
 }

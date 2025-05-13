@@ -3,7 +3,6 @@ using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Characters;
 using MagicalKitties.Contracts.Responses.Characters;
 using Microsoft.AspNetCore.Authorization;
@@ -110,7 +109,7 @@ public class CharacterController : ControllerBase
 
         return Ok(response);
     }
-    
+
     [HttpDelete(ApiEndpoints.Characters.Delete)]
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]

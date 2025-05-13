@@ -5,7 +5,6 @@ using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
@@ -76,11 +75,11 @@ public class AccountRepository : IAccountRepository
     {
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
 
-        Account? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                              select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code 
-                                                                                                              from account
-                                                                                                              where id = @id 
-                                                                                                              """, new { id }, cancellationToken: token));
+        Account? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition("""
+                                                                                                             select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code 
+                                                                                                             from account
+                                                                                                             where id = @id 
+                                                                                                             """, new { id }, cancellationToken: token));
 
         return result;
     }
@@ -130,21 +129,21 @@ public class AccountRepository : IAccountRepository
     public async Task<Account?> GetByEmailAsync(string email, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
-        return await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                   select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
-                                                                                                   from account
-                                                                                                   where lower(email) = @Email
-                                                                                                   """, new { Email = email.ToLowerInvariant() }, cancellationToken: token));
+        return await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition("""
+                                                                                                  select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
+                                                                                                  from account
+                                                                                                  where lower(email) = @Email
+                                                                                                  """, new { Email = email.ToLowerInvariant() }, cancellationToken: token));
     }
 
-    public async Task<Account?> GetByUsernameAsync(string username, CancellationToken token = default)
+    public async Task<Account?> GetByUsernameAsync(string? username, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnection.CreateConnectionAsync(token);
-        return await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition($"""
-                                                                                                   select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
-                                                                                                   from account acct
-                                                                                                   where lower(username) = @userName
-                                                                                                   """, new { userName = username.ToLowerInvariant() }, cancellationToken: token));
+        return await connection.QuerySingleOrDefaultAsyncWithRetry<Account>(new CommandDefinition("""
+                                                                                                  select id, first_name, last_name, username, password, email, created_utc, updated_utc, activated_utc, last_login_utc, deleted_utc, account_status, account_role, activation_expiration, activation_code, password_reset_requested_utc, password_reset_code
+                                                                                                  from account acct
+                                                                                                  where lower(username) = @userName
+                                                                                                  """, new { userName = username?.ToLowerInvariant() }, cancellationToken: token));
     }
 
     public async Task<bool> UpdateAsync(Account account, CancellationToken token = default)

@@ -14,7 +14,7 @@ public class CharacterUpdateServiceTests
     private readonly ICharacterUpdateRepository _characterUpdateRepository = Substitute.For<ICharacterUpdateRepository>();
     private readonly IValidator<DescriptionUpdateValidationContext> _descriptionValidator = Substitute.For<IValidator<DescriptionUpdateValidationContext>>();
     private readonly IValidator<AttributeUpdateValidationContext> _updateValidator = Substitute.For<IValidator<AttributeUpdateValidationContext>>();
-    
+
     public CharacterUpdateService _sut;
 
     public CharacterUpdateServiceTests()

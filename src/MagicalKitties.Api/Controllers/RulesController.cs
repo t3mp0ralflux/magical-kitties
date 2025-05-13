@@ -11,7 +11,7 @@ namespace MagicalKitties.Api.Controllers;
 public class RulesController : ControllerBase
 {
     private readonly IRuleService _ruleService;
-    
+
     public RulesController(IRuleService ruleService)
     {
         _ruleService = ruleService;

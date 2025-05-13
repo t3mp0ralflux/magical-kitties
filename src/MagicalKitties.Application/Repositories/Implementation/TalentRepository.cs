@@ -54,10 +54,10 @@ public class TalentRepository : ITalentRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                                    select exists(select 1
-                                                                                                    from talent
-                                                                                                    where id = @id)
-                                                                                                    """, new { id }, cancellationToken: token));
+                                                                                               select exists(select 1
+                                                                                               from talent
+                                                                                               where id = @id)
+                                                                                               """, new { id }, cancellationToken: token));
     }
 
     public async Task<IEnumerable<Talent>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)

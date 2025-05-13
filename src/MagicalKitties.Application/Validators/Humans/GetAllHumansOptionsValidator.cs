@@ -10,7 +10,7 @@ public class GetAllHumansOptionsValidator : AbstractValidator<GetAllHumansOption
         "id",
         "name"
     ];
-    
+
     public GetAllHumansOptionsValidator()
     {
         RuleFor(x => x.CharacterId).NotNull().NotEqual(Guid.Empty);

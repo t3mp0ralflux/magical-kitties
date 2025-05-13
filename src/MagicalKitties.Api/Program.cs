@@ -36,7 +36,7 @@ Log.Logger = new LoggerConfiguration()
                                     })
              .CreateLogger();
 
-builder.Services.AddSerilog(dispose:true);
+builder.Services.AddSerilog(dispose: true);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -145,7 +145,6 @@ builder.Services.Configure<HostOptions>(x =>
                                             x.ServicesStartConcurrently = true;
                                             x.ServicesStopConcurrently = true;
                                             x.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore; // will log error, but don't want complete death.
-                                            
                                         });
 
 WebApplication app = builder.Build();

@@ -2,6 +2,7 @@
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Repositories;
 using Microsoft.Extensions.Caching.Memory;
+using Serilog;
 
 namespace MagicalKitties.Application.Services.Implementation;
 
@@ -61,7 +62,7 @@ public class GlobalSettingsService : IGlobalSettingsService
         }
         catch (Exception ex)
         {
-            // TODO:MAYBE: log this?
+            Log.Error("GlobalSetting conversion error for {SettingName}: {Error}", name, ex.Message);
             return defaultValue;
         }
     }

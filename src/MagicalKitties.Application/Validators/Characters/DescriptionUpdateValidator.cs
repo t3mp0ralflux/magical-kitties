@@ -4,7 +4,7 @@ using MagicalKitties.Application.Models.Characters.Updates;
 
 namespace MagicalKitties.Application.Validators.Characters;
 
-public class DescriptionUpdateValidator: AbstractValidator<DescriptionUpdateValidationContext>
+public class DescriptionUpdateValidator : AbstractValidator<DescriptionUpdateValidationContext>
 {
     public DescriptionUpdateValidator()
     {

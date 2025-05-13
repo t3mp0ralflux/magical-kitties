@@ -30,7 +30,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
                                                                                            magicalpower.Name,
                                                                                            magicalpower.Description,
                                                                                            magicalpower.IsCustom,
-                                                                                           BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures)) // TODO: THIS IS A PROBLEM. If you insert this as-is, it saves is_custom as IsCustom and breaks EVERYTHING.
+                                                                                           BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures))
                                                                                        }, cancellationToken: token));
 
         transaction.Commit();
@@ -56,10 +56,10 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                                    select exists(select 1
-                                                                                                    from magicalpower
-                                                                                                    where id = @id)
-                                                                                                    """, new { id }, cancellationToken: token));
+                                                                                               select exists(select 1
+                                                                                               from magicalpower
+                                                                                               where id = @id)
+                                                                                               """, new { id }, cancellationToken: token));
     }
 
     public async Task<IEnumerable<MagicalPower>> GetAllAsync(GetAllMagicalPowersOptions options, CancellationToken token = default)

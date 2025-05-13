@@ -9,7 +9,6 @@ using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Account;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;

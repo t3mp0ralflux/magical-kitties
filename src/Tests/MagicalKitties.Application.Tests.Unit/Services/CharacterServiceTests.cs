@@ -5,7 +5,6 @@ using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Testing.Common;
 
@@ -78,10 +77,10 @@ public class CharacterServiceTests
     public async Task GetAsync_ShouldReturnNull_WhenCharacterIsNotFound()
     {
         // Arrange
-        _characterRepository.GetByIdAsync(Guid.NewGuid(),Guid.NewGuid()).Returns((Character?)null);
+        _characterRepository.GetByIdAsync(Guid.NewGuid(), Guid.NewGuid()).Returns((Character?)null);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(Guid.NewGuid(),Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(Guid.NewGuid(), Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();

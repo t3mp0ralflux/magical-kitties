@@ -3,14 +3,13 @@ using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class CharacterUpdateRepository : ICharacterUpdateRepository
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public CharacterUpdateRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
@@ -35,7 +34,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.AccountId,
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -58,7 +57,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.AccountId,
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -81,7 +80,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.AccountId,
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -109,17 +108,17 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   set updated_utc = @Now
                                                                                   where id = @CharacterId
                                                                                   """, new
-                                                                                           {
-                                                                                               update.CharacterId,
-                                                                                               Now = _dateTimeProvider.GetUtcNow()
-                                                                                           }, cancellationToken: token));
+                                                                                       {
+                                                                                           update.CharacterId,
+                                                                                           Now = _dateTimeProvider.GetUtcNow()
+                                                                                       }, cancellationToken: token));
         }
-        
+
         transaction.Commit();
 
         return result > 0;
     }
-    
+
     public async Task<bool> UpdateCunningAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -134,12 +133,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.Cunning,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -159,12 +158,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.Cute,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -184,12 +183,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.Fierce,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -209,12 +208,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.Level,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -234,12 +233,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CharacterId,
                                                                                            FlawId = update.FlawChange!.NewId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -259,12 +258,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.FlawChange!.NewId,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -284,12 +283,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CharacterId,
                                                                                            TalentId = update.TalentChange!.NewId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -311,12 +310,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CharacterId,
                                                                                            update.TalentChange!.PreviousId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -336,12 +335,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CharacterId,
                                                                                            MagicalPowerId = update.MagicalPowerChange!.NewId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -362,14 +361,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.MagicalPowerChange!.NewId,
                                                                                            update.CharacterId,
                                                                                            update.MagicalPowerChange!.PreviousId
-                                                                                           
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -389,12 +387,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CurrentOwies,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -414,12 +412,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CurrentTreats,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -439,12 +437,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.CurrentInjuries,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -453,7 +451,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
     public async Task<bool> UpdateIncapacitatedStatus(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using var transaction = connection.BeginTransaction();
+        using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update characterstat
@@ -464,12 +462,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.Incapacitated,
                                                                                            update.CharacterId
                                                                                        }, cancellationToken: token));
-        
+
         if (result > 0)
         {
             result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
         }
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -478,13 +476,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
     private async Task<int> UpdateCharacterUpdateUtcAsync(Guid characterId, IDbConnection connection, CancellationToken token)
     {
         return await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @characterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           characterId,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                          }, cancellationToken: token));
-    } 
+                                                                            update character
+                                                                            set updated_utc = @Now
+                                                                            where id = @characterId
+                                                                            """, new
+                                                                                 {
+                                                                                     characterId,
+                                                                                     Now = _dateTimeProvider.GetUtcNow()
+                                                                                 }, cancellationToken: token));
+    }
 }

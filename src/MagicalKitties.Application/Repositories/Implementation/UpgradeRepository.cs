@@ -9,15 +9,15 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class UpgradeRepository : IUpgradeRepository
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public UpgradeRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _dateTimeProvider = dateTimeProvider;
     }
-    
+
     public async Task<List<UpgradeRule>> GetRulesAsync(CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -46,7 +46,7 @@ public class UpgradeRepository : IUpgradeRepository
                                                                                            Upgrades = new JsonParameter(JsonSerializer.Serialize(upgrades)),
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;

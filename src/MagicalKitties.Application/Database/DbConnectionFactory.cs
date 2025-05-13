@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
@@ -20,7 +19,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
     public NpgsqlConnectionFactory(string connectionString)
     {
         _connectionString = connectionString;
-        
+
         SqlMapper.AddTypeHandler(typeof(Problem), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Talent>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());
@@ -29,9 +28,9 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         SqlMapper.AddTypeHandler(typeof(List<Upgrade>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(object), new JsonTypeHandler());
 
-        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
     }
-    
+
     public string GetConnectionString()
     {
         return _connectionString;

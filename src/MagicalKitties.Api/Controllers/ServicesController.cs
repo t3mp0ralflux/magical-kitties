@@ -32,7 +32,7 @@ public class ServicesController : ControllerBase
     }
 
     [HttpPost("start/{name}")]
-    public async Task<IActionResult> StartService([FromRoute]string name, CancellationToken token)
+    public async Task<IActionResult> StartService([FromRoute] string name, CancellationToken token)
     {
         switch (name.ToLowerInvariant())
         {

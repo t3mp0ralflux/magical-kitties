@@ -8,9 +8,9 @@ namespace MagicalKitties.Application.Services.Implementation;
 public class HumanService : IHumanService
 {
     private readonly IHumanRepository _humanRepository;
-    private readonly IProblemRepository _problemRepository;
     private readonly IValidator<Human> _humanValidator;
     private readonly IValidator<GetAllHumansOptions> _optionsValidator;
+    private readonly IProblemRepository _problemRepository;
 
     public HumanService(IHumanRepository humanRepository, IValidator<Human> humanValidator, IValidator<GetAllHumansOptions> optionsValidator, IProblemRepository problemRepository)
     {
@@ -22,7 +22,7 @@ public class HumanService : IHumanService
 
     public async Task<Human> CreateAsync(Guid characterId, CancellationToken token = default)
     {
-        Human human = new Human
+        Human human = new()
                       {
                           Id = Guid.NewGuid(),
                           CharacterId = characterId,
@@ -30,11 +30,11 @@ public class HumanService : IHumanService
                           Description = "",
                           Problems = []
                       };
-        
+
         await _humanValidator.ValidateAndThrowAsync(human, token);
 
         await _humanRepository.CreateAsync(human, token);
-        
+
         return human;
     }
 
@@ -46,8 +46,8 @@ public class HumanService : IHumanService
         {
             return false;
         }
-        
-        Problem problem = new Problem
+
+        Problem problem = new()
                           {
                               Id = Guid.NewGuid(),
                               HumanId = humanId,
@@ -62,7 +62,7 @@ public class HumanService : IHumanService
 
     public async Task<Human?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        return await _humanRepository.GetByIdAsync(id, token:token);
+        return await _humanRepository.GetByIdAsync(id, token: token);
     }
 
     public async Task<IEnumerable<Human>> GetAllAsync(GetAllHumansOptions options, CancellationToken token = default)
@@ -96,7 +96,7 @@ public class HumanService : IHumanService
 
     public async Task<bool> UpdateProblemAsync(ProblemUpdate update, CancellationToken token = default)
     {
-        Human? human = await _humanRepository.GetByIdAsync(update.HumanId, token:token);
+        Human? human = await _humanRepository.GetByIdAsync(update.HumanId, token: token);
 
         if (human is null)
         {

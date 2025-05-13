@@ -4,6 +4,9 @@ using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Repositories;
 using Microsoft.Extensions.Logging;
+using Serilog;
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
 namespace MagicalKitties.Application.Services.Implementation;
 
@@ -178,7 +181,7 @@ public class AccountService : IAccountService
         {
             return false;
         }
-        
+
         return await _accountRepository.ExistsByEmailAsync(email, token);
     }
 
@@ -262,6 +265,18 @@ public class AccountService : IAccountService
 
         Account? serviceAccount = await _accountRepository.GetByUsernameAsync(serviceUsername, token);
 
+        if (serviceAccount is null)
+        {
+            Log.Error("Service Account was not found to queue activation email");
+            return;
+        }
+
+        if (emailFormat is null)
+        {
+            Log.Error("Activation Email Format was not found. Cannot send email");
+            return;
+        }
+
         string activationLink = string.Format(ApplicationAssumptions.ActivationLinkFormat, account.Username, account.ActivationCode);
         string resendLink = string.Format(ApplicationAssumptions.ResendActivationLinkFormat, account.Username, account.ActivationCode);
 
@@ -289,6 +304,18 @@ public class AccountService : IAccountService
         int expirationMinutes = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_RESET_REQUEST_EXPIRATION_MINS, 5, token);
 
         Account? serviceAccount = await _accountRepository.GetByUsernameAsync(serviceUsername, token);
+
+        if (serviceAccount is null)
+        {
+            Log.Error("Service Account was not found to queue password reset email");
+            return;
+        }
+
+        if (emailFormat is null)
+        {
+            Log.Error("Password Reset email format was not found. Cannot send email");
+            return;
+        }
 
         EmailData data = new()
                          {

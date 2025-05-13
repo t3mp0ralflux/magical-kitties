@@ -32,11 +32,11 @@ public static class ApiEndpoints
         public const string Delete = $"{Base}/{{id:guid}}";
         public const string Get = $"{Base}/{{id:guid}}";
         public const string GetAll = Base;
-        public const string UpdateDescription = $"{Base}/description/{{description}}";
-        public const string UpdateAttribute = $"{Base}/attributes/{{attribute}}";
-        public const string Reset = $"{Base}/{{id:guid}}/reset";
-        public const string UpsertUpgrade = $"{Base}/{{characterId:guid}}/upgrade/upsert";
         public const string RemoveUpgrade = $"{Base}/{{characterId:guid}}/upgrade/remove";
+        public const string Reset = $"{Base}/{{id:guid}}/reset";
+        public const string UpdateAttribute = $"{Base}/attributes/{{attribute}}";
+        public const string UpdateDescription = $"{Base}/description/{{description}}";
+        public const string UpsertUpgrade = $"{Base}/{{characterId:guid}}/upgrade/upsert";
     }
 
     public static class Flaws
@@ -53,12 +53,12 @@ public static class ApiEndpoints
     {
         private const string Base = $"{ApiBase}/Humans";
         public const string Create = $"{Base}/{{characterId:guid}}";
+        public const string CreateProblem = $"{Base}/problem/{{humanId:guid}}";
         public const string Delete = $"{Base}/{{id:guid}}";
+        public const string DeleteProblem = $"{Base}/problem/{{id:guid}}";
         public const string Get = $"{Base}/{{id:guid}}";
         public const string GetAll = Base;
         public const string Update = $"{Base}/{{description}}";
-        public const string CreateProblem = $"{Base}/problem/{{humanId:guid}}";
-        public const string DeleteProblem = $"{Base}/problem/{{id:guid}}";
         public const string UpdateProblem = $"{Base}/problem/{{problem}}";
     }
 

@@ -12,15 +12,16 @@ public class Character
     public required Guid AccountId { get; init; }
     public required string Username { get; init; }
     public required string Name { get; set; }
-    
+
     [Column("created_utc")]
     public DateTime CreatedUtc { get; init; }
-    
+
     [Column("updated_utc")]
     public DateTime UpdatedUtc { get; init; }
-    
+
     [Column("deleted_utc")]
     public DateTime? DeletedUtc { get; set; }
+
     public string Description { get; init; } = "";
     public string Hometown { get; init; } = "";
     public Flaw? Flaw { get; set; }
@@ -29,24 +30,25 @@ public class Character
     public List<MagicalPower> MagicalPowers { get; set; } = [];
     public List<Human> Humans { get; set; } = [];
     public int Level { get; set; } = 1;
-    
+
     [Column("current_xp")]
     public int CurrentXp { get; init; }
-    
+
     [Column("max_owies")]
     public int MaxOwies { get; init; }
-    
+
     [Column("current_owies")]
     public int CurrentOwies { get; set; }
-    
+
     [Column("starting_treats")]
     public int StartingTreats { get; init; }
-    
+
     [Column("current_treats")]
     public int CurrentTreats { get; set; }
-    
+
     [Column("current_injuries")]
     public int CurrentInjuries { get; set; }
+
     public bool Incapacitated { get; set; }
     public int Cunning { get; set; }
     public int Cute { get; set; }

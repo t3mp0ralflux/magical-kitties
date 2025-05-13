@@ -3,10 +3,8 @@ using System.Net.Mail;
 using System.Net.Sockets;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Npgsql;
 using Serilog;
 
@@ -43,7 +41,7 @@ public class EmailProcessingService : IHostedService
             {
                 await _timer.WaitForNextTickAsync(cancellationToken);
             }
-            catch (OperationCanceledException oce)
+            catch (OperationCanceledException)
             {
                 break;
             }

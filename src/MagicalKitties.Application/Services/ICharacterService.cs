@@ -1,5 +1,4 @@
 ﻿using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Characters.Updates;
 
 namespace MagicalKitties.Application.Services;
 

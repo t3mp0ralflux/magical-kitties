@@ -2,5 +2,4 @@
 
 public class HumansResponse : PagedResponse<HumanResponse>
 {
-    
 }

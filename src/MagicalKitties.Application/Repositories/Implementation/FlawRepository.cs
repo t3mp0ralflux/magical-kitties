@@ -54,10 +54,10 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                                    select exists(select 1
-                                                                                                    from flaw
-                                                                                                    where id = @id)
-                                                                                                    """, new { id }, cancellationToken: token));
+                                                                                               select exists(select 1
+                                                                                               from flaw
+                                                                                               where id = @id)
+                                                                                               """, new { id }, cancellationToken: token));
     }
 
     public async Task<IEnumerable<Flaw>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)

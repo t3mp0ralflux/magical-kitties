@@ -8,10 +8,10 @@ namespace MagicalKitties.Application.Services.Implementation;
 
 public class CharacterUpdateService : ICharacterUpdateService
 {
+    private readonly IValidator<AttributeUpdateValidationContext> _attributeUpdateValidator;
     private readonly ICharacterRepository _characterRepository;
     private readonly ICharacterUpdateRepository _characterUpdateRepository;
     private readonly IValidator<DescriptionUpdateValidationContext> _descriptionUpdateValidator;
-    private readonly IValidator<AttributeUpdateValidationContext> _attributeUpdateValidator;
 
     public CharacterUpdateService(ICharacterRepository characterRepository, ICharacterUpdateRepository characterUpdateRepository, IValidator<DescriptionUpdateValidationContext> descriptionUpdateValidator, IValidator<AttributeUpdateValidationContext> attributeUpdateValidator)
     {
@@ -30,12 +30,12 @@ public class CharacterUpdateService : ICharacterUpdateService
             return false;
         }
 
-        DescriptionUpdateValidationContext validationContext = new DescriptionUpdateValidationContext
+        DescriptionUpdateValidationContext validationContext = new()
                                                                {
                                                                    Option = option,
                                                                    Update = update
                                                                };
-        
+
         await _descriptionUpdateValidator.ValidateAndThrowAsync(validationContext, token);
 
         return option switch
@@ -57,16 +57,16 @@ public class CharacterUpdateService : ICharacterUpdateService
             return false;
         }
 
-        AttributeUpdateValidationContext validationContext = new AttributeUpdateValidationContext
+        AttributeUpdateValidationContext validationContext = new()
                                                              {
                                                                  Option = option,
                                                                  Character = character,
                                                                  Update = update
                                                              };
-        
+
         // also validates if someone has put two threes or two ones for some reason.
         await _attributeUpdateValidator.ValidateAndThrowAsync(validationContext, token);
-        
+
         switch (option)
         {
             case AttributeOption.cunning:
@@ -74,7 +74,7 @@ public class CharacterUpdateService : ICharacterUpdateService
                 {
                     return true; // no need to update
                 }
-                
+
                 return await _characterUpdateRepository.UpdateCunningAsync(update, token);
             case AttributeOption.cute:
                 if (character.Cute == update.Cute)
@@ -107,6 +107,7 @@ public class CharacterUpdateService : ICharacterUpdateService
                 {
                     return true;
                 }
+
                 return await _characterUpdateRepository.UpdateFlawAsync(update, token);
             case AttributeOption.talent:
                 if (character.Talents.Count == 0 || character.Talents.FirstOrDefault(x => x.Id == update.TalentChange!.PreviousId) is null)
@@ -120,7 +121,7 @@ public class CharacterUpdateService : ICharacterUpdateService
                 {
                     return await _characterUpdateRepository.CreateMagicalPowerAsync(update, token);
                 }
-                
+
                 return await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token);
             case AttributeOption.currentowies:
                 if (character.CurrentOwies == update.CurrentOwies)
@@ -164,7 +165,7 @@ public class CharacterUpdateService : ICharacterUpdateService
             return false;
         }
 
-        AttributeUpdate update = new AttributeUpdate
+        AttributeUpdate update = new()
                                  {
                                      AccountId = accountId,
                                      CharacterId = characterId,
@@ -173,12 +174,12 @@ public class CharacterUpdateService : ICharacterUpdateService
                                      CurrentTreats = character.StartingTreats,
                                      Incapacitated = false
                                  };
-        
+
         // reset current owies, treats, injuries.
         await _characterUpdateRepository.UpdateCurrentOwiesAsync(update, token);
-        
+
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update, token);
-        
+
         await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
 
         await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);

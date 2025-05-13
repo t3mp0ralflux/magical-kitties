@@ -8,7 +8,7 @@ public class GetAllCharactersOptionsValidator : AbstractValidator<GetAllCharacte
     public static readonly string[] AcceptableSortFields =
     [
         "name",
-        "level",
+        "level"
     ];
 
     public GetAllCharactersOptionsValidator()

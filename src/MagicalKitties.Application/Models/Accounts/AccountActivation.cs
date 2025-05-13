@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace MagicalKitties.Application.Models.Accounts;
+﻿namespace MagicalKitties.Application.Models.Accounts;
 
 public class AccountActivation
 {

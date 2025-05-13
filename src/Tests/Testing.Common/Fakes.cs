@@ -228,10 +228,10 @@ public static class Fakes
                                Option = AttributeOption.magicalpowerbonus,
                                Level = 4,
                                Choice = new BonusFeatureUpgrade
-                                                 {
-                                                     MagicalPowerId = 33,
-                                                     BonusFeatureId = 1
-                                                 }
+                                        {
+                                            MagicalPowerId = 33,
+                                            BonusFeatureId = 1
+                                        }
                            };
         Upgrade upgrade5 = new()
                            {
@@ -367,23 +367,23 @@ public static class Fakes
                 Id = id,
                 Name = "Test",
                 Description = "This is a test",
-                BonusFeatures = 
-                    [
-                        new MagicalPower
-                        {
-                            Id = 1,
-                            Name = "Bonus 1",
-                            Description = "Bonus 1 lives here",
-                            IsCustom = false
-                        },
-                        new MagicalPower
-                        {
-                            Id = 2,
-                            Name = "Bonus 2",
-                            Description = "Bonus 2 lives here",
-                            IsCustom = false
-                        }
-                    ],
+                BonusFeatures =
+                [
+                    new MagicalPower
+                    {
+                        Id = 1,
+                        Name = "Bonus 1",
+                        Description = "Bonus 1 lives here",
+                        IsCustom = false
+                    },
+                    new MagicalPower
+                    {
+                        Id = 2,
+                        Name = "Bonus 2",
+                        Description = "Bonus 2 lives here",
+                        IsCustom = false
+                    }
+                ],
                 IsCustom = false
             }
         ];
@@ -392,28 +392,28 @@ public static class Fakes
     public static List<Talent> GenerateTalents()
     {
         return
-            [
-                new Talent
-                {
-                    Id = 22,
-                    Name = "Claws",
-                    Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
-                    IsCustom = false
-                },
-                new Talent
-                {
-                    Id = 42,
-                    Name = "Navigator",
-                    Description = "You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.",
-                    IsCustom = false
-                },
-                new Talent
-                {
-                    Id = 43,
-                    Name = "This is a test one",
-                    Description = "Eating stuff.",
-                    IsCustom = false
-                }
-            ];
+        [
+            new Talent
+            {
+                Id = 22,
+                Name = "Claws",
+                Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
+                IsCustom = false
+            },
+            new Talent
+            {
+                Id = 42,
+                Name = "Navigator",
+                Description = "You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.",
+                IsCustom = false
+            },
+            new Talent
+            {
+                Id = 43,
+                Name = "This is a test one",
+                Description = "Eating stuff.",
+                IsCustom = false
+            }
+        ];
     }
 }
