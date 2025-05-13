@@ -30,7 +30,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
                                                                                            magicalpower.Name,
                                                                                            magicalpower.Description,
                                                                                            magicalpower.IsCustom,
-                                                                                           BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures))
+                                                                                           BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalpower.BonusFeatures)) // TODO: THIS IS A PROBLEM. If you insert this as-is, it saves is_custom as IsCustom and breaks EVERYTHING.
                                                                                        }, cancellationToken: token));
 
         transaction.Commit();
@@ -43,7 +43,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         MagicalPower? result = await connection.QuerySingleOrDefaultAsyncWithRetry<MagicalPower>(new CommandDefinition("""
-                                                                                                                       select id, name, description, is_custom as IsCustom, bonusfeatures
+                                                                                                                       select id, name, description, is_custom, bonusfeatures
                                                                                                                        from magicalpower
                                                                                                                        where id = @id
                                                                                                                        """, new { id }, cancellationToken: token));
@@ -74,7 +74,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         }
 
         IEnumerable<MagicalPower> results = await connection.QueryAsyncWithRetry<MagicalPower>(new CommandDefinition($"""
-                                                                                                                      select id, name, description, is_custom as IsCustom, bonusfeatures
+                                                                                                                      select id, name, description, is_custom, bonusfeatures
                                                                                                                       from magicalpower
                                                                                                                       {orderClause}
                                                                                                                       """, new

@@ -21,7 +21,6 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
     {
         _connectionString = connectionString;
         
-        SqlMapper.AddTypeHandler(typeof(Flaw), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Problem), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Talent>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());

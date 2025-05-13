@@ -110,7 +110,7 @@ builder.Services.AddOutputCache(x =>
                                     x.AddPolicy(ApiAssumptions.PolicyNames.Rules, c =>
                                                                                   {
                                                                                       c.Cache()
-                                                                                       .Expire(TimeSpan.FromHours(1))
+                                                                                       .Expire(TimeSpan.FromMinutes(60))
                                                                                        .Tag(ApiAssumptions.TagNames.Rules);
                                                                                   });
                                 });
