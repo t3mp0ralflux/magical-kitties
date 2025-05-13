@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Serilog;
 
 namespace MagicalKitties.Application.HostedServices;
 
@@ -17,13 +18,11 @@ public class EmailProcessingService : IHostedService
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IEmailService _emailService;
     private readonly IGlobalSettingsService _globalSettingsService;
-    private readonly ILogger<EmailProcessingService> _logger;
 
     private PeriodicTimer _timer = new(TimeSpan.FromSeconds(9999)); // initial value to prevent running for a while. Overridden in StartAsync.
 
-    public EmailProcessingService(ILogger<EmailProcessingService> logger, IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
+    public EmailProcessingService(IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
     {
-        _logger = logger;
         _emailService = emailService;
         _dateTimeProvider = dateTimeProvider;
         _globalSettingsService = globalSettingsService;
@@ -32,7 +31,7 @@ public class EmailProcessingService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("EmailProcessing Service started");
+        Log.Information("EmailProcessing Service started");
 
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         State state = new();
@@ -40,14 +39,21 @@ public class EmailProcessingService : IHostedService
         while (!cancellationToken.IsCancellationRequested)
         {
             await ProcessEmailsAsync(state, cancellationToken);
-            await _timer.WaitForNextTickAsync(cancellationToken);
+            try
+            {
+                await _timer.WaitForNextTickAsync(cancellationToken);
+            }
+            catch (OperationCanceledException oce)
+            {
+                break;
+            }
         }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        Log.Information("EmailProcessing Service ended");
         _timer.Dispose();
-        _logger.LogInformation("EmailProcessing Service ended");
         return Task.CompletedTask;
     }
 
@@ -110,12 +116,12 @@ public class EmailProcessingService : IHostedService
         {
             if (dbException.InnerException is SocketException)
             {
-                _logger.LogCritical("Could not reach database. Error: {Message}", dbException.Message);
+                Log.Error("Could not reach database. Error: {Message}", dbException.Message);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message);
+            Log.Error(ex.Message);
         }
     }
 
@@ -139,12 +145,12 @@ public class EmailProcessingService : IHostedService
         }
         catch (SmtpException smtpEx)
         {
-            _logger.LogWarning(smtpEx.Message, smtpEx);
+            Log.Warning(smtpEx.Message, smtpEx);
             return (false, smtpEx.Message);
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message, e);
+            Log.Error(e.Message, e);
             return (false, e.Message);
         }
 

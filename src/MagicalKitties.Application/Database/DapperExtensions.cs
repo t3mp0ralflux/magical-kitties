@@ -23,7 +23,8 @@ public static class DapperExtensions
                                                            .OrInner<SocketException>()
                                                            .WaitAndRetryAsync(RetryTimes, (exception, timeSpan, retryCount, context) =>
                                                                                           {
-                                                                                              Log.Warning(exception, "WARNING: Error talking to DB, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
+                                                                                              Log.Warning(exception, "WARNING: Error talking to DB at {ConnectionString}, will retry after {RetryTimeSpan}. Retry attempt {RetryCount}",
+                                                                                                  "test",
                                                                                                   timeSpan,
                                                                                                   retryCount);
                                                                                           });
@@ -46,39 +47,40 @@ public static class DapperExtensions
     {
         return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync<T>(commandDefinition));
     }
-    
+
     public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
 
-    public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, TSecond,T> map, string splitOn)
+    public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, TSecond, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
-    
+
     public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond, TThird>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, TSecond, TThird, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
+
     public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond, TThird, TFourth>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, TSecond, TThird, TFourth, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
-    
+
     public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond, TThird, TFourth, TFifth>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, TSecond, TThird, TFourth, TFifth, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
-    
+
     public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond, TThird, TFourth, TFifth, TSixth>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<T, TFirst, TSecond, TThird, TFourth, TFifth, TSixth, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
-    
+
     public static async Task<IEnumerable<T>> QueryAsyncWithRetry<T, TFirst, TSecond, TThird, TFourth, TFifth, TSixth, TSeventh>(this IDbConnection cnn, CommandDefinition commandDefinition, Func<TFirst, TSecond, TThird, TFourth, TFifth, TSixth, TSeventh, T> map, string splitOn)
     {
-        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn: splitOn));
+        return await RetryPolicy.ExecuteAsync(async () => await cnn.QueryAsync(commandDefinition, map, splitOn));
     }
 
     public static async Task<T> QuerySingleAsyncWithRetry<T>(this IDbConnection cnn, CommandDefinition commandDefinition)
@@ -90,7 +92,7 @@ public static class DapperExtensions
     {
         return await RetryPolicy.ExecuteAsync(async () => await cnn.QuerySingleOrDefaultAsync<T?>(commandDefinition));
     }
-    
+
     public static async Task<T?> QuerySingleOrDefaultAsyncWithRetry<T, TFirst>(this IDbConnection cnn, CommandDefinition commandDefinition)
     {
         return await RetryPolicy.ExecuteAsync(async () => await cnn.QuerySingleOrDefaultAsync<T?>(commandDefinition));
