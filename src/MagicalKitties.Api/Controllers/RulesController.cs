@@ -8,21 +8,14 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class RulesController : ControllerBase
+public class RulesController(IRuleService ruleService) : ControllerBase
 {
-    private readonly IRuleService _ruleService;
-
-    public RulesController(IRuleService ruleService)
-    {
-        _ruleService = ruleService;
-    }
-
     [HttpGet(ApiEndpoints.Rules.GetAll)]
     [OutputCache(PolicyName = ApiAssumptions.PolicyNames.Rules)]
     [ProducesResponseType<GameRulesResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllRules(CancellationToken token)
     {
-        GameRules rules = await _ruleService.GetAll(token);
+        GameRules rules = await ruleService.GetAll(token);
 
         GameRulesResponse response = rules.ToResponse();
 

@@ -1,6 +1,6 @@
 ﻿namespace MagicalKitties.Api.Auth;
 
-public class AuthConstants
+public static class AuthConstants
 {
     public const string AdminUserClaimName = "admin";
     public const string AdminUserPolicyName = "Admin";

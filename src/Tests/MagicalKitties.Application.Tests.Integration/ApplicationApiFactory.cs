@@ -31,7 +31,7 @@ public class ApplicationApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLi
         }
     }
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await _dbContainer.DisposeAsync();
     }
@@ -65,5 +65,6 @@ public class ApplicationApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLi
                                       });
 
         builder.UseEnvironment("Testing");
+        
     }
 }

@@ -5,8 +5,8 @@ using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Npgsql;
-using Serilog;
 
 namespace MagicalKitties.Application.HostedServices;
 
@@ -16,20 +16,22 @@ public class EmailProcessingService : IHostedService
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IEmailService _emailService;
     private readonly IGlobalSettingsService _globalSettingsService;
+    private readonly ILogger<EmailProcessingService> _logger;
 
     private PeriodicTimer _timer = new(TimeSpan.FromSeconds(9999)); // initial value to prevent running for a while. Overridden in StartAsync.
 
-    public EmailProcessingService(IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
+    public EmailProcessingService(IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration, ILogger<EmailProcessingService> logger)
     {
         _emailService = emailService;
         _dateTimeProvider = dateTimeProvider;
         _globalSettingsService = globalSettingsService;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        Log.Information("EmailProcessing Service started");
+        _logger.LogInformation("EmailProcessing Service started");
 
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         State state = new();
@@ -50,7 +52,7 @@ public class EmailProcessingService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        Log.Information("EmailProcessing Service ended");
+        _logger.LogInformation("EmailProcessing Service ended");
         _timer.Dispose();
         return Task.CompletedTask;
     }
@@ -114,12 +116,12 @@ public class EmailProcessingService : IHostedService
         {
             if (dbException.InnerException is SocketException)
             {
-                Log.Error("Could not reach database. Error: {Message}", dbException.Message);
+                _logger.LogError(dbException, "Could not reach database. Error: {Message}", dbException.Message);
             }
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
         }
     }
 
@@ -143,12 +145,12 @@ public class EmailProcessingService : IHostedService
         }
         catch (SmtpException smtpEx)
         {
-            Log.Warning(smtpEx.Message, smtpEx);
+            _logger.LogWarning(smtpEx, "{Message}", smtpEx.Message);
             return (false, smtpEx.Message);
         }
         catch (Exception e)
         {
-            Log.Error(e.Message, e);
+            _logger.LogError(e, "{Message}", e.Message);
             return (false, e.Message);
         }
 
@@ -158,7 +160,5 @@ public class EmailProcessingService : IHostedService
     private class State
     {
         public bool IsRunning { get; set; }
-        public int Count { get; set; }
-        public CancellationToken token { get; set; }
     }
 }

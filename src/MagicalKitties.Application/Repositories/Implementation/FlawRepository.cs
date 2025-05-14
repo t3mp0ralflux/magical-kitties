@@ -41,25 +41,18 @@ public class FlawRepository : IFlawRepository
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
 
         Flaw? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Flaw>(new CommandDefinition("""
-                                                                                                       select id, name, description, is_custom
+                                                                                                       select json_build_object(
+                                                                                                       'id', id, 
+                                                                                                       'name',name, 
+                                                                                                       'description', description, 
+                                                                                                       'is_custom', is_custom)
                                                                                                        from flaw
                                                                                                        where id = @id
                                                                                                        """, new { id }, cancellationToken: token));
 
         return result;
     }
-
-    public async Task<bool> ExistsByIdAsync(int id, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
-
-        return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                               select exists(select 1
-                                                                                               from flaw
-                                                                                               where id = @id)
-                                                                                               """, new { id }, cancellationToken: token));
-    }
-
+    
     public async Task<IEnumerable<Flaw>> GetAllAsync(GetAllFlawsOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
@@ -72,7 +65,12 @@ public class FlawRepository : IFlawRepository
         }
 
         IEnumerable<Flaw> results = await connection.QueryAsyncWithRetry<Flaw>(new CommandDefinition($"""
-                                                                                                      select id, name, description, is_custom
+                                                                                                      select json_build_object(
+                                                                                                      'id', id, 
+                                                                                                      'name',name, 
+                                                                                                      'description', description, 
+                                                                                                      'is_custom', is_custom
+                                                                                                      )
                                                                                                       from flaw
                                                                                                       {orderClause}
                                                                                                       """, new

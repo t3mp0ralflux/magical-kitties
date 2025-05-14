@@ -12,7 +12,7 @@ public class MagicalPowerValidator : AbstractValidator<MagicalPower>
         RuleFor(x => x.Description).NotNull().NotEmpty();
     }
 
-    public void ValidateIdRange(int id, ValidationContext<MagicalPower> context)
+    public static void ValidateIdRange(int id, ValidationContext<MagicalPower> context)
     {
         switch (id)
         {

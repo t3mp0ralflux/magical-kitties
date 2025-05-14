@@ -2,8 +2,8 @@
 
 public class DescriptionUpdate
 {
-    public required DescriptionOption DescriptionOption { get; set; }
-    public required Guid HumanId { get; set; }
-    public required string? Name { get; set; }
-    public required string? Description { get; set; }
+    public required DescriptionOption DescriptionOption { get; init; }
+    public required Guid HumanId { get; init; }
+    public required string? Name { get; init; }
+    public required string? Description { get; init; }
 }

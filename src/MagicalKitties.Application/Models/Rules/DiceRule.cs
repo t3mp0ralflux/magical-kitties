@@ -78,17 +78,17 @@ public static class DiceRule
 
     public class DiceDifficulty
     {
-        public required int Difficulty { get; set; }
-        public required string DifficultyText { get; set; }
-        public required string CuteAction { get; set; }
-        public required string CunningAction { get; set; }
-        public required string FierceAction { get; set; }
+        public required int Difficulty { get; init; }
+        public required string DifficultyText { get; init; }
+        public required string CuteAction { get; init; }
+        public required string CunningAction { get; init; }
+        public required string FierceAction { get; init; }
     }
 
     public class DiceSuccess
     {
-        public required int Successes { get; set; }
-        public required string Result { get; set; }
-        public required string Enhancements { get; set; }
+        public required int Successes { get; init; }
+        public required string Result { get; init; }
+        public required string Enhancements { get; init; }
     }
 }

@@ -4,7 +4,6 @@ using MagicalKitties.Contracts.Responses.Errors;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using Serilog;
 
 namespace MagicalKitties.Api;
 
@@ -72,7 +71,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 
                 httpContext.Response.StatusCode = StatusCodes.Status408RequestTimeout;
 
-                Log.Logger.Error(exception, "DB timed out during request. Message: {Message}", exception.Message);
+                _logger.LogError(exception, "DB timed out during request. Message: {Message}", exception.Message);
                 break;
             default:
                 problemDetails = new ProblemDetails
@@ -82,7 +81,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                                      Detail = "A server error has occurred.",
                                      Type = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/500"
                                  };
-                Log.Logger.Error(exception, "Uncaught DB error detected. Message: {Message}", exception.Message);
+                _logger.LogError(exception, "Uncaught DB error detected. Message: {Message}", exception.Message);
 
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 

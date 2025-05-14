@@ -406,9 +406,9 @@ public static class ContractMapping
                };
     }
 
-    public static Application.Models.Humans.Updates.DescriptionUpdate ToUpdate(this MKCtrHumanRequests.HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
+    public static MKAppHumans.Updates.DescriptionUpdate ToUpdate(this MKCtrHumanRequests.HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
     {
-        return new Application.Models.Humans.Updates.DescriptionUpdate
+        return new MKAppHumans.Updates.DescriptionUpdate
                {
                    DescriptionOption = (DescriptionOption)description,
                    HumanId = request.CharacterId,

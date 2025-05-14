@@ -113,13 +113,13 @@ public static class ProblemRule
 
     public class Problem
     {
-        public required int RollValue { get; set; }
-        public required string ProblemSource { get; set; }
+        public required int RollValue { get; init; }
+        public required string ProblemSource { get; init; }
     }
 
     public class Emotion
     {
-        public required string RollValue { get; set; }
-        public required string EmotionSource { get; set; }
+        public required string RollValue { get; init; }
+        public required string EmotionSource { get; init; }
     }
 }

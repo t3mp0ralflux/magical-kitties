@@ -41,7 +41,7 @@ public static class ApiEndpoints
 
     public static class Flaws
     {
-        private const string Base = $"{ApiBase}/Flaws";
+        private const string Base = $"{ApiBase}/flaws";
         public const string Create = Base;
         public const string Delete = $"{Base}/{{id:int}}";
         public const string Get = $"{Base}/{{id:int}}";
@@ -51,11 +51,11 @@ public static class ApiEndpoints
 
     public static class Humans
     {
-        private const string Base = $"{ApiBase}/Humans";
+        private const string Base = $"{ApiBase}/humans";
         public const string Create = $"{Base}/{{characterId:guid}}";
-        public const string CreateProblem = $"{Base}/problem/{{humanId:guid}}";
+        public const string CreateProblem = $"{Base}/{{humanId:guid}}/problem";
         public const string Delete = $"{Base}/{{id:guid}}";
-        public const string DeleteProblem = $"{Base}/problem/{{id:guid}}";
+        public const string DeleteProblem = $"{Base}/{{humanId:guid}}/problem/{{problemId:guid}}";
         public const string Get = $"{Base}/{{id:guid}}";
         public const string GetAll = Base;
         public const string Update = $"{Base}/{{description}}";
@@ -64,13 +64,13 @@ public static class ApiEndpoints
 
     public static class Rules
     {
-        private const string Base = $"{ApiBase}/Rules";
+        private const string Base = $"{ApiBase}/rules";
         public const string GetAll = Base;
     }
 
     public static class Talents
     {
-        private const string Base = $"{ApiBase}/Talents";
+        private const string Base = $"{ApiBase}/talents";
         public const string Create = Base;
         public const string Delete = $"{Base}/{{id:int}}";
         public const string Get = $"{Base}/{{id:int}}";

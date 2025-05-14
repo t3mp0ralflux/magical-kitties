@@ -13,14 +13,14 @@ public class Account
     public required string LastName { get; init; }
 
     public required string Username { get; init; }
-    public required string Email { get; set; }
+    public required string Email { get; init; }
     public required string Password { get; set; }
 
     [Column("account_status")]
     public AccountStatus AccountStatus { get; set; }
 
     [Column("account_role")]
-    public AccountRole AccountRole { get; set; }
+    public AccountRole AccountRole { get; init; }
 
     [Column("created_utc")]
     public DateTime CreatedUtc { get; set; }

@@ -11,7 +11,6 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 public class HumanRepository : IHumanRepository
 {
     private const string HumanFields = "h.id, h.character_id, h.name, h.description";
-    private const string ProblemFields = "p.id, p.human_id, p.source, p.emotion, p.rank, p.solved";
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
@@ -55,30 +54,7 @@ public class HumanRepository : IHumanRepository
 
         return result > 0;
     }
-
-    public async Task<bool> CreateProblemAsync(Guid humanId, Problem problem, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
-                                                                                  values(@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, null)
-                                                                                  """, new
-                                                                                       {
-                                                                                           problem.Id,
-                                                                                           problem.HumanId,
-                                                                                           problem.Source,
-                                                                                           problem.Emotion,
-                                                                                           problem.Rank,
-                                                                                           problem.Solved
-                                                                                       }, cancellationToken: token));
-
-        transaction.Commit();
-
-        return result > 0;
-    }
-
+    
     public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);

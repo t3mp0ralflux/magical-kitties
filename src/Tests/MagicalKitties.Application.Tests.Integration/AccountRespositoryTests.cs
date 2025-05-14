@@ -13,7 +13,7 @@ using MagicalKitties.Contracts.Requests.Account;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Testing.Common;
-using ctr = MagicalKitties.Contracts.Models;
+using MKCtr = MagicalKitties.Contracts.Models;
 
 namespace MagicalKitties.Application.Tests.Integration;
 
@@ -53,7 +53,7 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
 
     [SkipIfEnvironmentMissingTheory]
     [MemberData(nameof(GetSingleSearchUsernameData))]
-    public async Task UsernameExistsAsync_ShouldReturnNull_WhenUsernameDoesNotExist(Account account, string username)
+    public async Task UsernameExistsAsync_ShouldReturnNull_WhenUsernameDoesNotExist(Account account, string _)
     {
         // Arrange
         account = account.WithActivation();
@@ -62,7 +62,7 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
         await _sut.ActivateAsync(account);
 
         // Act
-        Account? result = await _sut.GetByUsernameAsync("BigChungus");
+        Account? result = await _sut.GetByUsernameAsync("ThisNameLiterallyCannotExistCauseISaidSo");
 
         // Assert
         result.Should().BeNull();
@@ -367,8 +367,8 @@ public class AccountRespositoryTests : IClassFixture<ApplicationApiFactory>, IDi
                                            Username = "",
                                            Password = "",
                                            Email = "",
-                                           AccountStatus = ctr.AccountStatus.banned,
-                                           AccountRole = ctr.AccountRole.trusted
+                                           AccountStatus = MKCtr.AccountStatus.banned,
+                                           AccountRole = MKCtr.AccountRole.trusted
                                        };
 
         Account updatedAccount = request.ToAccount(account.Id);

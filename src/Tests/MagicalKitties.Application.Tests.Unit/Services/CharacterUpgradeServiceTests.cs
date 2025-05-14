@@ -9,6 +9,7 @@ using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Testing.Common;
 
@@ -22,10 +23,11 @@ public class CharacterUpgradeServiceTests
     public readonly CharacterUpgradeService _sut;
     private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
     private readonly IUpgradeRepository _upgradeRepository = Substitute.For<IUpgradeRepository>();
+    private readonly ILogger<CharacterUpgradeService> _logger = Substitute.For<ILogger<CharacterUpgradeService>>();
 
     public CharacterUpgradeServiceTests()
     {
-        _sut = new CharacterUpgradeService(_characterRepository, _upgradeRepository, _magicalPowerRepository, _talentRepository, _memoryCache);
+        _sut = new CharacterUpgradeService(_characterRepository, _upgradeRepository, _magicalPowerRepository, _talentRepository, _memoryCache, _logger);
     }
 
     [Fact]

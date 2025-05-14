@@ -4,7 +4,6 @@ using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Repositories;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -17,22 +16,22 @@ public class AccountService : IAccountService
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IEmailService _emailService;
     private readonly IGlobalSettingsService _globalSettingsService;
-    private readonly ILogger<AccountService> _logger;
     private readonly IValidator<GetAllAccountsOptions> _optionsValidator;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IValidator<PasswordReset> _passwordResetValidator;
+    private readonly ILogger<AccountService> _logger;
 
-    public AccountService(IAccountRepository accountRepository, IValidator<Account> accountValidator, IDateTimeProvider dateTimeProvider, IValidator<GetAllAccountsOptions> optionsValidator, IPasswordHasher passwordHasher, IGlobalSettingsService globalSettingsService, IEmailService emailService, ILogger<AccountService> logger, IValidator<PasswordReset> passwordResetValidator)
+    public AccountService(IAccountRepository accountRepository, IValidator<Account> accountValidator, IDateTimeProvider dateTimeProvider, IValidator<GetAllAccountsOptions> optionsValidator, IPasswordHasher passwordHasher, IGlobalSettingsService globalSettingsService, IEmailService emailService, IValidator<PasswordReset> passwordResetValidator, ILogger<AccountService> logger)
     {
         _accountRepository = accountRepository;
         _accountValidator = accountValidator;
         _optionsValidator = optionsValidator;
         _passwordResetValidator = passwordResetValidator;
+        _logger = logger;
         _passwordHasher = passwordHasher;
         _globalSettingsService = globalSettingsService;
         _emailService = emailService;
         _dateTimeProvider = dateTimeProvider;
-        _logger = logger;
     }
 
     public async Task<bool> CreateAsync(Account account, CancellationToken token = default)
@@ -57,7 +56,7 @@ public class AccountService : IAccountService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message, ex);
+            _logger.LogError(ex, "{Message}", ex.Message);
         }
 
         return true;
@@ -164,17 +163,12 @@ public class AccountService : IAccountService
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message, e);
+            _logger.LogError(e, "{Message}", e.Message);
         }
 
         return success;
     }
-
-    public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
-    {
-        return await _accountRepository.ExistsByIdAsync(id, token);
-    }
-
+    
     public async Task<bool> ExistsByEmailAsync(string? email, CancellationToken token = default)
     {
         if (email is null)
@@ -216,7 +210,7 @@ public class AccountService : IAccountService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message, ex);
+            _logger.LogError(ex, "{Message}", ex.Message);
         }
 
         return true;
@@ -233,12 +227,9 @@ public class AccountService : IAccountService
 
         int maxPasswordResetMins = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_RESET_REQUEST_EXPIRATION_MINS, 5, token);
 
-        if ((_dateTimeProvider.GetUtcNow() - account.PasswordResetRequestedUtc.Value).Duration() > TimeSpan.FromMinutes(maxPasswordResetMins))
-        {
-            throw new ValidationException("Code has expired");
-        }
-
-        if (!string.Equals(account.PasswordResetCode, code))
+        if (
+            (_dateTimeProvider.GetUtcNow() - account.PasswordResetRequestedUtc.Value).Duration() > TimeSpan.FromMinutes(maxPasswordResetMins)
+            || !string.Equals(account.PasswordResetCode, code))
         {
             throw new ValidationException("Code has expired");
         }
@@ -267,13 +258,13 @@ public class AccountService : IAccountService
 
         if (serviceAccount is null)
         {
-            Log.Error("Service Account was not found to queue activation email");
+            _logger.LogError("Service Account was not found to queue activation email");
             return;
         }
 
         if (emailFormat is null)
         {
-            Log.Error("Activation Email Format was not found. Cannot send email");
+            _logger.LogError("Activation Email Format was not found. Cannot send email");
             return;
         }
 
@@ -307,13 +298,13 @@ public class AccountService : IAccountService
 
         if (serviceAccount is null)
         {
-            Log.Error("Service Account was not found to queue password reset email");
+            _logger.LogError("Service Account was not found to queue password reset email");
             return;
         }
 
         if (emailFormat is null)
         {
-            Log.Error("Password Reset email format was not found. Cannot send email");
+            _logger.LogError("Password Reset email format was not found. Cannot send email");
             return;
         }
 

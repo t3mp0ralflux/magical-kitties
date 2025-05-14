@@ -48,18 +48,7 @@ public class TalentRepository : ITalentRepository
 
         return result;
     }
-
-    public async Task<bool> ExistsByIdAsync(int id, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);
-
-        return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                               select exists(select 1
-                                                                                               from talent
-                                                                                               where id = @id)
-                                                                                               """, new { id }, cancellationToken: token));
-    }
-
+    
     public async Task<IEnumerable<Talent>> GetAllAsync(GetAllTalentsOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbonConnectionFactory.CreateConnectionAsync(token);

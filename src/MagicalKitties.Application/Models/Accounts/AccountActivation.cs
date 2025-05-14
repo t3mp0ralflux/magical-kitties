@@ -2,7 +2,7 @@
 
 public class AccountActivation
 {
-    public required string Username { get; set; }
-    public required string ActivationCode { get; set; }
-    public required DateTime Expiration { get; set; }
+    public required string Username { get; init; }
+    public required string ActivationCode { get; init; }
+    public required DateTime Expiration { get; init; }
 }

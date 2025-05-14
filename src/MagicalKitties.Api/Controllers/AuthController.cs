@@ -13,21 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class AuthController : ControllerBase
+public class AuthController(IAccountService accountService, IPasswordHasher passwordHasher, IJwtTokenGeneratorService jwtTokenGeneratorService, IAuthService authService)
+    : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly IAuthService _authService;
-    private readonly IJwtTokenGeneratorService _jwtTokenGeneratorService;
-    private readonly IPasswordHasher _passwordHasher;
-
-    public AuthController(IAccountService accountService, IPasswordHasher passwordHasher, IJwtTokenGeneratorService jwtTokenGeneratorService, IAuthService authService)
-    {
-        _accountService = accountService;
-        _passwordHasher = passwordHasher;
-        _jwtTokenGeneratorService = jwtTokenGeneratorService;
-        _authService = authService;
-    }
-
     [HttpPost(ApiEndpoints.Auth.Login)]
     [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
@@ -37,11 +25,11 @@ public class AuthController : ControllerBase
         Account? account;
         if (request.Email.Contains('@'))
         {
-            account = await _accountService.GetByEmailAsync(request.Email, token);
+            account = await accountService.GetByEmailAsync(request.Email, token);
         }
         else
         {
-            account = await _accountService.GetByUsernameAsync(request.Email, token);
+            account = await accountService.GetByUsernameAsync(request.Email, token);
         }
 
         if (account is null)
@@ -54,7 +42,7 @@ public class AuthController : ControllerBase
             return Unauthorized("You must activate your account before you can login");
         }
 
-        bool verified = _passwordHasher.Verify(request.Password, account.Password);
+        bool verified = passwordHasher.Verify(request.Password, account.Password);
 
         if (!verified)
         {
@@ -63,9 +51,9 @@ public class AuthController : ControllerBase
 
         AccountLogin accountLogin = account.ToLogin();
 
-        await _authService.LoginAsync(accountLogin, token);
+        await authService.LoginAsync(accountLogin, token);
 
-        string jwtToken = _jwtTokenGeneratorService.GenerateToken(account, token);
+        string jwtToken = jwtTokenGeneratorService.GenerateToken(account);
 
         return Ok(jwtToken);
     }
@@ -74,7 +62,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
     public async Task<IActionResult> RequestPasswordReset([FromRoute] string email, CancellationToken token)
     {
-        await _accountService.RequestPasswordReset(email, token); // DO NOT SURFACE TO USER. If the account isn't found, it'll fail in silence.
+        await accountService.RequestPasswordReset(email, token); // DO NOT SURFACE TO USER. If the account isn't found, it'll fail in silence.
 
         return Ok(email);
     }
@@ -90,7 +78,7 @@ public class AuthController : ControllerBase
         }
 
         // throws ValidationExceptions if not valid
-        await _accountService.VerifyPasswordResetCode(verification.Email, verification.Code, token);
+        await accountService.VerifyPasswordResetCode(verification.Email, verification.Code, token);
 
         return Ok();
     }
@@ -101,7 +89,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> PasswordReset([FromBody] PasswordResetRequest request, CancellationToken token)
     {
-        bool accountExists = await _accountService.ExistsByEmailAsync(request.Email, token);
+        bool accountExists = await accountService.ExistsByEmailAsync(request.Email, token);
 
         if (!accountExists)
         {
@@ -110,7 +98,7 @@ public class AuthController : ControllerBase
 
         PasswordReset passwordReset = request.ToReset();
 
-        await _accountService.ResetPassword(passwordReset, token);
+        await accountService.ResetPassword(passwordReset, token);
 
         PasswordResetResponse response = passwordReset.ToResponse();
 

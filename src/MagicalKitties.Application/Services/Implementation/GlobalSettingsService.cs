@@ -2,7 +2,7 @@
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Repositories;
 using Microsoft.Extensions.Caching.Memory;
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace MagicalKitties.Application.Services.Implementation;
 
@@ -12,13 +12,15 @@ public class GlobalSettingsService : IGlobalSettingsService
     private readonly IGlobalSettingsRepository _globalSettingsRepository;
     private readonly IValidator<GlobalSetting> _globalSettingValidator;
     private readonly IValidator<GetAllGlobalSettingsOptions> _optionsValidator;
+    private readonly ILogger<GlobalSettingsService> _logger;
 
-    public GlobalSettingsService(IGlobalSettingsRepository globalSettingsRepository, IValidator<GlobalSetting> globalSettingValidator, IValidator<GetAllGlobalSettingsOptions> optionsValidator, IMemoryCache cache)
+    public GlobalSettingsService(IGlobalSettingsRepository globalSettingsRepository, IValidator<GlobalSetting> globalSettingValidator, IValidator<GetAllGlobalSettingsOptions> optionsValidator, IMemoryCache cache, ILogger<GlobalSettingsService> logger)
     {
         _globalSettingsRepository = globalSettingsRepository;
         _globalSettingValidator = globalSettingValidator;
         _optionsValidator = optionsValidator;
         _cache = cache;
+        _logger = logger;
     }
 
     public async Task<bool> CreateSettingAsync(GlobalSetting setting, CancellationToken token = default)
@@ -62,7 +64,7 @@ public class GlobalSettingsService : IGlobalSettingsService
         }
         catch (Exception ex)
         {
-            Log.Error("GlobalSetting conversion error for {SettingName}: {Error}", name, ex.Message);
+            _logger.LogError("GlobalSetting conversion error for {SettingName}: {Error}", name, ex.Message);
             return defaultValue;
         }
     }

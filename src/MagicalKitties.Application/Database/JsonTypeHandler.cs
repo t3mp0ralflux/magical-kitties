@@ -26,7 +26,7 @@ public class JsonTypeHandler : SqlMapper.ITypeHandler
         {
             return null;
         }
-
-        return JsonSerializer.Deserialize(parsedValue, destinationType, _options);
+        
+        return JsonSerializer.Deserialize(parsedValue, destinationType, _options);;
     }
 }

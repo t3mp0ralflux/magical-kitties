@@ -28,13 +28,13 @@ public class PasswordResetValidator : AbstractValidator<PasswordReset>
 
         bool exists = await _accountRepository.ExistsByEmailAsync(email, token);
 
-        if (!exists)
+        if (exists)
         {
-            context.AddFailure(nameof(PasswordReset.Email), "Account not found");
-            return false;
+            return true;
         }
 
-        return true;
+        context.AddFailure(nameof(PasswordReset.Email), "Account not found");
+        return false;
     }
 
     private async Task<bool> ValidateResetCode(string? resetCode, ValidationContext<PasswordReset> context, CancellationToken token)
@@ -53,12 +53,13 @@ public class PasswordResetValidator : AbstractValidator<PasswordReset>
             return false;
         }
 
-        if (!string.Equals(account.PasswordResetCode, resetCode))
+        if (string.Equals(account.PasswordResetCode, resetCode))
         {
-            context.AddFailure(nameof(resetCode), "Reset code has expired or was entered incorrectly");
-            return false;
+            return true;
         }
 
-        return true;
+        context.AddFailure(nameof(resetCode), "Reset code has expired or was entered incorrectly");
+        return false;
+
     }
 }

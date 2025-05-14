@@ -13,22 +13,15 @@ namespace MagicalKitties.Api.Controllers;
 
 [ApiVersion(1.0)]
 [ApiController]
-public class AccountController : ControllerBase
+public class AccountController(IAccountService accountService) : ControllerBase
 {
-    private readonly IAccountService _accountService;
-
-    public AccountController(IAccountService accountService)
-    {
-        _accountService = accountService;
-    }
-
     [HttpPost(ApiEndpoints.Accounts.Create)]
     [ProducesResponseType<AccountResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] AccountCreateRequest request, CancellationToken token)
     {
         Account account = request.ToAccount();
-        await _accountService.CreateAsync(account, token);
+        await accountService.CreateAsync(account, token);
 
         AccountResponse response = account.ToResponse();
 
@@ -40,7 +33,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByIdAsync(id, token);
+        Account? account = await accountService.GetByIdAsync(id, token);
 
         if (account is null)
         {
@@ -58,8 +51,8 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> GetAll([FromQuery] GetAllAccountsRequest request, CancellationToken token)
     {
         GetAllAccountsOptions options = request.ToOptions();
-        IEnumerable<Account> result = await _accountService.GetAllAsync(options, token);
-        int accountCount = await _accountService.GetCountAsync(options.UserName, token);
+        IEnumerable<Account> result = await accountService.GetAllAsync(options, token);
+        int accountCount = await accountService.GetCountAsync(options.UserName, token);
 
         AccountsResponse response = result.ToResponse(request.Page, request.PageSize, accountCount);
 
@@ -72,7 +65,7 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] AccountUpdateRequest request, CancellationToken token)
     {
         Account account = request.ToAccount(id);
-        Account? result = await _accountService.UpdateAsync(account, token);
+        Account? result = await accountService.UpdateAsync(account, token);
 
         if (result is null)
         {
@@ -89,7 +82,7 @@ public class AccountController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
     {
-        bool deleted = await _accountService.DeleteAsync(id, token);
+        bool deleted = await accountService.DeleteAsync(id, token);
 
         if (!deleted)
         {
@@ -112,7 +105,7 @@ public class AccountController : ControllerBase
                                               };
 
         // throws validation errors
-        await _accountService.ActivateAsync(activationRequest, token);
+        await accountService.ActivateAsync(activationRequest, token);
 
         AccountActivationResponse response = activationRequest.ToResponse();
 
@@ -131,7 +124,7 @@ public class AccountController : ControllerBase
                                                   Username = username,
                                                   Expiration = DateTime.MinValue
                                               };
-        bool resendActivationResult = await _accountService.ResendActivationAsync(activationRequest, token);
+        bool resendActivationResult = await accountService.ResendActivationAsync(activationRequest, token);
 
         // validations throw exceptions. False means account wasn't found.
         if (!resendActivationResult)

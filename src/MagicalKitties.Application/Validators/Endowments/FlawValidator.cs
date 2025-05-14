@@ -12,7 +12,7 @@ public class FlawValidator : AbstractValidator<Flaw>
         RuleFor(x => x.Description).NotNull().NotEmpty();
     }
 
-    public void ValidateIdRange(int id, ValidationContext<Flaw> context)
+    public static void ValidateIdRange(int id, ValidationContext<Flaw> context)
     {
         switch (id)
         {
