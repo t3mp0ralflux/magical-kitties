@@ -9,5 +9,4 @@ public class ProblemUpdate
     public required string? Emotion { get; init; }
     public required int? Rank { get; init; }
     public required bool? Solved { get; init; }
-    
 }

@@ -13,19 +13,8 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class MagicalPowersController : ControllerBase
+public class MagicalPowersController(IAccountService accountService, IMagicalPowerService magicalPowerService, IOutputCacheStore outputCacheStore) : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly IMagicalPowerService _magicalPowerService;
-    private readonly IOutputCacheStore _outputCacheStore;
-
-    public MagicalPowersController(IAccountService accountService, IMagicalPowerService magicalPowerService, IOutputCacheStore outputCacheStore)
-    {
-        _accountService = accountService;
-        _magicalPowerService = magicalPowerService;
-        _outputCacheStore = outputCacheStore;
-    }
-
     [Authorize(AuthConstants.TrustedUserPolicyName)]
     [HttpPost(ApiEndpoints.MagicalPowers.Create)]
     [ProducesResponseType<MagicalPowerResponse>(StatusCodes.Status200OK)]
@@ -33,7 +22,7 @@ public class MagicalPowersController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(CreateMagicalPowerRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -42,9 +31,9 @@ public class MagicalPowersController : ControllerBase
 
         MagicalPower result = request.ToMagicalPower();
 
-        await _magicalPowerService.CreateAsync(result, token);
+        await magicalPowerService.CreateAsync(result, token);
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
 
         MagicalPowerResponse response = result.ToResponse();
 
@@ -57,7 +46,7 @@ public class MagicalPowersController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken token)
     {
-        MagicalPower? result = await _magicalPowerService.GetByIdAsync(id, token);
+        MagicalPower? result = await magicalPowerService.GetByIdAsync(id, token);
 
         if (result is null)
         {
@@ -77,8 +66,8 @@ public class MagicalPowersController : ControllerBase
     {
         GetAllMagicalPowersOptions options = request.ToOptions();
 
-        IEnumerable<MagicalPower> results = await _magicalPowerService.GetAllAsync(options, token);
-        int total = await _magicalPowerService.GetCountAsync(options, token);
+        IEnumerable<MagicalPower> results = await magicalPowerService.GetAllAsync(options, token);
+        int total = await magicalPowerService.GetCountAsync(options, token);
 
         MagicalPowersResponse response = results.ToResponse(options.Page, options.PageSize, total);
 
@@ -93,7 +82,7 @@ public class MagicalPowersController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(UpdateMagicalPowerRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -102,7 +91,7 @@ public class MagicalPowersController : ControllerBase
 
         MagicalPower magicalPower = request.ToMagicalPower();
 
-        bool result = await _magicalPowerService.UpdateAsync(magicalPower, token);
+        bool result = await magicalPowerService.UpdateAsync(magicalPower, token);
 
         if (!result)
         {
@@ -111,7 +100,7 @@ public class MagicalPowersController : ControllerBase
 
         MagicalPowerResponse response = magicalPower.ToResponse();
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
         return Ok(response);
     }
 
@@ -122,21 +111,21 @@ public class MagicalPowersController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool result = await _magicalPowerService.DeleteAsync(id, token);
+        bool result = await magicalPowerService.DeleteAsync(id, token);
 
         if (!result)
         {
             return NotFound();
         }
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.MagicalPowers, token);
         return NoContent();
     }
 }

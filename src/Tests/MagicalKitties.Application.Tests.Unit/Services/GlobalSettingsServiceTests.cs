@@ -2,9 +2,9 @@
 using FluentValidation;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Repositories;
-using MagicalKitties.Application.Services;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Testing.Common;
 
@@ -16,10 +16,11 @@ public class GlobalSettingsServiceTests
     private readonly IGlobalSettingsRepository _globalSettingsRepository = Substitute.For<IGlobalSettingsRepository>();
     private readonly IValidator<GlobalSetting> _globalSettingValidator = Substitute.For<IValidator<GlobalSetting>>();
     private readonly IMemoryCache _memoryCache = Substitute.For<IMemoryCache>();
+    private readonly ILogger<GlobalSettingsService> _logger = Substitute.For<ILogger<GlobalSettingsService>>();
 
     public GlobalSettingsServiceTests()
     {
-        _sut = new GlobalSettingsService(_globalSettingsRepository, _globalSettingValidator, _globalSettingOptionsValidator, _memoryCache);
+        _sut = new GlobalSettingsService(_globalSettingsRepository, _globalSettingValidator, _globalSettingOptionsValidator, _memoryCache, _logger);
     }
 
     public GlobalSettingsService _sut { get; set; }

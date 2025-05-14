@@ -12,19 +12,8 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class TalentsController : ControllerBase
+public class TalentsController(IAccountService accountService, ITalentService talentService, IOutputCacheStore outputCacheStore) : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly IOutputCacheStore _outputCacheStore;
-    private readonly ITalentService _talentService;
-
-    public TalentsController(IAccountService accountService, ITalentService talentService, IOutputCacheStore outputCacheStore)
-    {
-        _accountService = accountService;
-        _talentService = talentService;
-        _outputCacheStore = outputCacheStore;
-    }
-
     [Authorize(AuthConstants.TrustedUserPolicyName)]
     [HttpPost(ApiEndpoints.Talents.Create)]
     [ProducesResponseType<TalentResponse>(StatusCodes.Status200OK)]
@@ -32,7 +21,7 @@ public class TalentsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(CreateTalentRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -41,9 +30,9 @@ public class TalentsController : ControllerBase
 
         Talent result = request.ToTalent();
 
-        await _talentService.CreateAsync(result, token);
+        await talentService.CreateAsync(result, token);
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
 
         TalentResponse response = result.ToResponse();
 
@@ -56,7 +45,7 @@ public class TalentsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken token)
     {
-        Talent? result = await _talentService.GetByIdAsync(id, token);
+        Talent? result = await talentService.GetByIdAsync(id, token);
 
         if (result is null)
         {
@@ -76,8 +65,8 @@ public class TalentsController : ControllerBase
     {
         GetAllTalentsOptions options = request.ToOptions();
 
-        IEnumerable<Talent> results = await _talentService.GetAllAsync(options, token);
-        int total = await _talentService.GetCountAsync(options, token);
+        IEnumerable<Talent> results = await talentService.GetAllAsync(options, token);
+        int total = await talentService.GetCountAsync(options, token);
 
         TalentsResponse response = results.ToResponse(options.Page, options.PageSize, total);
 
@@ -91,7 +80,7 @@ public class TalentsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(UpdateTalentRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -100,7 +89,7 @@ public class TalentsController : ControllerBase
 
         Talent talent = request.ToTalent();
 
-        bool result = await _talentService.UpdateAsync(talent, token);
+        bool result = await talentService.UpdateAsync(talent, token);
 
         if (!result)
         {
@@ -109,7 +98,7 @@ public class TalentsController : ControllerBase
 
         TalentResponse response = talent.ToResponse();
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
         return Ok(response);
     }
 
@@ -120,21 +109,21 @@ public class TalentsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool result = await _talentService.DeleteAsync(id, token);
+        bool result = await talentService.DeleteAsync(id, token);
 
         if (!result)
         {
             return NotFound();
         }
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Talents, token);
         return NoContent();
     }
 }

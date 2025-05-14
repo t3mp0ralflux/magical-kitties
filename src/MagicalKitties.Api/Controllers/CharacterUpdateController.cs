@@ -3,9 +3,7 @@ using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Contracts.Requests.Characters;
 using MagicalKitties.Contracts.Responses.Errors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,37 +14,26 @@ namespace MagicalKitties.Api.Controllers;
 
 [Authorize]
 [ApiController]
-public class CharacterUpdateController : ControllerBase
+public class CharacterUpdateController(IAccountService accountService, ICharacterUpdateService characterUpdateService, ICharacterUpgradeService characterUpgradeService) : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly ICharacterUpdateService _characterUpdateService;
-    private readonly ICharacterUpgradeService _characterUpgradeService;
-
-    public CharacterUpdateController(IAccountService accountService, ICharacterUpdateService characterUpdateService, ICharacterUpgradeService characterUpgradeService)
-    {
-        _accountService = accountService;
-        _characterUpdateService = characterUpdateService;
-        _characterUpgradeService = characterUpgradeService;
-    }
-
     [HttpPut(ApiEndpoints.Characters.UpdateDescription)]
     [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundObjectResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateDescription([FromRoute]MKCtrCharacterRequests.DescriptionOption description, [FromBody]CharacterDescriptionUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> UpdateDescription([FromRoute] MKCtrCharacterRequests.DescriptionOption description, [FromBody] MKCtrCharacterRequests.CharacterDescriptionUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        DescriptionUpdate descriptionUpdate = request.ToUpdate(account.Id);
+        MKCtrApplicationCharacterUpdates.DescriptionUpdate descriptionUpdate = request.ToUpdate(account.Id);
 
         // will throw validation errors
-        bool success = await _characterUpdateService.UpdateDescriptionAsync((MKCtrApplicationCharacterUpdates.DescriptionOption)description, descriptionUpdate, token);
+        bool success = await characterUpdateService.UpdateDescriptionAsync((MKCtrApplicationCharacterUpdates.DescriptionOption)description, descriptionUpdate, token);
 
         // returns not found if character not found
         return success ? Ok($"{description.ToString()} updated successfully.") : NotFound("Character not found.");
@@ -57,19 +44,19 @@ public class CharacterUpdateController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundObjectResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateAttribute([FromRoute]MKCtrCharacterRequests.AttributeOption attribute, [FromBody]CharacterAttributeUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> UpdateAttribute([FromRoute] MKCtrCharacterRequests.AttributeOption attribute, [FromBody] MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        AttributeUpdate attributeUpdate = request.ToUpdate(account.Id);
-        
+        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(account.Id);
+
         // will throw validation errors
-        bool success = await _characterUpdateService.UpdateAttributeAsync((MKCtrApplicationCharacterUpdates.AttributeOption)attribute, attributeUpdate, token);
+        bool success = await characterUpdateService.UpdateAttributeAsync((MKCtrApplicationCharacterUpdates.AttributeOption)attribute, attributeUpdate, token);
 
         return success ? Ok($"{attribute.ToString()} updated successfully.") : NotFound("Character not found.");
     }
@@ -80,14 +67,14 @@ public class CharacterUpdateController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Reset([FromRoute] Guid id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool success = await _characterUpdateService.Reset(account.Id, id, token);
+        bool success = await characterUpdateService.Reset(account.Id, id, token);
 
         if (!success)
         {
@@ -102,9 +89,9 @@ public class CharacterUpdateController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ValidationException>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpsertUpgrade([FromRoute]Guid characterId, UpgradeUpsertRequest request, CancellationToken token)
+    public async Task<IActionResult> UpsertUpgrade([FromRoute] Guid characterId, MKCtrCharacterRequests.UpgradeUpsertRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -113,7 +100,7 @@ public class CharacterUpdateController : ControllerBase
 
         UpgradeRequest update = request.ToUpdate(account.Id, characterId);
 
-        bool success = await _characterUpgradeService.UpsertUpgradeAsync(update, token);
+        bool success = await characterUpgradeService.UpsertUpgradeAsync(update, token);
 
         if (!success)
         {
@@ -128,9 +115,9 @@ public class CharacterUpdateController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ValidationException>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RemoveUpgrade([FromRoute]Guid characterId, UpgradeRemoveRequest request, CancellationToken token)
+    public async Task<IActionResult> RemoveUpgrade([FromRoute] Guid characterId, MKCtrCharacterRequests.UpgradeRemoveRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -139,8 +126,8 @@ public class CharacterUpdateController : ControllerBase
 
         UpgradeRequest update = request.ToUpdate(account.Id, characterId);
 
-        bool success = await _characterUpgradeService.RemoveUpgradeAsync(update, token);
-        
+        bool success = await characterUpgradeService.RemoveUpgradeAsync(update, token);
+
         if (!success)
         {
             return NotFound();

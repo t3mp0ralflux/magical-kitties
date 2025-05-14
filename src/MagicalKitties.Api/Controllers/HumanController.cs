@@ -4,7 +4,6 @@ using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Contracts.Requests.Humans;
 using MagicalKitties.Contracts.Responses.Errors;
 using MagicalKitties.Contracts.Responses.Humans;
 using Microsoft.AspNetCore.Authorization;
@@ -15,61 +14,49 @@ namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
 [Authorize]
-public class HumanController : ControllerBase
+public class HumanController(IHumanService humanService, IAccountService accountService, ICharacterService characterService) : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly ICharacterService _characterService;
-    private readonly IHumanService _humanService;
-    
-    public HumanController(IHumanService humanService, IAccountService accountService, ICharacterService characterService)
-    {
-        _humanService = humanService;
-        _accountService = accountService;
-        _characterService = characterService;
-    }
-
     [HttpPost(ApiEndpoints.Humans.Create)]
     [ProducesResponseType<HumanResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<NotFoundObjectResult>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Create(Guid characterId, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool characterExists = await _characterService.ExistsByIdAsync(characterId, token);
+        bool characterExists = await characterService.ExistsByIdAsync(characterId, token);
 
         if (!characterExists)
         {
             return NotFound("Character not found.");
         }
-        
-        Human human = await _humanService.CreateAsync(characterId, token);
+
+        Human human = await humanService.CreateAsync(characterId, token);
 
         HumanResponse response = human.ToResponse();
 
-        return CreatedAtAction(nameof(Get),new { id = human.Id }, new { response });
-
+        return CreatedAtAction(nameof(Get), new { id = human.Id }, new { response });
     }
 
     [HttpPost(ApiEndpoints.Humans.CreateProblem)]
     [ProducesResponseType<OkObjectResult>(StatusCodes.Status201Created)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateProblem([FromRoute]Guid humanId, CancellationToken token)
+    public async Task<IActionResult> CreateProblem([FromRoute] Guid humanId, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
-        
-        bool result = await _humanService.CreateProblemAsync(humanId, token);
+
+        bool result = await humanService.CreateProblemAsync(humanId, token);
 
         return result ? Ok("Problem created successfully") : NotFound("Human not found.");
     }
@@ -78,16 +65,16 @@ public class HumanController : ControllerBase
     [ProducesResponseType<HumanResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute]Guid id, CancellationToken token)
+    public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        Human? human = await _humanService.GetByIdAsync(id, token);
+        Human? human = await humanService.GetByIdAsync(id, token);
 
         if (human is null)
         {
@@ -102,9 +89,9 @@ public class HumanController : ControllerBase
     [HttpGet(ApiEndpoints.Humans.GetAll)]
     [ProducesResponseType<HumansResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetAll(GetAllHumansRequest request, CancellationToken token)
+    public async Task<IActionResult> GetAll(MKCtrHumanRequests.GetAllHumansRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -113,8 +100,8 @@ public class HumanController : ControllerBase
 
         GetAllHumansOptions options = request.ToOptions();
 
-        IEnumerable<Human> result = await _humanService.GetAllAsync(options, token);
-        int humanCount = await _humanService.GetCountAsync(options, token);
+        IEnumerable<Human> result = await humanService.GetAllAsync(options, token);
+        int humanCount = await humanService.GetCountAsync(options, token);
 
         HumansResponse response = result.ToGetAllResponse(request.Page, request.PageSize, humanCount);
 
@@ -126,9 +113,9 @@ public class HumanController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateHuman([FromRoute]MKCtrHumanRequests.DescriptionOption description, [FromBody]HumanDescriptionUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> UpdateHuman([FromRoute] MKCtrHumanRequests.DescriptionOption description, [FromBody] MKCtrHumanRequests.HumanDescriptionUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -137,7 +124,7 @@ public class HumanController : ControllerBase
 
         DescriptionUpdate descriptionUpdate = request.ToUpdate(description);
 
-        bool success = await _humanService.UpdateDescriptionAsync(descriptionUpdate, token);
+        bool success = await humanService.UpdateDescriptionAsync(descriptionUpdate, token);
 
         return success ? Ok($"{description.ToString()} updated successfully.") : NotFound("Character not found.");
     }
@@ -147,9 +134,9 @@ public class HumanController : ControllerBase
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateProblem([FromRoute]MKCtrHumanRequests.ProblemOption problem, [FromBody]HumanProblemUpdateRequest request, CancellationToken token )
+    public async Task<IActionResult> UpdateProblem([FromRoute] MKCtrHumanRequests.ProblemOption problem, [FromBody] MKCtrHumanRequests.HumanProblemUpdateRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -157,8 +144,8 @@ public class HumanController : ControllerBase
         }
 
         ProblemUpdate problemUpdate = request.ToUpdate(problem);
-        
-        bool success = await _humanService.UpdateProblemAsync(problemUpdate, token);
+
+        bool success = await humanService.UpdateProblemAsync(problemUpdate, token);
 
         return success ? Ok($"{problem.ToString()} updated successfully.") : NotFound("Character not found.");
     }
@@ -167,16 +154,16 @@ public class HumanController : ControllerBase
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete([FromRoute]Guid id, CancellationToken token)
+    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool result = await _humanService.DeleteAsync(id, token);
+        bool result = await humanService.DeleteAsync(id, token);
 
         if (!result)
         {
@@ -185,21 +172,21 @@ public class HumanController : ControllerBase
 
         return NoContent();
     }
-    
+
     [HttpDelete(ApiEndpoints.Humans.DeleteProblem)]
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteProblem([FromRoute]Guid humanId, [FromRoute]Guid problemId, CancellationToken token)
+    public async Task<IActionResult> DeleteProblem([FromRoute] Guid humanId, [FromRoute] Guid problemId, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool result = await _humanService.DeleteProblemAsync(humanId, problemId, token);
+        bool result = await humanService.DeleteProblemAsync(humanId, problemId, token);
 
         if (!result)
         {
@@ -208,5 +195,4 @@ public class HumanController : ControllerBase
 
         return NoContent();
     }
-    
 }

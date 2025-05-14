@@ -3,5 +3,5 @@
 public enum DescriptionOption
 {
     name,
-    description,
+    description
 }

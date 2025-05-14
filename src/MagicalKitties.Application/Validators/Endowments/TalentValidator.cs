@@ -12,7 +12,7 @@ public class TalentValidator : AbstractValidator<Talent>
         RuleFor(x => x.Description).NotNull().NotEmpty();
     }
 
-    public void ValidateIdRange(int id, ValidationContext<Talent> context)
+    public static void ValidateIdRange(int id, ValidationContext<Talent> context)
     {
         switch (id)
         {

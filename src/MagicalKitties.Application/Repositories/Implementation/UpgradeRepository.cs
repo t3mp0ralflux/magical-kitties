@@ -9,8 +9,8 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class UpgradeRepository : IUpgradeRepository
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
 
     public UpgradeRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
@@ -23,8 +23,9 @@ public class UpgradeRepository : IUpgradeRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         IEnumerable<UpgradeRule> result = await connection.QueryAsyncWithRetry<UpgradeRule>(new CommandDefinition("""
-                                                                                                                  select id, block, upgradechoice
-                                                                                                                  from upgraderule 
+                                                                                                                  select ur.id, ur.block, ur.upgradechoice, uc.name as Value 
+                                                                                                                  from upgradechoice uc 
+                                                                                                                  join upgraderule ur on uc.id = ur.upgradechoice
                                                                                                                   """, cancellationToken: token));
 
         return result.ToList();
@@ -45,7 +46,7 @@ public class UpgradeRepository : IUpgradeRepository
                                                                                            Upgrades = new JsonParameter(JsonSerializer.Serialize(upgrades)),
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;

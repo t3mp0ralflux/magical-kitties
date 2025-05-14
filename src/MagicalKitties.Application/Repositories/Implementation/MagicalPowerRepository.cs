@@ -43,25 +43,14 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         MagicalPower? result = await connection.QuerySingleOrDefaultAsyncWithRetry<MagicalPower>(new CommandDefinition("""
-                                                                                                                       select id, name, description, is_custom as IsCustom, bonusfeatures
+                                                                                                                       select id, name, description, is_custom, bonusfeatures
                                                                                                                        from magicalpower
                                                                                                                        where id = @id
                                                                                                                        """, new { id }, cancellationToken: token));
 
         return result;
     }
-
-    public async Task<bool> ExistsByIdAsync(int id, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-
-        return await connection.QuerySingleOrDefaultAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                                    select exists(select 1
-                                                                                                    from magicalpower
-                                                                                                    where id = @id)
-                                                                                                    """, new { id }, cancellationToken: token));
-    }
-
+    
     public async Task<IEnumerable<MagicalPower>> GetAllAsync(GetAllMagicalPowersOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -74,7 +63,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         }
 
         IEnumerable<MagicalPower> results = await connection.QueryAsyncWithRetry<MagicalPower>(new CommandDefinition($"""
-                                                                                                                      select id, name, description, is_custom as IsCustom, bonusfeatures
+                                                                                                                      select id, name, description, is_custom, bonusfeatures
                                                                                                                       from magicalpower
                                                                                                                       {orderClause}
                                                                                                                       """, new

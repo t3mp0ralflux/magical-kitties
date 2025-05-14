@@ -31,7 +31,7 @@ public class AccountServiceTests
 
     public AccountServiceTests()
     {
-        _sut = new AccountService(_accountRepository, _accountValidator, _dateTimeProvider, _optionsValidator, _passwordHasher, _globalSettingsService, _emailService, _logger, _passwordResetValidator);
+        _sut = new AccountService(_accountRepository, _accountValidator, _dateTimeProvider, _optionsValidator, _passwordHasher, _globalSettingsService, _emailService, _passwordResetValidator, _logger);
 
         _equivalencyOptions = new EquivalencyOptions<Account>().Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
     }

@@ -36,7 +36,7 @@ Log.Logger = new LoggerConfiguration()
                                     })
              .CreateLogger();
 
-builder.Services.AddSerilog();
+builder.Services.AddSerilog(dispose: true);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -107,6 +107,12 @@ builder.Services.AddOutputCache(x =>
                                                                                                .SetVaryByQuery(["sortBy", "page", "pageSize"])
                                                                                                .Tag(ApiAssumptions.TagNames.MagicalPowers);
                                                                                           });
+                                    x.AddPolicy(ApiAssumptions.PolicyNames.Rules, c =>
+                                                                                  {
+                                                                                      c.Cache()
+                                                                                       .Expire(TimeSpan.FromMinutes(60))
+                                                                                       .Tag(ApiAssumptions.TagNames.Rules);
+                                                                                  });
                                 });
 
 builder.Services.AddControllers();
@@ -137,7 +143,7 @@ builder.Services.AddApplication();
 builder.Services.Configure<HostOptions>(x =>
                                         {
                                             x.ServicesStartConcurrently = true;
-                                            x.ServicesStopConcurrently = false;
+                                            x.ServicesStopConcurrently = true;
                                             x.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore; // will log error, but don't want complete death.
                                         });
 
@@ -167,11 +173,5 @@ app.UseOutputCache();
 
 app.MapControllers();
 app.UseRateLimiter();
-
-// if (app.Environment.IsDevelopment())
-// {
-//     DbInitializer dbInitializer = app.Services.GetRequiredService<DbInitializer>();
-//     await dbInitializer.InitializeAsync();
-// }
 
 app.Run();

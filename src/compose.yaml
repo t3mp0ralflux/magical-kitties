@@ -18,3 +18,23 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - '5341:80'
+  api:
+    image: dockerapp
+    container_name: API
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - '5001:5001'
+    environment:
+      - ASPNETCORE_HTTPS_PORTS=5001
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ConnectionStrings:Database=Server=192.168.1.110;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
+    depends_on:
+      - "db"
+    volumes:
+      - $APPDATA/microsoft/UserSecrets/:/home/app/.microsoft/usersecrets
+      - $USERPROFILE/.aspnet/https/:/https
+    stop_signal: SIGINT
+    stop_grace_period: 30s

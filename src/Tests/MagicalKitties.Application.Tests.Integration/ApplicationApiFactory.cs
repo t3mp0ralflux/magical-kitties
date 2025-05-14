@@ -1,5 +1,4 @@
-﻿using System.Text;
-using MagicalKitties.Api;
+﻿using MagicalKitties.Api;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.HostedServices;
 using Microsoft.AspNetCore.Hosting;
@@ -24,16 +23,15 @@ public class ApplicationApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        
+
         foreach (string file in Directory.GetFiles("../../../../../scripts").Order())
         {
             string script = await File.ReadAllTextAsync(file);
             await _dbContainer.ExecScriptAsync(script);
         }
-
     }
 
-    public async Task DisposeAsync()
+    public new async Task DisposeAsync()
     {
         await _dbContainer.DisposeAsync();
     }
@@ -67,5 +65,6 @@ public class ApplicationApiFactory : WebApplicationFactory<IApiMarker>, IAsyncLi
                                       });
 
         builder.UseEnvironment("Testing");
+        
     }
 }

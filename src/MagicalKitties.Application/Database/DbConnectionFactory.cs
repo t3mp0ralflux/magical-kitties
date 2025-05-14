@@ -9,7 +9,6 @@ namespace MagicalKitties.Application.Database;
 
 public interface IDbConnectionFactory
 {
-    //Task<IDbConnection> CreateConnectionAsync(CancellationToken token = default);
     string GetConnectionString();
 }
 
@@ -21,7 +20,6 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
     {
         _connectionString = connectionString;
         
-        SqlMapper.AddTypeHandler(typeof(Flaw), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Problem), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Talent>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<MagicalPower>), new JsonTypeHandler());
@@ -29,10 +27,11 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         SqlMapper.AddTypeHandler(typeof(List<Problem>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(List<Upgrade>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(object), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(Flaw), new JsonTypeHandler());
 
-        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
     }
-    
+
     public string GetConnectionString()
     {
         return _connectionString;

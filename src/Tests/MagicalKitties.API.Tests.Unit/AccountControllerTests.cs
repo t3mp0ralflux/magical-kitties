@@ -10,17 +10,17 @@ using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Testing.Common;
-using ctr = MagicalKitties.Contracts.Models;
+using MKCtr = MagicalKitties.Contracts.Models;
 
 namespace MagicalKitties.API.Tests.Unit;
 
 public class AccountControllerTests
 {
-    public IAccountService _AccountService = Substitute.For<IAccountService>();
+    private readonly  IAccountService _accountService = Substitute.For<IAccountService>();
 
     public AccountControllerTests()
     {
-        _sut = new AccountController(_AccountService);
+        _sut = new AccountController(_accountService);
     }
 
     public AccountController _sut { get; set; }
@@ -30,7 +30,7 @@ public class AccountControllerTests
     {
         // Arrange
         Account fakeAccount = Fakes.GenerateAccount();
-        _AccountService.CreateAsync(Arg.Any<Account>()).Throws(new ValidationException("Information is required"));
+        _accountService.CreateAsync(Arg.Any<Account>()).Throws(new ValidationException("Information is required"));
 
         AccountCreateRequest request = new()
                                        {
@@ -51,7 +51,7 @@ public class AccountControllerTests
     public async Task Create_ShouldCreateAccount_WhenRequestInformationIsPresent()
     {
         // Arrange
-        _AccountService.CreateAsync(Arg.Any<Account>()).Returns(true);
+        _accountService.CreateAsync(Arg.Any<Account>()).Returns(true);
         Account fakeAccount = Fakes.GenerateAccount();
 
         AccountCreateRequest request = new()
@@ -80,7 +80,7 @@ public class AccountControllerTests
     public async Task Get_ShouldReturnNotFound_WhenAccountIsNotFound()
     {
         // Arrange
-        _AccountService.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Account?)null);
+        _accountService.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Account?)null);
 
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.Get(Guid.NewGuid(), CancellationToken.None);
@@ -98,7 +98,7 @@ public class AccountControllerTests
 
         Account account = Fakes.GenerateAccount();
 
-        _AccountService.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns(account);
+        _accountService.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns(account);
 
         AccountResponse expectedResponse = account.ToResponse();
         // Act
@@ -120,7 +120,7 @@ public class AccountControllerTests
                                             PageSize = 5
                                         };
 
-        _AccountService.GetAllAsync(Arg.Any<GetAllAccountsOptions>(), CancellationToken.None).Throws(new ValidationException("Bad Search Term"));
+        _accountService.GetAllAsync(Arg.Any<GetAllAccountsOptions>(), CancellationToken.None).Throws(new ValidationException("Bad Search Term"));
         // Act
         Func<Task<IActionResult>> action = async () => await _sut.GetAll(request, CancellationToken.None);
 
@@ -173,8 +173,8 @@ public class AccountControllerTests
 
         List<Account> accounts = Enumerable.Range(5, random.Next(1, 15)).Select(x => Fakes.GenerateAccount()).ToList();
 
-        _AccountService.GetAllAsync(Arg.Any<GetAllAccountsOptions>(), CancellationToken.None).Returns(accounts);
-        _AccountService.GetCountAsync(requestOptions.UserName, CancellationToken.None).Returns(accounts.Count);
+        _accountService.GetAllAsync(Arg.Any<GetAllAccountsOptions>(), CancellationToken.None).Returns(accounts);
+        _accountService.GetCountAsync(requestOptions.UserName, CancellationToken.None).Returns(accounts.Count);
 
         AccountsResponse expectedResponse = accounts.ToResponse(request.Page, request.PageSize, accounts.Count());
 
@@ -200,11 +200,11 @@ public class AccountControllerTests
                                            Username = "",
                                            Password = "",
                                            Email = "",
-                                           AccountStatus = (ctr.AccountStatus)account.AccountStatus,
-                                           AccountRole = (ctr.AccountRole)account.AccountRole
+                                           AccountStatus = (MKCtr.AccountStatus)account.AccountStatus,
+                                           AccountRole = (MKCtr.AccountRole)account.AccountRole
                                        };
 
-        _AccountService.UpdateAsync(Arg.Any<Account>(), CancellationToken.None).Returns((Account?)null);
+        _accountService.UpdateAsync(Arg.Any<Account>(), CancellationToken.None).Returns((Account?)null);
 
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.Update(account.Id, request, CancellationToken.None);
@@ -226,13 +226,13 @@ public class AccountControllerTests
                                            Username = string.Empty,
                                            Password = string.Empty,
                                            Email = string.Empty,
-                                           AccountStatus = (ctr.AccountStatus)account.AccountStatus,
-                                           AccountRole = (ctr.AccountRole)account.AccountRole
+                                           AccountStatus = (MKCtr.AccountStatus)account.AccountStatus,
+                                           AccountRole = (MKCtr.AccountRole)account.AccountRole
                                        };
 
         AccountResponse expectedOutput = request.ToAccount(account.Id).ToResponse();
 
-        _AccountService.UpdateAsync(Arg.Any<Account>(), CancellationToken.None).Returns(account);
+        _accountService.UpdateAsync(Arg.Any<Account>(), CancellationToken.None).Returns(account);
 
         // Act
         OkObjectResult result = (OkObjectResult)await _sut.Update(account.Id, request, CancellationToken.None);
@@ -248,7 +248,7 @@ public class AccountControllerTests
         // Arrange
         Guid missingId = Guid.NewGuid();
 
-        _AccountService.DeleteAsync(missingId, CancellationToken.None).Returns(false);
+        _accountService.DeleteAsync(missingId, CancellationToken.None).Returns(false);
 
         // Act
         NotFoundResult? result = (NotFoundResult)await _sut.Delete(missingId, CancellationToken.None);
@@ -263,7 +263,7 @@ public class AccountControllerTests
         // Arrange
         Guid missingId = Guid.NewGuid();
 
-        _AccountService.DeleteAsync(missingId, CancellationToken.None).Returns(true);
+        _accountService.DeleteAsync(missingId, CancellationToken.None).Returns(true);
 
         // Act
         NoContentResult? result = (NoContentResult)await _sut.Delete(missingId, CancellationToken.None);
@@ -279,7 +279,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("No account found"));
+        _accountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("No account found"));
 
         // Act
         Func<Task<IActionResult>> action = async () => await _sut.Activate(username, activationcode, CancellationToken.None);
@@ -295,7 +295,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Activation Code has expired"));
+        _accountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Activation Code has expired"));
 
         // Act
         Func<Task<IActionResult>> action = async () => await _sut.Activate(username, activationcode, CancellationToken.None);
@@ -311,7 +311,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Couldn't activate"));
+        _accountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Couldn't activate"));
 
         // Act
         Func<Task<IActionResult>> action = async () => await _sut.Activate(username, activationcode, CancellationToken.None);
@@ -327,7 +327,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Error, yo"));
+        _accountService.ActivateAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Error, yo"));
 
         // Act
         Func<Task<IActionResult>>? action = async () => await _sut.Activate(username, activationcode, CancellationToken.None);
@@ -343,7 +343,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ActivateAsync(Arg.Any<AccountActivation>()).Returns(true);
+        _accountService.ActivateAsync(Arg.Any<AccountActivation>()).Returns(true);
 
         AccountActivationResponse expectedResponse = new()
                                                      {
@@ -365,7 +365,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Account not found"));
+        _accountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Account not found"));
 
         // Act
         Func<Task<IActionResult>> action = async () => await _sut.ResendActivation(username, activationcode, CancellationToken.None);
@@ -381,7 +381,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Activation invalid"));
+        _accountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Activation invalid"));
 
         // Act
         Func<Task<IActionResult>> action = async () => await _sut.ResendActivation(username, activationcode, CancellationToken.None);
@@ -397,7 +397,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Error, yo"));
+        _accountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Throws(new ValidationException("Error, yo"));
 
         // Act
         Func<Task<IActionResult>>? action = async () => await _sut.ResendActivation(username, activationcode, CancellationToken.None);
@@ -413,7 +413,7 @@ public class AccountControllerTests
         string username = "TestUsername";
         string activationcode = "Activate";
 
-        _AccountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Returns(true);
+        _accountService.ResendActivationAsync(Arg.Any<AccountActivation>()).Returns(true);
 
         AccountActivationResponse expectedResponse = new()
                                                      {

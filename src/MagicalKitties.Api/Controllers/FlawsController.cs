@@ -12,19 +12,8 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class FlawsController : ControllerBase
+public class FlawsController(IAccountService accountService, IFlawService flawService, IOutputCacheStore outputCacheStore) : ControllerBase
 {
-    private readonly IAccountService _accountService;
-    private readonly IFlawService _flawService;
-    private readonly IOutputCacheStore _outputCacheStore;
-
-    public FlawsController(IAccountService accountService, IFlawService flawService, IOutputCacheStore outputCacheStore)
-    {
-        _accountService = accountService;
-        _flawService = flawService;
-        _outputCacheStore = outputCacheStore;
-    }
-
     [Authorize(AuthConstants.TrustedUserPolicyName)]
     [HttpPost(ApiEndpoints.Flaws.Create)]
     [ProducesResponseType<FlawResponse>(StatusCodes.Status200OK)]
@@ -32,7 +21,7 @@ public class FlawsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create(CreateFlawRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -41,9 +30,9 @@ public class FlawsController : ControllerBase
 
         Flaw result = request.ToFlaw();
 
-        await _flawService.CreateAsync(result, token);
+        await flawService.CreateAsync(result, token);
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
 
         FlawResponse response = result.ToResponse();
 
@@ -56,7 +45,7 @@ public class FlawsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken token)
     {
-        Flaw? result = await _flawService.GetByIdAsync(id, token);
+        Flaw? result = await flawService.GetByIdAsync(id, token);
 
         if (result is null)
         {
@@ -76,8 +65,8 @@ public class FlawsController : ControllerBase
     {
         GetAllFlawsOptions options = request.ToOptions();
 
-        IEnumerable<Flaw> results = await _flawService.GetAllAsync(options, token);
-        int total = await _flawService.GetCountAsync(options, token);
+        IEnumerable<Flaw> results = await flawService.GetAllAsync(options, token);
+        int total = await flawService.GetCountAsync(options, token);
 
         FlawsResponse response = results.ToResponse(options.Page, options.PageSize, total);
 
@@ -91,7 +80,7 @@ public class FlawsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(UpdateFlawRequest request, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
@@ -100,7 +89,7 @@ public class FlawsController : ControllerBase
 
         Flaw flaw = request.ToFlaw();
 
-        bool result = await _flawService.UpdateAsync(flaw, token);
+        bool result = await flawService.UpdateAsync(flaw, token);
 
         if (!result)
         {
@@ -109,7 +98,7 @@ public class FlawsController : ControllerBase
 
         FlawResponse response = flaw.ToResponse();
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
         return Ok(response);
     }
 
@@ -120,21 +109,21 @@ public class FlawsController : ControllerBase
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken token)
     {
-        Account? account = await _accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
         {
             return Unauthorized();
         }
 
-        bool result = await _flawService.DeleteAsync(id, token);
+        bool result = await flawService.DeleteAsync(id, token);
 
         if (!result)
         {
             return NotFound();
         }
 
-        await _outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
+        await outputCacheStore.EvictByTagAsync(ApiAssumptions.TagNames.Flaws, token);
         return NoContent();
     }
 }

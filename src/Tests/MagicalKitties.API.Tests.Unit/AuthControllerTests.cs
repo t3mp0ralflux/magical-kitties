@@ -147,7 +147,7 @@ public class AuthControllerTests
 
         _accountService.GetByEmailAsync(request.Email, CancellationToken.None).Returns(account);
         _passwordHasher.Verify(request.Password, account.Password).Returns(true);
-        _jwtService.GenerateToken(account, CancellationToken.None).Returns(expectedToken);
+        _jwtService.GenerateToken(account).Returns(expectedToken);
         _authService.LoginAsync(Arg.Any<AccountLogin>()).Returns(true);
 
         // Act

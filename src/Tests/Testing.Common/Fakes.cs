@@ -18,14 +18,14 @@ public static class Fakes
     public static Account GenerateAccount(AccountStatus? status = AccountStatus.active, AccountRole? role = AccountRole.admin, string? userName = null, bool isDeleted = false, bool isReset = false)
     {
         Faker<Account> fakeAccount = new Faker<Account>()
-                                     .RuleFor(x => x.Id, f => Guid.NewGuid())
+                                     .RuleFor(x => x.Id, _ => Guid.NewGuid())
                                      .RuleFor(x => x.FirstName, f => f.Person.FirstName)
                                      .RuleFor(x => x.LastName, f => f.Person.LastName)
                                      .RuleFor(x => x.Username, f => string.IsNullOrWhiteSpace(userName) ? f.Internet.UserName() : userName)
                                      .RuleFor(x => x.Email, f => f.Person.Email)
                                      .RuleFor(x => x.Password, f => f.Internet.Password())
-                                     .RuleFor(x => x.AccountStatus, f => status)
-                                     .RuleFor(x => x.AccountRole, f => role)
+                                     .RuleFor(x => x.AccountStatus, _ => status)
+                                     .RuleFor(x => x.AccountRole, _ => role)
                                      .RuleFor(x => x.CreatedUtc, f => f.Date.Recent())
                                      .RuleFor(x => x.UpdatedUtc, f => f.Date.Recent())
                                      .RuleFor(x => x.LastLoginUtc, f => f.Date.Recent())
@@ -41,7 +41,7 @@ public static class Fakes
         Faker<EmailData> fakeSetting = new Faker<EmailData>()
                                        .RuleFor(x => x.Id, _ => Guid.NewGuid())
                                        .RuleFor(x => x.ShouldSend, _ => true)
-                                       .RuleFor(x => x.SendAttempts, f => 0)
+                                       .RuleFor(x => x.SendAttempts, _ => 0)
                                        .RuleFor(x => x.SendAfterUtc, f => sendAfterUtc ??= f.Date.Recent())
                                        .RuleFor(x => x.SenderEmail, f => f.Person.Email)
                                        .RuleFor(x => x.RecipientEmail, f => f.Person.Email)
@@ -228,10 +228,10 @@ public static class Fakes
                                Option = AttributeOption.magicalpowerbonus,
                                Level = 4,
                                Choice = new BonusFeatureUpgrade
-                                                 {
-                                                     MagicalPowerId = 33,
-                                                     BonusFeatureId = 1
-                                                 }
+                                        {
+                                            MagicalPowerId = 33,
+                                            BonusFeatureId = 1
+                                        }
                            };
         Upgrade upgrade5 = new()
                            {
@@ -331,25 +331,29 @@ public static class Fakes
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6")
+                UpgradeChoice = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
+                Value = "Improve Attribute 3"
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b")
+                UpgradeChoice = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b"),
+                Value = "Increase Owie"
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30")
+                UpgradeChoice = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
+                Value = "Gain Bonus Feature"
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 2,
-                UpgradeChoice = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589")
+                UpgradeChoice = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
+                Value = "Gain Talent" // rude much?
             }
         ];
     }
@@ -363,23 +367,23 @@ public static class Fakes
                 Id = id,
                 Name = "Test",
                 Description = "This is a test",
-                BonusFeatures = 
-                    [
-                        new MagicalPower
-                        {
-                            Id = 1,
-                            Name = "Bonus 1",
-                            Description = "Bonus 1 lives here",
-                            IsCustom = false
-                        },
-                        new MagicalPower
-                        {
-                            Id = 2,
-                            Name = "Bonus 2",
-                            Description = "Bonus 2 lives here",
-                            IsCustom = false
-                        }
-                    ],
+                BonusFeatures =
+                [
+                    new MagicalPower
+                    {
+                        Id = 1,
+                        Name = "Bonus 1",
+                        Description = "Bonus 1 lives here",
+                        IsCustom = false
+                    },
+                    new MagicalPower
+                    {
+                        Id = 2,
+                        Name = "Bonus 2",
+                        Description = "Bonus 2 lives here",
+                        IsCustom = false
+                    }
+                ],
                 IsCustom = false
             }
         ];
@@ -388,28 +392,28 @@ public static class Fakes
     public static List<Talent> GenerateTalents()
     {
         return
-            [
-                new Talent
-                {
-                    Id = 22,
-                    Name = "Claws",
-                    Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
-                    IsCustom = false
-                },
-                new Talent
-                {
-                    Id = 42,
-                    Name = "Navigator",
-                    Description = "You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.",
-                    IsCustom = false
-                },
-                new Talent
-                {
-                    Id = 43,
-                    Name = "This is a test one",
-                    Description = "Eating stuff.",
-                    IsCustom = false
-                }
-            ];
+        [
+            new Talent
+            {
+                Id = 22,
+                Name = "Claws",
+                Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
+                IsCustom = false
+            },
+            new Talent
+            {
+                Id = 42,
+                Name = "Navigator",
+                Description = "You hardly ever get lost and you know how to find your way from here to there, wherever there happens to be.",
+                IsCustom = false
+            },
+            new Talent
+            {
+                Id = 43,
+                Name = "This is a test one",
+                Description = "Eating stuff.",
+                IsCustom = false
+            }
+        ];
     }
 }

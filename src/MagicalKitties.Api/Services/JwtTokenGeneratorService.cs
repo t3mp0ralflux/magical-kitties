@@ -11,7 +11,7 @@ namespace MagicalKitties.Api.Services;
 
 public interface IJwtTokenGeneratorService
 {
-    string GenerateToken(Account account, CancellationToken token = default);
+    string GenerateToken(Account account);
 }
 
 public class JwtTokenGeneratorService : IJwtTokenGeneratorService
@@ -27,7 +27,7 @@ public class JwtTokenGeneratorService : IJwtTokenGeneratorService
         _tokenLifetime = TimeSpan.FromHours(lifetimeHours);
     }
 
-    public string GenerateToken(Account account, CancellationToken token = default)
+    public string GenerateToken(Account account)
     {
         string tokenSecret = _config["Jwt:Key"]!;
         JwtSecurityTokenHandler tokenHandler = new();

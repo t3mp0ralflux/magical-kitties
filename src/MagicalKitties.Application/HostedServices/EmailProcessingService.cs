@@ -3,7 +3,6 @@ using System.Net.Mail;
 using System.Net.Sockets;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -21,13 +20,13 @@ public class EmailProcessingService : IHostedService
 
     private PeriodicTimer _timer = new(TimeSpan.FromSeconds(9999)); // initial value to prevent running for a while. Overridden in StartAsync.
 
-    public EmailProcessingService(ILogger<EmailProcessingService> logger, IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration)
+    public EmailProcessingService(IEmailService emailService, IDateTimeProvider dateTimeProvider, IGlobalSettingsService globalSettingsService, IConfiguration configuration, ILogger<EmailProcessingService> logger)
     {
-        _logger = logger;
         _emailService = emailService;
         _dateTimeProvider = dateTimeProvider;
         _globalSettingsService = globalSettingsService;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -40,14 +39,21 @@ public class EmailProcessingService : IHostedService
         while (!cancellationToken.IsCancellationRequested)
         {
             await ProcessEmailsAsync(state, cancellationToken);
-            await _timer.WaitForNextTickAsync(cancellationToken);
+            try
+            {
+                await _timer.WaitForNextTickAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
         }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _timer.Dispose();
         _logger.LogInformation("EmailProcessing Service ended");
+        _timer.Dispose();
         return Task.CompletedTask;
     }
 
@@ -110,12 +116,12 @@ public class EmailProcessingService : IHostedService
         {
             if (dbException.InnerException is SocketException)
             {
-                _logger.LogCritical("Could not reach database. Error: {Message}", dbException.Message);
+                _logger.LogError(dbException, "Could not reach database. Error: {Message}", dbException.Message);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex.Message);
+            _logger.LogError(ex, "{Message}", ex.Message);
         }
     }
 
@@ -139,12 +145,12 @@ public class EmailProcessingService : IHostedService
         }
         catch (SmtpException smtpEx)
         {
-            _logger.LogWarning(smtpEx.Message, smtpEx);
+            _logger.LogWarning(smtpEx, "{Message}", smtpEx.Message);
             return (false, smtpEx.Message);
         }
         catch (Exception e)
         {
-            _logger.LogError(e.Message, e);
+            _logger.LogError(e, "{Message}", e.Message);
             return (false, e.Message);
         }
 
@@ -154,7 +160,5 @@ public class EmailProcessingService : IHostedService
     private class State
     {
         public bool IsRunning { get; set; }
-        public int Count { get; set; }
-        public CancellationToken token { get; set; }
     }
 }

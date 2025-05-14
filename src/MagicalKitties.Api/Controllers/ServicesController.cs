@@ -5,15 +5,8 @@ namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
 [Route("services")]
-public class ServicesController : ControllerBase
+public class ServicesController(IServiceProvider services) : ControllerBase
 {
-    private readonly IServiceProvider _services;
-
-    public ServicesController(IServiceProvider services)
-    {
-        _services = services;
-    }
-
     [HttpPost("stop/{name}")]
     public async Task<IActionResult> StopService([FromRoute] string name, CancellationToken token)
 
@@ -21,7 +14,7 @@ public class ServicesController : ControllerBase
         switch (name.ToLowerInvariant())
         {
             case "email":
-                EmailProcessingService emailProcessor = _services.GetRequiredService<EmailProcessingService>();
+                EmailProcessingService emailProcessor = services.GetRequiredService<EmailProcessingService>();
                 await emailProcessor.StopAsync(token);
                 break;
             default:
@@ -32,12 +25,12 @@ public class ServicesController : ControllerBase
     }
 
     [HttpPost("start/{name}")]
-    public async Task<IActionResult> StartService([FromRoute]string name, CancellationToken token)
+    public async Task<IActionResult> StartService([FromRoute] string name, CancellationToken token)
     {
         switch (name.ToLowerInvariant())
         {
             case "email":
-                EmailProcessingService emailProcessor = _services.GetRequiredService<EmailProcessingService>();
+                EmailProcessingService emailProcessor = services.GetRequiredService<EmailProcessingService>();
                 await emailProcessor.StartAsync(token);
                 break;
             default:

@@ -10,7 +10,7 @@ public class CharacterAttributeUpdateRequest
     public EndowmentChangeRequest? FlawChange { get; init; }
     public EndowmentChangeRequest? TalentChange { get; init; }
     public EndowmentChangeRequest? MagicalPowerChange { get; init; }
-    
+
     public int? CurrentOwies { get; init; }
     public int? CurrentTreats { get; init; }
     public int? CurrentInjuries { get; init; }

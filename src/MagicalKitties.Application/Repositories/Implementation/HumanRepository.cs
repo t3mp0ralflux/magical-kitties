@@ -5,18 +5,15 @@ using MagicalKitties.Application.Models;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class HumanRepository : IHumanRepository
 {
-    private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly IDateTimeProvider _dateTimeProvider;
-    
     private const string HumanFields = "h.id, h.character_id, h.name, h.description";
-    private const string ProblemFields = "p.id, p.human_id, p.source, p.emotion, p.rank, p.solved";
-    
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IDbConnectionFactory _dbConnectionFactory;
+
 
     public HumanRepository(IDbConnectionFactory dbConnectionFactory, IDateTimeProvider dateTimeProvider)
     {
@@ -52,44 +49,21 @@ public class HumanRepository : IHumanRepository
                                                                                            human.CharacterId
                                                                                        }, cancellationToken: token));
         }
-        
+
         transaction.Commit();
 
         return result > 0;
     }
-
-    public async Task<bool> CreateProblemAsync(Guid humanId, Problem problem, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using IDbTransaction transaction = connection.BeginTransaction();
-
-        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
-                                                                                  values(@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, null)
-                                                                                  """, new
-                                                                                       {
-                                                                                           problem.Id,
-                                                                                           problem.HumanId,
-                                                                                           problem.Source,
-                                                                                           problem.Emotion,
-                                                                                           problem.Rank,
-                                                                                           problem.Solved
-                                                                                       }, cancellationToken: token));
-        
-        transaction.Commit();
-
-        return result > 0;
-    }
-
+    
     public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         return await connection.QuerySingleAsyncWithRetry<bool>(new CommandDefinition("""
-                                                                                    select exists(select 1
-                                                                                    from human
-                                                                                    where id = @id)
-                                                                                    """, new { id }, cancellationToken: token));
+                                                                                      select exists(select 1
+                                                                                      from human
+                                                                                      where id = @id)
+                                                                                      """, new { id }, cancellationToken: token));
     }
 
     public async Task<Human?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken token = default)
@@ -98,22 +72,22 @@ public class HumanRepository : IHumanRepository
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and h.deleted_utc is null";
         IEnumerable<Human> result = await connection.QueryAsyncWithRetry<Human, List<Problem>>(new CommandDefinition($"""
-                                                                                                                       select {HumanFields},
-                                                                                                                       (select json_agg(p.*)
-                                                                                                                       from problem p
-                                                                                                                       where human_id = @id) as problems
-                                                                                                                       from human h
-                                                                                                                       where h.id = @id
-                                                                                                                       {shouldIncludeDeleted}
-                                                                                                                       """, new
-                                                                                                                            {
-                                                                                                                                id
-                                                                                                                            }, cancellationToken: token), (human, problems) =>
-                                                                                                                                                          {
-                                                                                                                                                              human.Problems = problems;
+                                                                                                                      select {HumanFields},
+                                                                                                                      (select json_agg(p.*)
+                                                                                                                      from problem p
+                                                                                                                      where human_id = @id) as problems
+                                                                                                                      from human h
+                                                                                                                      where h.id = @id
+                                                                                                                      {shouldIncludeDeleted}
+                                                                                                                      """, new
+                                                                                                                           {
+                                                                                                                               id
+                                                                                                                           }, cancellationToken: token), (human, problems) =>
+                                                                                                                                                         {
+                                                                                                                                                             human.Problems = problems;
 
-                                                                                                                                                              return human;
-                                                                                                                                                          }, "problems");
+                                                                                                                                                             return human;
+                                                                                                                                                         }, "problems");
 
         return result.FirstOrDefault();
     }
@@ -152,18 +126,18 @@ public class HumanRepository : IHumanRepository
     public async Task<int> GetCountAsync(GetAllHumansOptions options, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        
+
         int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
-                                                                                                       select count(h.id)
-                                                                                                       from human h
-                                                                                                       where h.character_id = @CharacterId
-                                                                                                       and (@Name is null or lower(h.name) like ('%' || @Name || '%'))
-                                                                                                       and h.deleted_utc is null
-                                                                                                       """, new
-                                                                                                            {
-                                                                                                                options.CharacterId,
-                                                                                                                Name = options.Name?.ToLowerInvariant()
-                                                                                                            }));
+                                                                                           select count(h.id)
+                                                                                           from human h
+                                                                                           where h.character_id = @CharacterId
+                                                                                           and (@Name is null or lower(h.name) like ('%' || @Name || '%'))
+                                                                                           and h.deleted_utc is null
+                                                                                           """, new
+                                                                                                {
+                                                                                                    options.CharacterId,
+                                                                                                    Name = options.Name?.ToLowerInvariant()
+                                                                                                }));
 
         return result;
     }
@@ -182,7 +156,7 @@ public class HumanRepository : IHumanRepository
                                                                                            update.Description,
                                                                                            update.HumanId
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -190,8 +164,8 @@ public class HumanRepository : IHumanRepository
 
     public async Task<bool> UpdateNameAsync(DescriptionUpdate update, CancellationToken token = default)
     {
-        using var connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-        using var transaction = connection.BeginTransaction();
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update human
@@ -202,7 +176,7 @@ public class HumanRepository : IHumanRepository
                                                                                            update.Name,
                                                                                            update.HumanId
                                                                                        }, cancellationToken: token));
-        
+
         transaction.Commit();
 
         return result > 0;
@@ -231,7 +205,7 @@ public class HumanRepository : IHumanRepository
                                                                                   where human_id = @id
                                                                                   """, new
                                                                                        {
-                                                                                           @Now = _dateTimeProvider.GetUtcNow(),
+                                                                                           Now = _dateTimeProvider.GetUtcNow(),
                                                                                            id
                                                                                        }, cancellationToken: token));
         }
@@ -248,7 +222,7 @@ public class HumanRepository : IHumanRepository
                                                                                            id
                                                                                        }, cancellationToken: token));
         }
-        
+
         transaction.Commit();
 
         return result > 0;

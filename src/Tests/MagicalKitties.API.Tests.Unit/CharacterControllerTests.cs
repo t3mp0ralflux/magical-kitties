@@ -1,11 +1,9 @@
 ﻿using FluentAssertions;
 using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
-using MagicalKitties.Application;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Services;
-using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Contracts.Requests.Characters;
 using MagicalKitties.Contracts.Responses.Characters;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +43,7 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        
+
         _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
 
         CharacterResponse expectedResponse = new Character
@@ -71,7 +69,7 @@ public class CharacterControllerTests
         result.StatusCode.Should().Be(201);
         result.ActionName.Should().Be(nameof(_sut.Get));
         result.Value.Should().BeEquivalentTo(expectedResponse, options => options
-                                                                          .Excluding(x => x.Id));
+                                                                   .Excluding(x => x.Id));
     }
 
     [Fact]
@@ -204,7 +202,7 @@ public class CharacterControllerTests
         result.StatusCode.Should().Be(200);
         result.Value.Should().BeEquivalentTo(expectedResponse);
     }
-    
+
     [Fact]
     public async Task Delete_ShouldReturnUnauthorized_WhenAccountIsNotFound()
     {

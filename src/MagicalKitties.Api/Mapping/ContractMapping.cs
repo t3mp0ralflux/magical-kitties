@@ -6,6 +6,7 @@ using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
+using MagicalKitties.Application.Models.Rules;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Contracts.Requests.Account;
 using MagicalKitties.Contracts.Requests.Auth;
@@ -20,6 +21,7 @@ using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.GlobalSetting;
 using MagicalKitties.Contracts.Responses.Humans;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
+using MagicalKitties.Contracts.Responses.Rules;
 using MagicalKitties.Contracts.Responses.Talents;
 using DescriptionOption = MagicalKitties.Application.Models.Humans.Updates.DescriptionOption;
 using DescriptionUpdate = MagicalKitties.Application.Models.Characters.Updates.DescriptionUpdate;
@@ -404,9 +406,9 @@ public static class ContractMapping
                };
     }
 
-    public static Application.Models.Humans.Updates.DescriptionUpdate ToUpdate(this MKCtrHumanRequests.HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
+    public static MKAppHumans.Updates.DescriptionUpdate ToUpdate(this MKCtrHumanRequests.HumanDescriptionUpdateRequest request, MKCtrHumanRequests.DescriptionOption description)
     {
-        return new Application.Models.Humans.Updates.DescriptionUpdate
+        return new MKAppHumans.Updates.DescriptionUpdate
                {
                    DescriptionOption = (DescriptionOption)description,
                    HumanId = request.CharacterId,
@@ -594,6 +596,90 @@ public static class ContractMapping
                    Page = page,
                    PageSize = pageSize,
                    Total = totalCount
+               };
+    }
+
+    #endregion
+
+    #region GameRules
+
+    public static GameRulesResponse ToResponse(this GameRules rules)
+    {
+        return new GameRulesResponse
+               {
+                   MaxLevel = rules.MaxLevel,
+                   MinAttributeValue = rules.MinAttributeValue,
+                   MaxAttributeValue = rules.MaxAttributeValue,
+                   MinInjuries = rules.MinInjuries,
+                   MaxInjuries = rules.MaxInjuries,
+                   LevelExperiencePoints = rules.LevelExperiencePoints,
+                   Attributes = rules.Attributes,
+                   Flaws = rules.Flaws.Select(ToResponse),
+                   Talents = rules.Talents.Select(ToResponse),
+                   MagicalPowers = rules.MagicalPowers.Select(ToResponse),
+                   Upgrades = rules.Upgrades.Select(ToResponse),
+                   ProblemSource = rules.ProblemSource.Select(ToResponse),
+                   Emotion = rules.Emotion.Select(ToResponse),
+                   DiceRules = rules.DiceRules,
+                   DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
+                   DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
+                   RollComplications = rules.RollComplications,
+                   RollBonus = rules.RollBonus,
+                   RollSuperBonus = rules.RollSuperBonus,
+                   SpendingKittyTreats = rules.SpendingKittyTreats,
+                   Healing = rules.Healing,
+                   EndOfEpisodeInfo = rules.EndOfEpisodeInfo,
+                   EndEpisodeQuestions = rules.EndEpisodeQuestions
+               };
+    }
+
+    public static UpgradeRuleResponse ToResponse(this MKAppCharacters.UpgradeRule rule)
+    {
+        return new UpgradeRuleResponse
+               {
+                   Id = rule.Id,
+                   Block = rule.Block,
+                   Value = rule.Value
+               };
+    }
+
+    public static ProblemSourceResponse ToResponse(this ProblemRule.Problem problem)
+    {
+        return new ProblemSourceResponse
+               {
+                   RollValue = problem.RollValue,
+                   ProblemSource = problem.ProblemSource
+               };
+    }
+
+    public static EmotionResponse ToResponse(this ProblemRule.Emotion emotion)
+    {
+        return new EmotionResponse
+               {
+                   RollValue = emotion.RollValue,
+                   EmotionSource = emotion.EmotionSource
+               };
+    }
+
+    public static DiceDifficultyResponse ToResponse(this DiceRule.DiceDifficulty diceDifficulty)
+    {
+        return new DiceDifficultyResponse
+               {
+                   Difficulty = diceDifficulty.Difficulty,
+                   DifficultyText = diceDifficulty.DifficultyText,
+                   CunningAction = diceDifficulty.CunningAction,
+                   CuteAction = diceDifficulty.CuteAction,
+                   FierceAction = diceDifficulty.FierceAction
+               };
+    }
+
+    public static DiceSuccessResponse ToResponse(this DiceRule.DiceSuccess diceSuccess)
+    {
+        return new DiceSuccessResponse
+               {
+                   Successes = diceSuccess.Successes,
+                   Result = diceSuccess.Result,
+                   Enhancements = diceSuccess.Enhancements
                };
     }
 

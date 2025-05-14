@@ -1,5 +1,3 @@
 ﻿namespace MagicalKitties.Application;
 
-public interface IApplicationMarker
-{
-}
+public interface IApplicationMarker;

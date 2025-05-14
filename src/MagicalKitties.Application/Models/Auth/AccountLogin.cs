@@ -2,5 +2,5 @@
 
 public class AccountLogin
 {
-    public required string Email { get; set; }
+    public required string Email { get; init; }
 }

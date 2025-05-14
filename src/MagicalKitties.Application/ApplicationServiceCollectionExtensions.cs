@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MagicalKitties.Application.Database;
+using MagicalKitties.Application.HostedServices;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Repositories.Implementation;
 using MagicalKitties.Application.Services;
@@ -24,6 +25,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IMagicalPowerRepository, MagicalPowerRepository>();
         services.AddSingleton<IHumanRepository, HumanRepository>();
         services.AddSingleton<IProblemRepository, ProblemRepository>();
+        services.AddSingleton<IUpgradeRepository, UpgradeRepository>();
 
         #endregion
 
@@ -39,6 +41,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<ITalentService, TalentService>();
         services.AddSingleton<IMagicalPowerService, MagicalPowerService>();
         services.AddSingleton<IHumanService, HumanService>();
+        services.AddSingleton<ICharacterUpgradeService, CharacterUpgradeService>();
+        services.AddSingleton<IRuleService, RuleService>();
 
         #endregion
 
@@ -56,13 +60,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<DbInitializer>();
         services.AddSingleton<IEmailService, EmailService>();
 
-        services.AddHostedService<HostedServices.EmailProcessingService>();
+        services.AddHostedService<EmailProcessingService>();
 
-        return services;
-    }
-
-    public static IServiceCollection AddResilience(this IServiceCollection services)
-    {
         return services;
     }
 }

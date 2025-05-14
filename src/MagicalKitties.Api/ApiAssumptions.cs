@@ -7,6 +7,7 @@ public static class ApiAssumptions
         public const string Flaws = "FlawCache";
         public const string MagicalPowers = "MagicalPowerCache";
         public const string RateLimiter = "ThreeRequestsPerFiveSecond";
+        public const string Rules = "RuleCache";
         public const string Talents = "TalentCache";
     }
 
@@ -14,6 +15,7 @@ public static class ApiAssumptions
     {
         public const string Flaws = "flaws";
         public const string MagicalPowers = "magicalpowers";
+        public const string Rules = "rules";
         public const string Talents = "talents";
     }
 }

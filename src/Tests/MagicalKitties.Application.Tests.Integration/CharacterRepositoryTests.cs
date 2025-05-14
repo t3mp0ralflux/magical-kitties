@@ -20,6 +20,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly HumanRepository _humanRepository;
     private readonly UpgradeRepository _upgradeRepository;
+    private readonly ProblemRepository _problemRepository;
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
@@ -30,6 +31,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         _characterUpdateRepository = new CharacterUpdateRepository(dbConnectionFactory, _dateTimeProvider);
         _humanRepository = new HumanRepository(dbConnectionFactory, _dateTimeProvider);
         _upgradeRepository = new UpgradeRepository(dbConnectionFactory, _dateTimeProvider);
+        _problemRepository = new ProblemRepository(dbConnectionFactory, _dateTimeProvider);
     }
 
     public CharacterRepository _sut { get; set; }
@@ -110,7 +112,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
-        AttributeUpdate secondTalentUpdate = new AttributeUpdate
+        AttributeUpdate secondTalentUpdate = new()
                                              {
                                                  AccountId = account.Id,
                                                  CharacterId = character.Id,
@@ -141,7 +143,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
             foreach (Problem problem in human.Problems)
             {
-                await _humanRepository.CreateProblemAsync(human.Id, problem);
+                await _problemRepository.CreateProblemAsync(problem);
             }
         }
 
@@ -152,11 +154,11 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
         // Assert
         result.Should().NotBeNull();
-
+        
         result.Should().BeEquivalentTo(character, options =>
                                                   {
                                                       options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
-                                                      options.For(x => x.Upgrades).Exclude(x=>x.Choice);
+                                                      options.For(x => x.Upgrades).Exclude(x => x.Choice);
                                                       return options;
                                                   });
     }

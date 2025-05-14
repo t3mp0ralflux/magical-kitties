@@ -9,6 +9,7 @@ using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Testing.Common;
 
@@ -16,16 +17,17 @@ namespace MagicalKitties.Application.Tests.Unit.Services;
 
 public class CharacterUpgradeServiceTests
 {
-    public readonly CharacterUpgradeService _sut;
     private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
-    private readonly IUpgradeRepository _upgradeRepository = Substitute.For<IUpgradeRepository>();
     private readonly IMagicalPowerRepository _magicalPowerRepository = Substitute.For<IMagicalPowerRepository>();
-    private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
     private readonly IMemoryCache _memoryCache = Substitute.For<IMemoryCache>();
+    public readonly CharacterUpgradeService _sut;
+    private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
+    private readonly IUpgradeRepository _upgradeRepository = Substitute.For<IUpgradeRepository>();
+    private readonly ILogger<CharacterUpgradeService> _logger = Substitute.For<ILogger<CharacterUpgradeService>>();
 
     public CharacterUpgradeServiceTests()
     {
-        _sut = new CharacterUpgradeService(_characterRepository, _upgradeRepository, _magicalPowerRepository, _talentRepository, _memoryCache);
+        _sut = new CharacterUpgradeService(_characterRepository, _upgradeRepository, _magicalPowerRepository, _talentRepository, _memoryCache, _logger);
     }
 
     [Fact]
@@ -33,7 +35,7 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        UpgradeRequest update = new UpgradeRequest
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = Guid.NewGuid(),
@@ -48,7 +50,7 @@ public class CharacterUpgradeServiceTests
                                 };
 
         _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns((Character?)null);
-        
+
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
 
@@ -63,8 +65,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -80,7 +82,7 @@ public class CharacterUpgradeServiceTests
                                 };
 
         _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
@@ -95,8 +97,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -112,14 +114,14 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Option selected was outside the available options for this character.");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldAddUpgrade_WhenUpgradeIsAdded()
     {
@@ -127,8 +129,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -145,7 +147,7 @@ public class CharacterUpgradeServiceTests
         _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
-        
+
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
 
@@ -154,6 +156,7 @@ public class CharacterUpgradeServiceTests
     }
 
     #region Attribute (Max3) Upgrade
+
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenAttribute3UpgradeExistsAndOptionIsInvalid()
     {
@@ -161,10 +164,10 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithUpgrades();
         character.Level = 2;
-        
+
         Enum.TryParse(typeof(AttributeOption), "-1", out object? o);
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -182,14 +185,14 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Attribute upgrade option was not valid.");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenAttribute3UpgradeExistsAndOptionInvalidatesRules()
     {
@@ -197,9 +200,9 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
         character.Level = 2;
-        
+
         // generator has Cunning set to 3. Below level 5 can't have any attribute above 3.
-        UpgradeRequest update = new UpgradeRequest
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -217,14 +220,14 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Level 2 characters cannot have any Attribute above 3.");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldUpdateAttribute_WhenAttribute3UpgradeExistsAndOptionIsValid()
     {
@@ -232,8 +235,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -253,17 +256,19 @@ public class CharacterUpgradeServiceTests
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
-        
+
         // Act
-        var result = await _sut.UpsertUpgradeAsync(update);
+        bool result = await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         result.Should().BeTrue();
         character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.cute).Should().NotBeNull();
     }
+
     #endregion
 
     #region Bonus Feature
+
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenBonusFeatureUpgradeExistsAndMagicalPowerNotFound()
     {
@@ -271,8 +276,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -295,14 +300,14 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Tried to update Magical Power '22' but it was not found.");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenBonusFeatureUpgradeExistsAndMagicalPowerBonusDoesNotExist()
     {
@@ -310,8 +315,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -334,14 +339,14 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Bonus Feature '9' does not exist on Magical Power '33'");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldUpdateBonusFeature_WhenBonusFeatureUpgradeExistsAndOptionIsValid()
     {
@@ -349,8 +354,8 @@ public class CharacterUpgradeServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
         character.Level = 2;
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -375,27 +380,29 @@ public class CharacterUpgradeServiceTests
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
-        
+
         // Act
-        var result = await _sut.UpsertUpgradeAsync(update);
+        bool result = await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         result.Should().BeTrue();
-        var updatedUpgrade =character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.magicalpowerbonus); 
+        Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.magicalpowerbonus);
         updatedUpgrade.Should().NotBeNull();
         ((BonusFeatureUpgrade)updatedUpgrade.Choice).BonusFeatureId.Should().Be(2);
     }
+
     #endregion
-    
+
     #region Talent
+
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenTalentUpgradeExistsAndTalentDoesNotExist()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = character.Id,
@@ -405,7 +412,7 @@ public class CharacterUpgradeServiceTests
                                                   Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                                   Block = 2,
                                                   Level = 5,
-                                                  Choice = new GainTalentUpgrade()
+                                                  Choice = new GainTalentUpgrade
                                                            {
                                                                TalentId = 99
                                                            }
@@ -416,22 +423,22 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Talent '99' does not exist.");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenTalentUpgradeExistsAndTalentAlreadyExists()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = Guid.NewGuid(),
@@ -441,7 +448,7 @@ public class CharacterUpgradeServiceTests
                                                   Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                                   Block = 2,
                                                   Level = 5,
-                                                  Choice = new GainTalentUpgrade()
+                                                  Choice = new GainTalentUpgrade
                                                            {
                                                                TalentId = 22
                                                            }
@@ -452,22 +459,22 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-        
+
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         await action.Should().ThrowAsync<ValidationException>().WithMessage("Talent already present on character.");
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldUpdateTalent_WhenTalentUpgradeExistsAndOptionIsValid()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
-        
-        UpgradeRequest update = new UpgradeRequest
+
+        UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
                                     CharacterId = Guid.NewGuid(),
@@ -477,7 +484,7 @@ public class CharacterUpgradeServiceTests
                                                   Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                                   Block = 2,
                                                   Level = 5,
-                                                  Choice = new GainTalentUpgrade()
+                                                  Choice = new GainTalentUpgrade
                                                            {
                                                                TalentId = 43
                                                            }
@@ -490,15 +497,16 @@ public class CharacterUpgradeServiceTests
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
-        
+
         // Act
-        var result = await _sut.UpsertUpgradeAsync(update);
+        bool result = await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         result.Should().BeTrue();
-        var updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.talent); 
+        Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.talent);
         updatedUpgrade.Should().NotBeNull();
         ((GainTalentUpgrade)updatedUpgrade.Choice).TalentId.Should().Be(43);
     }
+
     #endregion
 }

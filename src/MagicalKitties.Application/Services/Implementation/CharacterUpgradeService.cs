@@ -6,7 +6,7 @@ using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using Microsoft.Extensions.Caching.Memory;
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace MagicalKitties.Application.Services.Implementation;
 
@@ -17,14 +17,16 @@ public class CharacterUpgradeService : ICharacterUpgradeService
     private readonly IMagicalPowerRepository _magicalPowerRepository;
     private readonly ITalentRepository _talentRepository;
     private readonly IUpgradeRepository _upgradeRepository;
+    private readonly ILogger<CharacterUpgradeService> _logger;
 
-    public CharacterUpgradeService(ICharacterRepository characterRepository, IUpgradeRepository upgradeRepository, IMagicalPowerRepository magicalPowerRepository, ITalentRepository talentRepository, IMemoryCache cache)
+    public CharacterUpgradeService(ICharacterRepository characterRepository, IUpgradeRepository upgradeRepository, IMagicalPowerRepository magicalPowerRepository, ITalentRepository talentRepository, IMemoryCache cache, ILogger<CharacterUpgradeService> logger)
     {
         _characterRepository = characterRepository;
         _upgradeRepository = upgradeRepository;
         _magicalPowerRepository = magicalPowerRepository;
         _talentRepository = talentRepository;
         _cache = cache;
+        _logger = logger;
     }
 
     public async Task<bool> UpsertUpgradeAsync(UpgradeRequest update, CancellationToken token = default)
@@ -35,14 +37,14 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         {
             return false;
         }
-        
+
         int characterBlock = GetLevelBlock(character.Level);
 
         if (update.Upgrade.Block > characterBlock)
         {
             throw new ValidationException("Cannot add upgrade. Upgrade is higher than the character's level.");
         }
-        
+
         Upgrade? existingUpgrade = character.Upgrades.FirstOrDefault(x => x.Block == update.Upgrade.Block && x.Id == update.Upgrade.Id);
 
         // update
@@ -50,7 +52,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         {
             List<MagicalPower> magicalPowers = (await GetValuesCachedAsync("MagicPowers", async () => await _magicalPowerRepository.GetAllAsync(new GetAllMagicalPowersOptions { Page = 1, PageSize = 99 }, token))).ToList();
             List<Talent> talents = (await GetValuesCachedAsync("Talents", async () => await _talentRepository.GetAllAsync(new GetAllTalentsOptions { Page = 1, PageSize = 99 }, token))).ToList();
-            
+
             switch (update.UpgradeOption)
             {
                 // attributes have to check level rules and see if they can update to that value or not.
@@ -86,7 +88,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                             throw new ValidationException($"Level {character.Level} characters cannot have an Attribute above 3.");
                         }
                     }
-                    
+
                     if (existingUpgrade.Option == update.Upgrade.Option)
                     {
                         break; // they're the same, no bother to do anything.
@@ -96,8 +98,8 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     break;
 
                 case UpgradeOption.bonusFeature:
-                    BonusFeatureUpgrade bonusFeatureUpdate = (BonusFeatureUpgrade)update.Upgrade.Choice;
-                    BonusFeatureUpgrade existingFeature = (BonusFeatureUpgrade)existingUpgrade.Choice;
+                    BonusFeatureUpgrade bonusFeatureUpdate = (BonusFeatureUpgrade)update.Upgrade.Choice!;
+                    BonusFeatureUpgrade existingFeature = (BonusFeatureUpgrade)existingUpgrade.Choice!;
 
                     if (bonusFeatureUpdate.IsNested)
                     {
@@ -114,7 +116,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         MagicalPower? magicalPower = magicalPowers.FirstOrDefault(x => x.Id == existingFeature.NestedMagicalPowerId);
                         if (magicalPower is null)
                         {
-                            Log.Logger.Error("Saved nested Magical Power {MagicalPowerId} on Character {CharacterId} was not found", existingFeature.NestedMagicalPowerId, character.Id);
+                            _logger.LogError("Saved nested Magical Power {MagicalPowerId} on Character {CharacterId} was not found", existingFeature.NestedMagicalPowerId, character.Id);
                             break; // do nothing 'cause this should never happen.
                         }
 
@@ -140,7 +142,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         MagicalPower? magicalPower = magicalPowers.FirstOrDefault(x => x.Id == existingFeature.MagicalPowerId);
                         if (magicalPower is null)
                         {
-                            Log.Logger.Error("Saved Magical Power {MagicalPowerId} on Character {CharacterId} was not found", existingFeature.MagicalPowerId, character.Id);
+                            _logger.LogError("Saved Magical Power {MagicalPowerId} on Character {CharacterId} was not found", existingFeature.MagicalPowerId, character.Id);
                             break; // do nothing 'cause this should never happen.
                         }
 
@@ -155,8 +157,8 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     existingUpgrade.Choice = existingFeature;
                     break;
                 case UpgradeOption.talent:
-                    GainTalentUpgrade talentUpdate = (GainTalentUpgrade)update.Upgrade.Choice;
-                    GainTalentUpgrade existingTalent = (GainTalentUpgrade)existingUpgrade.Choice;
+                    GainTalentUpgrade talentUpdate = (GainTalentUpgrade)update.Upgrade.Choice!;
+                    GainTalentUpgrade existingTalent = (GainTalentUpgrade)existingUpgrade.Choice!;
 
                     if (talentUpdate.TalentId == existingTalent.TalentId)
                     {
@@ -165,7 +167,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (talents.FirstOrDefault(x => x.Id == existingTalent.TalentId) is null)
                     {
-                        Log.Logger.Error("Saved Talent {TalentId} on Character {CharacterId} was not found", existingTalent.TalentId, character.Id);
+                        _logger.LogError("Saved Talent {TalentId} on Character {CharacterId} was not found", existingTalent.TalentId, character.Id);
                         break; // do nothing 'cause this should never happen.
                     }
 
@@ -184,8 +186,8 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     existingUpgrade.Choice = existingTalent;
                     break;
                 case UpgradeOption.magicalPower:
-                    NewMagicalPowerUpgrade magicalPowerUpdate = (NewMagicalPowerUpgrade)update.Upgrade.Choice;
-                    NewMagicalPowerUpgrade existingMagicalPower = (NewMagicalPowerUpgrade)existingUpgrade.Choice;
+                    NewMagicalPowerUpgrade magicalPowerUpdate = (NewMagicalPowerUpgrade)update.Upgrade.Choice!;
+                    NewMagicalPowerUpgrade existingMagicalPower = (NewMagicalPowerUpgrade)existingUpgrade.Choice!;
 
                     if (magicalPowerUpdate.MagicalPowerId == existingMagicalPower.MagicalPowerId)
                     {
@@ -194,7 +196,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (magicalPowers.FirstOrDefault(x => x.Id == existingMagicalPower.MagicalPowerId) is null)
                     {
-                        Log.Logger.Error("Saved Magical Power {MagicalPowerId} on Character {CharacterId} was not found", existingMagicalPower.MagicalPowerId, character.Id);
+                        _logger.LogError("Saved Magical Power {MagicalPowerId} on Character {CharacterId} was not found", existingMagicalPower.MagicalPowerId, character.Id);
                         break; // do nothing 'cause this shouldn't happen
                     }
 
@@ -203,7 +205,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         throw new ValidationException($"Magical Power '{magicalPowerUpdate.MagicalPowerId}' does not exist.");
                     }
 
-                    if (character.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpdate.MagicalPowerId) is not null 
+                    if (character.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpdate.MagicalPowerId) is not null
                         || character.MagicalPowers.FirstOrDefault(x => x.BonusFeatures.Any(y => y.Id == magicalPowerUpdate.MagicalPowerId)) is not null)
                     {
                         throw new ValidationException("Magical Power already present on character.");
@@ -236,7 +238,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         }
 
         existingUpgrade = update.Upgrade;
-        
+
         character.Upgrades.Add(existingUpgrade);
 
         return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
@@ -246,8 +248,8 @@ public class CharacterUpgradeService : ICharacterUpgradeService
     {
         Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId, cancellationToken: token);
 
-        Upgrade? upgrade = character?.Upgrades.FirstOrDefault(x => x.Id == update.Upgrade.Id); 
-        
+        Upgrade? upgrade = character?.Upgrades.FirstOrDefault(x => x.Id == update.Upgrade.Id);
+
         if (upgrade is null)
         {
             return false;
@@ -256,20 +258,22 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         switch (update.UpgradeOption)
         {
             case UpgradeOption.talent:
-                GainTalentUpgrade talentUpgrade = (GainTalentUpgrade)upgrade.Choice;
+                GainTalentUpgrade talentUpgrade = (GainTalentUpgrade)upgrade.Choice!;
 
                 if (character!.Talents.FirstOrDefault(x => x.Id == talentUpgrade.TalentId) is not null)
                 {
                     throw new ValidationException("Talent still exists on Character. Cannot remove upgrade."); // mostly for FE debugging and BE shenanigans
                 }
+
                 break;
             case UpgradeOption.magicalPower:
-                NewMagicalPowerUpgrade magicalPowerUpgrade = (NewMagicalPowerUpgrade)upgrade.Choice;
+                NewMagicalPowerUpgrade magicalPowerUpgrade = (NewMagicalPowerUpgrade)upgrade.Choice!;
 
                 if (character!.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpgrade.MagicalPowerId) is not null)
                 {
                     throw new ValidationException("MagicalPower still exists on Character. Cannot remove upgrade."); // mostly for FE debugging and BE shenanigans
                 }
+
                 break;
             case UpgradeOption.bonusFeature:
             case UpgradeOption.attribute3:
@@ -285,7 +289,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
     }
 
-    private int GetLevelBlock(int level)
+    private static int GetLevelBlock(int level)
     {
         return (int)Math.Round(level * 0.3 + .02);
     }

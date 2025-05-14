@@ -2,6 +2,4 @@
 
 namespace MagicalKitties.Application.Models.Talents;
 
-public class Talent : Endowment
-{
-}
+public class Talent : Endowment;

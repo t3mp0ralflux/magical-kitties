@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
 using MagicalKitties.Application.Models.Characters;
-using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Repositories;
-using Microsoft.Extensions.Logging;
 
 namespace MagicalKitties.Application.Services.Implementation;
 
@@ -51,7 +49,7 @@ public class CharacterService : ICharacterService
     {
         return await _characterRepository.GetCountAsync(options, token);
     }
-    
+
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
         bool exists = await _characterRepository.ExistsByIdAsync(id, token);

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace MagicalKitties.Application.Models.Characters;
 
+[Serializable]
 public class Endowment
 {
     public required int Id { get; init; }
