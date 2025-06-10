@@ -80,10 +80,10 @@ public class AccountControllerTests
     public async Task Get_ShouldReturnNotFound_WhenAccountIsNotFound()
     {
         // Arrange
-        _accountService.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Account?)null);
+        _accountService.GetByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((Account?)null);
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Get(Guid.NewGuid(), CancellationToken.None);
+        NotFoundResult result = (NotFoundResult)await _sut.Get(string.Empty, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -98,11 +98,11 @@ public class AccountControllerTests
 
         Account account = Fakes.GenerateAccount();
 
-        _accountService.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns(account);
+        _accountService.GetByIdAsync(accountId.ToString(), Arg.Any<CancellationToken>()).Returns(account);
 
         AccountResponse expectedResponse = account.ToResponse();
         // Act
-        OkObjectResult result = (OkObjectResult)await _sut.Get(accountId, CancellationToken.None);
+        OkObjectResult result = (OkObjectResult)await _sut.Get(accountId.ToString(), CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();

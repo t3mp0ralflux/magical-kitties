@@ -17,13 +17,15 @@ namespace MagicalKitties.API.Tests.Unit;
 public class AuthControllerTests
 {
     private readonly IAccountService _accountService = Substitute.For<IAccountService>();
+    private readonly IRefreshTokenService _refreshTokenService = Substitute.For<IRefreshTokenService>();
     private readonly IAuthService _authService = Substitute.For<IAuthService>();
     private readonly IJwtTokenService _jwtService = Substitute.For<IJwtTokenService>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
+    private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
 
     public AuthControllerTests()
     {
-        _sut = new AuthController(_accountService, _passwordHasher, _jwtService, _authService);
+        _sut = new AuthController(_accountService, _refreshTokenService, _passwordHasher, _jwtService, _authService, _dateTimeProvider);
     }
 
     public AuthController _sut { get; set; }
@@ -143,19 +145,28 @@ public class AuthControllerTests
                                    Password = account.Password
                                };
 
-        string expectedToken = "ThisIsTheSingleBestTokenYouHaveEverSeen";
+        const string expectedToken = "ThisIsTheSingleBestTokenYouHaveEverSeen";
+        const string expectedRefreshToken = "ThisIsARefreshingToken";
 
         _accountService.GetByEmailAsync(request.Email, CancellationToken.None).Returns(account);
         _passwordHasher.Verify(request.Password, account.Password).Returns(true);
         _jwtService.GenerateToken(account).Returns(expectedToken);
+        _jwtService.GenerateRefreshToken().Returns(expectedRefreshToken);
         _authService.LoginAsync(Arg.Any<AccountLogin>()).Returns(true);
+
+        LoginResponse expectedResult = new LoginResponse
+                                       {
+                                           Account = account.ToResponse(),
+                                           AccessToken = expectedToken,
+                                           RefreshToken = expectedRefreshToken
+                                       };
 
         // Act
         OkObjectResult result = (OkObjectResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(200);
-        result.Value.Should().Be(expectedToken);
+        result.Value.Should().BeEquivalentTo(expectedResult);
     }
 
     [Fact]
