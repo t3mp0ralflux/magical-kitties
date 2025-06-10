@@ -15,12 +15,14 @@ public interface IJwtTokenService
     string GenerateToken(Account account);
     string GenerateRefreshToken();
     bool ValidateCustomToken(string accessToken);
+    string? GetEmailFromToken(string jwtToken);
 }
 
 public class JwtTokenService : IJwtTokenService
 {
     private readonly IConfiguration _config;
     private readonly TimeSpan _tokenLifetime;
+    private readonly JwtSecurityTokenHandler _tokenHandler = new JwtSecurityTokenHandler();
 
     public JwtTokenService(IConfiguration configuration, IGlobalSettingsService globalSettingsService)
     {
@@ -33,7 +35,6 @@ public class JwtTokenService : IJwtTokenService
     public string GenerateToken(Account account)
     {
         string tokenSecret = _config["Jwt:Key"]!;
-        JwtSecurityTokenHandler tokenHandler = new();
 
         byte[] key = Encoding.UTF8.GetBytes(tokenSecret);
 
@@ -55,9 +56,9 @@ public class JwtTokenService : IJwtTokenService
                                                       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                                                   };
 
-        SecurityToken newToken = tokenHandler.CreateToken(tokenDescriptor);
+        SecurityToken newToken = _tokenHandler.CreateToken(tokenDescriptor);
 
-        string jwt = tokenHandler.WriteToken(newToken);
+        string jwt = _tokenHandler.WriteToken(newToken);
 
         return jwt;
     }
@@ -83,13 +84,11 @@ public class JwtTokenService : IJwtTokenService
                                                                   ValidateIssuer = true,
                                                                   ValidateAudience = true
                                                               };
-
-        JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-
+        
         try
         {
             // just validate and make sure it's good structurally.
-            tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out SecurityToken? _);
+            _tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out SecurityToken? _);
             return true;
         }
         catch
@@ -97,5 +96,18 @@ public class JwtTokenService : IJwtTokenService
             return false;
         }
 
+    }
+
+    public string? GetEmailFromToken(string jwtToken)
+    {
+        try
+        {
+            JwtSecurityToken parsedToken = _tokenHandler.ReadJwtToken(jwtToken);
+            return parsedToken.Subject;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

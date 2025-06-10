@@ -7,6 +7,7 @@ public interface IRefreshTokenService
 {
     Task<bool> ValidateRefreshToken(Guid accountId, AuthToken authToken, CancellationToken token = default);
     Task<RefreshToken> UpsertRefreshToken(Account account, string accessToken, string refreshToken, CancellationToken token = default);
+    Task<bool> Exists(Guid accountId, CancellationToken token = default);
     Task<RefreshToken?> GetRefreshToken(Guid accountId, CancellationToken token = default);
     Task<bool> DeleteRefreshToken(Guid accountId, CancellationToken token = default);
 }

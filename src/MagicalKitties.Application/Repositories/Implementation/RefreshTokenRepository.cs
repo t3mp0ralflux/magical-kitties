@@ -40,17 +40,30 @@ public class RefreshTokenRepository : IRefreshTokenRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        RefreshToken? result = await connection.QuerySingleOrDefaultAsync<RefreshToken>(new CommandDefinition("""
-                                                                                                              select id, account_id, access_token, token, expiration_utc
-                                                                                                              from refreshtoken
-                                                                                                              where account_id = @accountId
-                                                                                                              limit 1
-                                                                                                              """, new
-                                                                                                                   {
-                                                                                                                       accountId
-                                                                                                                   }, cancellationToken: token));
+        RefreshToken? result = await connection.QuerySingleOrDefaultAsyncWithRetry<RefreshToken>(new CommandDefinition("""
+                                                                                                                       select id, account_id, access_token, token, expiration_utc
+                                                                                                                       from refreshtoken
+                                                                                                                       where account_id = @accountId
+                                                                                                                       limit 1
+                                                                                                                       """, new
+                                                                                                                            {
+                                                                                                                                accountId
+                                                                                                                            }, cancellationToken: token));
 
         return result;
+    }
+
+    public async Task<bool> Exists(Guid accountId, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+
+        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
+                                                                                           select count(id)
+                                                                                           from refreshtoken
+                                                                                           where account_id = @accountId
+                                                                                           """, new { accountId }, cancellationToken: token));
+
+        return result > 0;
     }
 
     public async Task<bool> DeleteRefreshToken(Guid accountId, CancellationToken token = default)

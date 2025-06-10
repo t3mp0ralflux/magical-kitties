@@ -2,6 +2,7 @@
 using MagicalKitties.Api.Controllers;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
+using MagicalKitties.Application;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Services;
@@ -9,6 +10,7 @@ using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Responses.Auth;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using Testing.Common;
 
@@ -22,7 +24,9 @@ public class AuthControllerTests
     private readonly IJwtTokenService _jwtService = Substitute.For<IJwtTokenService>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
-
+    private readonly IGlobalSettingsService _globalSettingsService = Substitute.For<IGlobalSettingsService>();
+    private readonly IConfiguration _configuration = Substitute.For<IConfiguration>();
+    
     public AuthControllerTests()
     {
         _sut = new AuthController(_accountService, _refreshTokenService, _passwordHasher, _jwtService, _authService, _dateTimeProvider);
@@ -50,7 +54,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_ShouldReturnNotFound_WhenUsernameIsNotFound()
+    public async Task LoginByPassword_ShouldReturnNotFound_WhenUsernameIsNotFound()
     {
         // Arrange
         LoginRequest request = new()
@@ -68,7 +72,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_ShouldReturnUnauthorized_WhenEmailIsCorrectAndPasswordIsIncorrect()
+    public async Task LoginByPassword_ShouldReturnUnauthorized_WhenEmailIsCorrectAndPasswordIsIncorrect()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -91,7 +95,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_ShouldReturnUnauthorized_WhenUsernameIsCorrectAndPasswordIsIncorrect()
+    public async Task LoginByPassword_ShouldReturnUnauthorized_WhenUsernameIsCorrectAndPasswordIsIncorrect()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -114,7 +118,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_ShouldReturnUnauthorized_WhenAccountIsNotActive()
+    public async Task LoginByPassword_ShouldReturnUnauthorized_WhenAccountIsNotActive()
     {
         // Arrange
         Account account = Fakes.GenerateAccount(AccountStatus.created);
@@ -135,7 +139,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Login_ShouldReturnJwtToken_WhenDataIsCorrect()
+    public async Task LoginByPassword_ShouldReturnJwtToken_WhenDataIsCorrect()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -167,6 +171,214 @@ public class AuthControllerTests
         // Assert
         result.StatusCode.Should().Be(200);
         result.Value.Should().BeEquivalentTo(expectedResult);
+    }
+
+    [Fact]
+    public async Task LoginByToken_ShouldReturnFalse_WhenTokenIsInvalid()
+    {
+        // Arrange
+        TokenRequest request = new TokenRequest
+                               {
+                                   AccessToken = "Bogus",
+                                   RefreshToken = "Token"
+                               };
+        
+        // Act
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByToken(request, CancellationToken.None);
+
+        // Assert
+        result.StatusCode.Should().Be(401);
+        result.Value.Should().Be("Token is invalid");
+    }
+
+    [Fact]
+    public async Task LoginByToken_ShouldReturnNotFound_WhenAccountIsNotFound()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        
+        const string token = "ThisIsALoginToken";
+        const string refreshToken = "ThisIsARefreshToken";
+        
+        _jwtService.ValidateCustomToken(token).Returns(true);
+        _jwtService.GetEmailFromToken(token).Returns(account.Email);
+        
+        TokenRequest request = new TokenRequest
+                               {
+                                   AccessToken = token,
+                                   RefreshToken = refreshToken
+                               };
+        
+        // Act
+        NotFoundResult result = (NotFoundResult)await _sut.LoginByToken(request, CancellationToken.None);
+
+        // Assert
+        result.StatusCode.Should().Be(404);
+    }
+
+    [Fact]
+    public async Task LoginByToken_ShouldReturnUnauthorized_WhenAccountIsNotActive()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        account.AccountStatus = AccountStatus.banned;
+
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
+        
+        const string token = "ThisIsALoginToken";
+        const string refreshToken = "ThisIsARefreshToken";
+        
+        _jwtService.ValidateCustomToken(token).Returns(true);
+        _jwtService.GetEmailFromToken(token).Returns(account.Email);
+        
+        TokenRequest request = new TokenRequest
+                               {
+                                   AccessToken = token,
+                                   RefreshToken = refreshToken
+                               };
+        
+        // Act
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByToken(request, CancellationToken.None);
+
+        // Assert
+        result.StatusCode.Should().Be(401);
+        result.Value.Should().Be("Your account status is not active. Contact support.");
+    }
+    
+    [Fact]
+    public async Task LoginByToken_ShouldReturnUnauthorized_WhenNoRefreshTokenExists()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
+        _refreshTokenService.Exists(account.Id).Returns(false);
+        
+        const string token = "ThisIsALoginToken";
+        const string refreshToken = "ThisIsARefreshToken";
+        
+        _jwtService.ValidateCustomToken(token).Returns(true);
+        _jwtService.GetEmailFromToken(token).Returns(account.Email);
+        
+        TokenRequest request = new TokenRequest
+                               {
+                                   AccessToken = token,
+                                   RefreshToken = refreshToken
+                               };
+        
+        // Act
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByToken(request, CancellationToken.None);
+
+        // Assert
+        result.StatusCode.Should().Be(401);
+        result.Value.Should().Be("Refresh token is invalid");
+    }
+    
+    [Fact]
+    public async Task LoginByToken_ShouldReturnUnauthorized_WhenRefreshTokenIsValidAndPayloadIsNot()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
+        
+        const string token = "ThisIsALoginToken";
+        const string refreshToken = "ThisIsARefreshToken";
+        
+        _jwtService.ValidateCustomToken(token).Returns(true);
+        _jwtService.GetEmailFromToken(token).Returns(account.Email);
+        
+        RefreshToken storedToken = new RefreshToken
+                                   {
+                                       Id = Guid.NewGuid(),
+                                       AccountId = account.Id,
+                                       AccessToken = token,
+                                       Token = refreshToken,
+                                       ExpirationUtc = DateTime.UtcNow.AddMinutes(5)
+                                   };
+        
+        _refreshTokenService.Exists(account.Id).Returns(true);
+        _refreshTokenService.GetRefreshToken(account.Id).Returns(storedToken);
+        _refreshTokenService.ValidateRefreshToken(account.Id, Arg.Any<AuthToken>()).Returns(false);
+
+        _jwtService.ValidateCustomToken(Arg.Any<string>()).Returns(true);
+        _jwtService.GetEmailFromToken(token).Returns(account.Email);
+        
+        TokenRequest request = new TokenRequest
+                               {
+                                   AccessToken = token,
+                                   RefreshToken = "ThisIsAFakeRefreshToken"
+                               };
+        
+        // Act
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByToken(request, CancellationToken.None);
+
+        // Assert
+        result.StatusCode.Should().Be(401);
+        result.Value.Should().Be("Refresh token is invalid");
+    }
+    
+    [Fact]
+    public async Task LoginByToken_ShouldReturnOk_WhenRefreshTokenAndPayloadAreValid()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
+        
+        const string token = "ThisIsALoginToken";
+        const string refreshToken = "ThisIsARefreshToken";
+
+        RefreshToken storedToken = new RefreshToken
+                                   {
+                                       Id = Guid.NewGuid(),
+                                       AccountId = account.Id,
+                                       AccessToken = token,
+                                       Token = refreshToken,
+                                       ExpirationUtc = DateTime.UtcNow.AddMinutes(5)
+                                   };
+        
+        _jwtService.ValidateCustomToken(token).Returns(true);
+        _jwtService.GetEmailFromToken(token).Returns(account.Email);
+        
+        _refreshTokenService.Exists(account.Id).Returns(true);
+        _refreshTokenService.GetRefreshToken(account.Id).Returns(storedToken);
+        _refreshTokenService.ValidateRefreshToken(account.Id, Arg.Any<AuthToken>()).Returns(true);
+
+        const string expectedAccessToken = "ThisIsANewToken";
+        const string expectedRefreshToken = "ThisIsANewRefreshToken";
+
+        _jwtService.GenerateToken(Arg.Any<Account>()).Returns(expectedAccessToken);
+        _jwtService.GenerateRefreshToken().Returns(expectedRefreshToken);
+
+        _refreshTokenService.UpsertRefreshToken(Arg.Any<Account>(), expectedAccessToken, expectedRefreshToken).Returns(new RefreshToken
+                                                                                                                       {
+                                                                                                                           Id = Guid.NewGuid(),
+                                                                                                                           AccountId = account.Id,
+                                                                                                                           AccessToken = expectedAccessToken,
+                                                                                                                           Token = expectedRefreshToken,
+                                                                                                                           ExpirationUtc = DateTime.UtcNow.AddMinutes(5)
+                                                                                                                       });
+        
+        TokenRequest request = new TokenRequest
+                               {
+                                   AccessToken = token,
+                                   RefreshToken = refreshToken
+                               };
+
+        LoginResponse expectedResponse = new LoginResponse
+                                         {
+                                             Account = account.ToResponse(),
+                                             AccessToken = expectedAccessToken,
+                                             RefreshToken = expectedRefreshToken
+                                         };
+        
+        // Act
+        OkObjectResult result = (OkObjectResult)await _sut.LoginByToken(request, CancellationToken.None);
+
+        // Assert
+        result.StatusCode.Should().Be(200);
+        result.Value.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]

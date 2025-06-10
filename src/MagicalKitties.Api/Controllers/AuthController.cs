@@ -83,12 +83,15 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
         {
             return Unauthorized("Token is invalid");
         }
+        
+        string? tokenEmail = jwtTokenService.GetEmailFromToken(authToken.AccessToken);
 
-        JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
+        if (string.IsNullOrWhiteSpace(tokenEmail))
+        {
+            return Unauthorized("Token is invalid");
+        }
         
-        JwtSecurityToken? parsedToken = jwtTokenHandler.ReadJwtToken(authToken.AccessToken);
-        
-        Account? account = await accountService.GetByEmailAsync(parsedToken.Subject, token);
+        Account? account = await accountService.GetByEmailAsync(tokenEmail, token);
 
         if (account is null)
         {
@@ -101,22 +104,13 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
             return Unauthorized("Your account status is not active. Contact support.");
         }
 
-        RefreshToken? existingToken = await refreshTokenService.GetRefreshToken(account.Id, token);
+        bool existingToken = await refreshTokenService.Exists(account.Id, token);
 
-        if (existingToken is null)
+        if (!existingToken)
         {
             return Unauthorized("Refresh token is invalid");
         }
         
-        // current token is expired, but refresh may be valid
-        if (parsedToken.ValidTo <= dateTimeProvider.GetUtcNow())
-        {
-            if (!string.Equals(existingToken.Token, authToken.RefreshToken, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return Unauthorized("Refresh token is invalid");
-            }
-        }
-
         bool validToken = await refreshTokenService.ValidateRefreshToken(account.Id, authToken, token);
 
         if (!validToken)
