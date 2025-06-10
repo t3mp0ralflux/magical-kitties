@@ -26,6 +26,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IHumanRepository, HumanRepository>();
         services.AddSingleton<IProblemRepository, ProblemRepository>();
         services.AddSingleton<IUpgradeRepository, UpgradeRepository>();
+        services.AddSingleton<IRefreshTokenRepository, RefreshTokenRepository>();
 
         #endregion
 
@@ -43,6 +44,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton<IHumanService, HumanService>();
         services.AddSingleton<ICharacterUpgradeService, CharacterUpgradeService>();
         services.AddSingleton<IRuleService, RuleService>();
+        services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 
         #endregion
 

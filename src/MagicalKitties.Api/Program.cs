@@ -15,6 +15,17 @@ using Serilog.Sinks.OpenTelemetry;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ConfigurationManager config = builder.Configuration;
 
+builder.Services.AddCors(options =>
+                         {
+                             options.AddPolicy("Default",
+                                 policy =>
+                                 {
+                                     policy.AllowAnyOrigin()
+                                           .AllowAnyHeader()
+                                           .AllowAnyMethod();
+                                 });
+                         });
+
 builder.Logging.ClearProviders();
 
 Log.Logger = new LoggerConfiguration()
@@ -42,7 +53,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddMemoryCache();
-builder.Services.AddSingleton<IJwtTokenGeneratorService, JwtTokenGeneratorService>();
+builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
 builder.Services.AddOpenApi();
 
@@ -160,8 +171,11 @@ if (app.Environment.IsDevelopment())
                                       .WithTheme(ScalarTheme.Mars)
                                       .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
                               });
+    
+    
 }
 
+app.UseCors("Default");
 app.UseHttpsRedirection();
 
 app.UseExceptionHandler();

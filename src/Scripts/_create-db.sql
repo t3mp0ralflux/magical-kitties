@@ -19,6 +19,15 @@ create table if not exists account (
 	UNIQUE (username, email)
 );
 
+create table if not exists refreshtoken (
+    id UUID primary key,
+    account_id UUID references account(id),
+    access_token text not null,
+    token text not null,
+    expiration_utc timestamp not null,
+    UNIQUE(account_id)
+);
+
 create table if not exists flaw(
     id numeric primary key,
     name text not null,

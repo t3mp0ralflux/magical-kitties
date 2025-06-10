@@ -18,7 +18,7 @@ public class AuthControllerTests
 {
     private readonly IAccountService _accountService = Substitute.For<IAccountService>();
     private readonly IAuthService _authService = Substitute.For<IAuthService>();
-    private readonly IJwtTokenGeneratorService _jwtService = Substitute.For<IJwtTokenGeneratorService>();
+    private readonly IJwtTokenService _jwtService = Substitute.For<IJwtTokenService>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
 
     public AuthControllerTests()
@@ -41,7 +41,7 @@ public class AuthControllerTests
         _accountService.GetByEmailAsync(request.Email, CancellationToken.None).Returns((Account?)null);
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Login(request, CancellationToken.None);
+        NotFoundResult result = (NotFoundResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(404);
@@ -59,7 +59,7 @@ public class AuthControllerTests
 
         _accountService.GetByUsernameAsync(request.Email, CancellationToken.None).Returns((Account?)null);
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Login(request, CancellationToken.None);
+        NotFoundResult result = (NotFoundResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(404);
@@ -81,7 +81,7 @@ public class AuthControllerTests
         _passwordHasher.Verify(request.Password, account.Password).Returns(false);
 
         // Act
-        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.Login(request, CancellationToken.None);
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(401);
@@ -104,7 +104,7 @@ public class AuthControllerTests
         _passwordHasher.Verify(request.Password, account.Password).Returns(false);
 
         // Act
-        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.Login(request, CancellationToken.None);
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(401);
@@ -125,7 +125,7 @@ public class AuthControllerTests
         _accountService.GetByEmailAsync(request.Email, CancellationToken.None).Returns(account);
 
         // Act
-        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.Login(request, CancellationToken.None);
+        UnauthorizedObjectResult result = (UnauthorizedObjectResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(401);
@@ -151,7 +151,7 @@ public class AuthControllerTests
         _authService.LoginAsync(Arg.Any<AccountLogin>()).Returns(true);
 
         // Act
-        OkObjectResult result = (OkObjectResult)await _sut.Login(request, CancellationToken.None);
+        OkObjectResult result = (OkObjectResult)await _sut.LoginByPassword(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(200);
