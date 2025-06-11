@@ -210,6 +210,7 @@ if (app.Environment.IsDevelopment())
                                       .WithTitle("Magical Kitties Save the Day API")
                                       .WithTheme(ScalarTheme.Mars)
                                       .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+                                  options.Servers = [];
                               });
     
     

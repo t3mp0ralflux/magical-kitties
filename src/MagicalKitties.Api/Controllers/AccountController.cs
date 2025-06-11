@@ -25,7 +25,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
 
         AccountResponse response = account.ToResponse();
 
-        return CreatedAtAction(nameof(Get), new { id = account.Id }, response);
+        return CreatedAtAction(nameof(Get), new { emailOrId = account.Id }, response);
     }
 
     [HttpGet(ApiEndpoints.Accounts.Get)]
