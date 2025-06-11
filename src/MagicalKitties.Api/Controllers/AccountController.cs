@@ -44,7 +44,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
 
         return Ok(response);
     }
-    
+
     [HttpGet(ApiEndpoints.Accounts.GetAll)]
     [Authorize(AuthConstants.TrustedUserPolicyName)]
     [ProducesResponseType<AccountsResponse>(StatusCodes.Status200OK)]
