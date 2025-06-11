@@ -62,9 +62,14 @@ public class AccountService : IAccountService
         return true;
     }
 
-    public async Task<Account?> GetByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<Account?> GetByIdAsync(string emailOrId, CancellationToken token = default)
     {
-        return await _accountRepository.GetByIdAsync(id, token);
+        if (Guid.TryParse(emailOrId, out Guid guidId))
+        {
+            return await _accountRepository.GetByIdAsync(guidId, token);
+        }
+        
+        return await _accountRepository.GetByEmailAsync(emailOrId, token);
     }
 
     public async Task<IEnumerable<Account>> GetAllAsync(GetAllAccountsOptions options, CancellationToken token = default)

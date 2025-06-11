@@ -31,9 +31,9 @@ public class AccountController(IAccountService accountService) : ControllerBase
     [HttpGet(ApiEndpoints.Accounts.Get)]
     [ProducesResponseType<AccountResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Get([FromRoute] string emailOrId, CancellationToken token)
     {
-        Account? account = await accountService.GetByIdAsync(id, token);
+        Account? account = await accountService.GetByIdAsync(emailOrId, token);
 
         if (account is null)
         {

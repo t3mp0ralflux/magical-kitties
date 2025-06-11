@@ -149,6 +149,15 @@ public static class ContractMapping
                };
     }
 
+    public static AuthToken ToToken(this TokenRequest request)
+    {
+        return new AuthToken
+               {
+                   AccessToken = request.AccessToken,
+                   RefreshToken = request.RefreshToken
+               };
+    }
+    
     #endregion
 
     #region Characters

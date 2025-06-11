@@ -153,7 +153,7 @@ public class AccountServiceTests
         _accountRepository.GetByIdAsync(id).Returns((Account?)null);
 
         // Act
-        Account? result = await _sut.GetByIdAsync(id);
+        Account? result = await _sut.GetByIdAsync(id.ToString());
 
         // Assert
         result.Should().BeNull();
@@ -167,7 +167,7 @@ public class AccountServiceTests
         _accountRepository.GetByIdAsync(account.Id).Returns(account);
 
         // Act
-        Account? result = await _sut.GetByIdAsync(account.Id);
+        Account? result = await _sut.GetByIdAsync(account.Id.ToString());
 
         // Assert
         result.Should().NotBeNull();
