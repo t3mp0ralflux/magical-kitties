@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Asp.Versioning;
 using MagicalKitties.Api;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
@@ -57,24 +59,62 @@ builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddAuthentication(x =>
-                                   {
-                                       x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                                       x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                                   }).AddJwtBearer(x =>
-                                                   {
-                                                       x.TokenValidationParameters = new TokenValidationParameters
-                                                                                     {
-                                                                                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
-                                                                                         ValidateIssuerSigningKey = true,
-                                                                                         ValidateLifetime = true,
-                                                                                         ValidIssuer = config["Jwt:Issuer"],
-                                                                                         ValidAudience = config["Jwt:Audience"],
-                                                                                         ValidateIssuer = true,
-                                                                                         ValidateAudience = true
-                                                                                     };
-                                                   });
+builder.Services
+       .AddAuthentication(x =>
+                          {
+                              x.DefaultScheme = "JWT_OR_GOOGLE";
+                              x.DefaultChallengeScheme = "JWT_OR_GOOGLE";
+                          })
+       .AddJwtBearer("JWT", x =>
+                               {
+                                   x.Audience = config["Jwt:Audience"];
+                                   x.TokenValidationParameters = new TokenValidationParameters
+                                                                 {
+                                                                     // IssuerSigningKeys = [
+                                                                     //     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
+                                                                     //     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Google:ClientSecret"]!))
+                                                                     // ],
+                                                                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
+                                                                     ValidateIssuerSigningKey = true,
+                                                                     ValidateLifetime = true,
+                                                                     ValidIssuer = config["Jwt:Issuer"],
+                                                                     ValidAudience = config["Jwt:Audience"],
+                                                                     // ValidIssuers = [config["Jwt:Issuer"], config["Google:Issuer"]],
+                                                                     // ValidAudiences = [config["Jwt:Audience"], config["Google:Audience"]],
+                                                                     ValidateIssuer = true,
+                                                                     ValidateAudience = true
+                                                                 };
+                               })
+       .AddJwtBearer("Google", x =>
+                               {
+                                   x.Authority = "https://accounts.google.com";
+                                   x.Audience = config["Google:Audience"];
+                                   x.TokenValidationParameters = new TokenValidationParameters
+                                                                 {
+                                                                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Google:ClientSecret"]!)),
+                                                                     ValidIssuer = config["Google:Issuer"],
+                                                                     ValidAudience = config["Google:Audience"],
+                                                                     ValidateIssuer = true,
+                                                                     ValidateAudience = true
+                                                                 };
+                                   
+                               })
+       .AddPolicyScheme("JWT_OR_GOOGLE", "JWT_OR_GOOGLE", x =>
+                                                          {
+                                                              x.ForwardDefaultSelector = context =>
+                                                                                         {
+                                                                                             string? authorization = context.Request.Headers[HeaderNames.Authorization];
+                                                                                             if (string.IsNullOrEmpty(authorization) || !authorization.StartsWith("Bearer "))
+                                                                                             {
+                                                                                                 return "JWT";
+                                                                                             }
+
+                                                                                             string token = authorization["Bearer ".Length..].Trim();
+                                                                                             JwtSecurityTokenHandler jwtHandler = new JwtSecurityTokenHandler();
+
+                                                                                             return jwtHandler.CanReadToken(token) && jwtHandler.ReadJwtToken(token).Issuer.Equals(config["Google:Issuer"]) ? "Google" : "JWT";
+                                                                                         };
+                                                          });
 
 builder.Services.AddAuthorizationBuilder()
        .AddPolicy(AuthConstants.AdminUserPolicyName, p => p.RequireClaim(AuthConstants.AdminUserClaimName, "true"))
