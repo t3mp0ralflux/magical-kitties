@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.Characters.Upgrades;
@@ -42,7 +43,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
         if (update.Upgrade.Block > characterBlock)
         {
-            throw new ValidationException("Cannot add upgrade. Upgrade is higher than the character's level.");
+            throw new ValidationException([new ValidationFailure("Upgrade","Cannot add upgrade. Upgrade is higher than the character's level.")]);
         }
 
         Upgrade? existingUpgrade = character.Upgrades.FirstOrDefault(x => x.Block == update.Upgrade.Block && x.Id == update.Upgrade.Id);
@@ -63,7 +64,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         AttributeOption.cunning => character.Cunning,
                         AttributeOption.cute => character.Cute,
                         AttributeOption.fierce => character.Fierce,
-                        _ => throw new ValidationException("Attribute upgrade option was not valid.")
+                        _ => throw new ValidationException([new ValidationFailure("UpgradeOption","Attribute upgrade option was not valid.")])
                     };
 
                     if (update.UpgradeOption == UpgradeOption.attribute3)
@@ -72,7 +73,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         {
                             if (maxPropertyValue + 1 > 3)
                             {
-                                throw new ValidationException($"Level {character.Level} characters cannot have any Attribute above 3.");
+                                throw new ValidationException([new ValidationFailure("AttributeMax3",$"Level {character.Level} characters cannot have any Attribute above 3.")]);
                             }
                         }
                     }
@@ -80,12 +81,12 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         if (character.Level < 5)
                         {
-                            throw new ValidationException("This upgrade is invalid for characters less than level 5.");
+                            throw new ValidationException([new ValidationFailure("CharacterLevel","This upgrade is invalid for characters less than level 5.")]);
                         }
 
                         if (maxPropertyValue + 1 > 4)
                         {
-                            throw new ValidationException($"Level {character.Level} characters cannot have an Attribute above 3.");
+                            throw new ValidationException([new ValidationFailure("AttributeMaxLevel",$"Level {character.Level} characters cannot have an Attribute above 3.")]);
                         }
                     }
 
@@ -105,7 +106,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         if (bonusFeatureUpdate.NestedMagicalPowerId != existingFeature.NestedMagicalPowerId)
                         {
-                            throw new ValidationException($"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.");
+                            throw new ValidationException([new ValidationFailure("MagicalPower",$"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
                         }
 
                         if (bonusFeatureUpdate.BonusFeatureId == existingFeature.NestedBonusFeatureId)
@@ -122,7 +123,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                         if (!magicalPower.BonusFeatures.Exists(x => x.Id == bonusFeatureUpdate.NestedBonusFeatureId))
                         {
-                            throw new ValidationException($"Bonus Feature '{bonusFeatureUpdate.NestedBonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'");
+                            throw new ValidationException([new ValidationFailure("BonusFeature",$"Bonus Feature '{bonusFeatureUpdate.NestedBonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
                         }
 
                         existingFeature.NestedBonusFeatureId = bonusFeatureUpdate.NestedBonusFeatureId;
@@ -131,7 +132,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         if (bonusFeatureUpdate.MagicalPowerId != existingFeature.MagicalPowerId)
                         {
-                            throw new ValidationException($"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.");
+                            throw new ValidationException([new ValidationFailure("MagicalPower",$"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
                         }
 
                         if (bonusFeatureUpdate.BonusFeatureId == existingFeature.BonusFeatureId)
@@ -148,7 +149,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                         if (!magicalPower.BonusFeatures.Exists(x => x.Id == bonusFeatureUpdate.BonusFeatureId))
                         {
-                            throw new ValidationException($"Bonus Feature '{bonusFeatureUpdate.BonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'");
+                            throw new ValidationException([new ValidationFailure("BonusFeature",$"Bonus Feature '{bonusFeatureUpdate.BonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
                         }
 
                         existingFeature.BonusFeatureId = bonusFeatureUpdate.BonusFeatureId;
@@ -173,12 +174,12 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (talents.FirstOrDefault(x => x.Id == talentUpdate.TalentId) is null)
                     {
-                        throw new ValidationException($"Talent '{talentUpdate.TalentId}' does not exist.");
+                        throw new ValidationException([new ValidationFailure("Talent", $"Talent '{talentUpdate.TalentId}' does not exist.")]);
                     }
 
                     if (character.Talents.FirstOrDefault(x => x.Id == talentUpdate.TalentId) is not null)
                     {
-                        throw new ValidationException("Talent already present on character.");
+                        throw new ValidationException([new ValidationFailure("TalentExists", "Talent already present on character.")]);
                     }
 
                     existingTalent.TalentId = talentUpdate.TalentId;
@@ -202,13 +203,13 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (magicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpdate.MagicalPowerId) is null)
                     {
-                        throw new ValidationException($"Magical Power '{magicalPowerUpdate.MagicalPowerId}' does not exist.");
+                        throw new ValidationException([new ValidationFailure("MagicalPower",$"Magical Power '{magicalPowerUpdate.MagicalPowerId}' does not exist.")]);
                     }
 
                     if (character.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpdate.MagicalPowerId) is not null
                         || character.MagicalPowers.FirstOrDefault(x => x.BonusFeatures.Any(y => y.Id == magicalPowerUpdate.MagicalPowerId)) is not null)
                     {
-                        throw new ValidationException("Magical Power already present on character.");
+                        throw new ValidationException([new ValidationFailure("MagicalPowerExists", "Magical Power already present on character.")]);
                     }
 
                     existingMagicalPower.MagicalPowerId = magicalPowerUpdate.MagicalPowerId;
@@ -219,7 +220,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                 case UpgradeOption.treatsValue:
                     break; // doesn't really do anything, honestly
                 default:
-                    throw new ValidationException("Upgrade option was not valid.");
+                    throw new ValidationException([new ValidationFailure("UpgradeOption", "Upgrade option was not valid.")]);
             }
 
             await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
@@ -234,7 +235,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         if (levelRules.FirstOrDefault(x => x.UpgradeChoice == update.Upgrade.Id) is null)
         {
             // out of range, throw hands
-            throw new ValidationException("Option selected was outside the available options for this character.");
+            throw new ValidationException([new ValidationFailure("InvalidOption", "Option selected was outside the available options for this character.")]);
         }
 
         existingUpgrade = update.Upgrade;
@@ -262,7 +263,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                 if (character!.Talents.FirstOrDefault(x => x.Id == talentUpgrade.TalentId) is not null)
                 {
-                    throw new ValidationException("Talent still exists on Character. Cannot remove upgrade."); // mostly for FE debugging and BE shenanigans
+                    throw new ValidationException([new ValidationFailure("TalentExists","Talent still exists on Character. Cannot remove upgrade.")]); // mostly for FE debugging and BE shenanigans
                 }
 
                 break;
@@ -271,7 +272,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                 if (character!.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpgrade.MagicalPowerId) is not null)
                 {
-                    throw new ValidationException("MagicalPower still exists on Character. Cannot remove upgrade."); // mostly for FE debugging and BE shenanigans
+                    throw new ValidationException([new ValidationFailure("MagicalPowerExists","MagicalPower still exists on Character. Cannot remove upgrade.")]); // mostly for FE debugging and BE shenanigans
                 }
 
                 break;

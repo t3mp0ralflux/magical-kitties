@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Models.System;
@@ -52,7 +53,7 @@ public class AccountService : IAccountService
 
         try
         {
-            await QueueActivationEmail(account, token);
+            await QueueActivationEmailAsync(account, token);
         }
         catch (Exception ex)
         {
@@ -119,15 +120,15 @@ public class AccountService : IAccountService
     public async Task<bool> ActivateAsync(AccountActivation activation, CancellationToken token = default)
     {
         Account? existingAccount = await _accountRepository.GetByUsernameAsync(activation.Username, token);
-
+        
         if (existingAccount is null)
         {
-            throw new ValidationException("No account found");
+            throw new ValidationException([new ValidationFailure("Account", "No Account found")]);
         }
 
         if (existingAccount.ActivationCode != activation.ActivationCode || existingAccount.ActivationExpiration < _dateTimeProvider.GetUtcNow())
         {
-            throw new ValidationException("Activation is invalid");
+            throw new ValidationException([new ValidationFailure("ActivationCode","Activation is invalid")]);
         }
 
         existingAccount.AccountStatus = AccountStatus.active;
@@ -145,12 +146,12 @@ public class AccountService : IAccountService
 
         if (account is null)
         {
-            throw new ValidationException("No account found");
+            throw new ValidationException([new ValidationFailure("Account","No account found")]);
         }
 
         if (!string.Equals(account.ActivationCode, activationRequest.ActivationCode))
         {
-            throw new ValidationException("Activation code invalid");
+            throw new ValidationException([new ValidationFailure("ActivationCode","Activation code invalid")]);
         }
 
         await CreateActivationData(account, token);
@@ -164,7 +165,7 @@ public class AccountService : IAccountService
 
         try
         {
-            await QueueActivationEmail(account, token);
+            await QueueActivationEmailAsync(account, token);
         }
         catch (Exception e)
         {
@@ -211,7 +212,7 @@ public class AccountService : IAccountService
 
         try
         {
-            await QueuePasswordResetEmail(account, token);
+            await QueuePasswordResetEmailAsync(account, token);
         }
         catch (Exception ex)
         {
@@ -221,13 +222,13 @@ public class AccountService : IAccountService
         return true;
     }
 
-    public async Task<bool> VerifyPasswordResetCode(string email, string code, CancellationToken token = default)
+    public async Task<bool> VerifyPasswordResetCodeAsync(string email, string code, CancellationToken token = default)
     {
         Account? account = await _accountRepository.GetByEmailAsync(email, token);
 
         if (account?.PasswordResetRequestedUtc == null)
         {
-            throw new ValidationException("Reset was not requested");
+            throw new ValidationException([new ValidationFailure("Reset","Reset was not requested")]);
         }
 
         int maxPasswordResetMins = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_RESET_REQUEST_EXPIRATION_MINS, 5, token);
@@ -236,13 +237,13 @@ public class AccountService : IAccountService
             (_dateTimeProvider.GetUtcNow() - account.PasswordResetRequestedUtc.Value).Duration() > TimeSpan.FromMinutes(maxPasswordResetMins)
             || !string.Equals(account.PasswordResetCode, code))
         {
-            throw new ValidationException("Code has expired");
+            throw new ValidationException([new ValidationFailure("ResetCode","Code has expired")]);
         }
 
         return true;
     }
 
-    public async Task<bool> ResetPassword(PasswordReset reset, CancellationToken token = default)
+    public async Task<bool> ResetPasswordAsync(PasswordReset reset, CancellationToken token = default)
     {
         await _passwordResetValidator.ValidateAndThrowAsync(reset, token);
 
@@ -253,7 +254,7 @@ public class AccountService : IAccountService
         return result;
     }
 
-    private async Task QueueActivationEmail(Account account, CancellationToken token = default)
+    private async Task QueueActivationEmailAsync(Account account, CancellationToken token = default)
     {
         string? serviceUsername = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.SERVICE_ACCOUNT_USERNAME, string.Empty, token);
         string? emailFormat = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.ACTIVATION_EMAIL_FORMAT, string.Empty, token);
@@ -293,7 +294,7 @@ public class AccountService : IAccountService
         _emailService.QueueEmailAsync(data, token); // fire and forget, no waiting.
     }
 
-    private async Task QueuePasswordResetEmail(Account account, CancellationToken token = default)
+    private async Task QueuePasswordResetEmailAsync(Account account, CancellationToken token = default)
     {
         string? serviceUsername = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.SERVICE_ACCOUNT_USERNAME, string.Empty, token);
         string? emailFormat = await _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_RESET_EMAIL_FORMAT, string.Empty, token);

@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application.Models.Accounts;
@@ -170,11 +171,11 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
     {
         if (!string.Equals(email.ToLowerInvariant(), verification.Email.ToLowerInvariant()))
         {
-            throw new ValidationException("Email not valid");
+            throw new ValidationException([new ValidationFailure("Email", "Email not valid")]);
         }
 
         // throws ValidationExceptions if not valid
-        await accountService.VerifyPasswordResetCode(verification.Email, verification.Code, token);
+        await accountService.VerifyPasswordResetCodeAsync(verification.Email, verification.Code, token);
 
         return Ok();
     }
@@ -194,7 +195,7 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
 
         PasswordReset passwordReset = request.ToReset();
 
-        await accountService.ResetPassword(passwordReset, token);
+        await accountService.ResetPasswordAsync(passwordReset, token);
 
         PasswordResetResponse response = passwordReset.ToResponse();
 
