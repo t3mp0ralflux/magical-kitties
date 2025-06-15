@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Equivalency;
+using FluentAssertions.Specialized;
 using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
 using MagicalKitties.Application.Models.System;
@@ -190,8 +192,9 @@ public class AccountServiceTests
         IEnumerable<Account> result = await _sut.GetAllAsync(options);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().BeEmpty();
+        List<Account> enumerable = result.ToList();
+        enumerable.Should().NotBeNull();
+        enumerable.Should().BeEmpty();
     }
 
     [Fact]
@@ -390,7 +393,15 @@ public class AccountServiceTests
         Func<Task<bool>> action = async () => await _sut.ActivateAsync(activation);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("No account found");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Account");
+        error.ErrorMessage.Should().Be("No Account found");
     }
 
     [Fact]
@@ -413,7 +424,15 @@ public class AccountServiceTests
         Func<Task<bool>> action = async () => await _sut.ActivateAsync(activation);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Activation is invalid");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("ActivationCode");
+        error.ErrorMessage.Should().Be("Activation is invalid");
     }
 
     [Fact]
@@ -436,7 +455,15 @@ public class AccountServiceTests
         Func<Task<bool>> action = async () => await _sut.ActivateAsync(activation);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Activation is invalid");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("ActivationCode");
+        error.ErrorMessage.Should().Be("Activation is invalid");
     }
 
     [Fact]
@@ -461,6 +488,32 @@ public class AccountServiceTests
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ActivateAsync_ShouldReturnTrue_WhenAccountIsAlreadyActive()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        DateTime now = DateTime.UtcNow;
+        account.ActivatedUtc = now;
+        _dateTimeProvider.GetUtcNow().Returns(now);
+        
+        _accountRepository.GetByUsernameAsync(account.Username).Returns(account);
+        
+        AccountActivation activation = new()
+                                       {
+                                           Username = account.Username,
+                                           ActivationCode = "test", // doesn't matter
+                                           Expiration = DateTime.MinValue
+                                       };
+        
+        // Act
+        bool result = await _sut.ActivateAsync(activation);
+
+        // Assert
+        result.Should().BeTrue();
+        await _accountRepository.DidNotReceiveWithAnyArgs().ActivateAsync(Arg.Any<Account>());
     }
 
     [Fact]
@@ -505,7 +558,15 @@ public class AccountServiceTests
         Func<Task<bool>> action = async () => await _sut.ResendActivationAsync(request);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("No account found");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Account");
+        error.ErrorMessage.Should().Be("No account found");
     }
 
     [Fact]
@@ -528,7 +589,47 @@ public class AccountServiceTests
         Func<Task<bool>> action = async () => await _sut.ResendActivationAsync(request);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Activation code invalid");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("ActivationCode");
+        error.ErrorMessage.Should().Be("Activation code invalid");
+    }
+    
+    [Fact]
+    public async Task ResendActivationAsync_ShouldThrowValidationException_WhenActivationCodeIsStillValid()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        account.ActivationCode = "Old and busted";
+        account.ActivationExpiration = DateTime.Now.AddMinutes(5);
+
+        _accountRepository.GetByUsernameAsync(account.Username).Returns(account);
+        
+        AccountActivation request = new()
+                                    {
+                                        Username = account.Username,
+                                        ActivationCode = "Old and busted",
+                                        Expiration = DateTime.MinValue
+                                    };
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.ResendActivationAsync(request);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("ActivationExpiration");
+        error.ErrorMessage.Should().Be("Activation code active");
     }
 
     [Fact]
@@ -659,7 +760,7 @@ public class AccountServiceTests
     public async Task RequestPasswordResetAsync_ShouldReturnFalse_WhenAccountDoesNotExist()
     {
         // Arrange
-        string email = "email@email.com";
+        const string email = "email@email.com";
 
         _accountRepository.GetByEmailAsync(email).Returns((Account?)null);
 
@@ -734,5 +835,58 @@ public class AccountServiceTests
         // Assert
         result.Should().BeTrue();
         await _accountRepository.Received().RequestPasswordResetAsync(account.Email, "069420");
+    }
+
+    [Fact]
+    public async Task VerifyPasswordResetCode_ShouldThrowValidationException_WhenResetNotRequested()
+    {
+        // Arrange
+        const string email = "test@test.com";
+        const string code = "1235";
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.VerifyPasswordResetCodeAsync(email, code);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Reset");
+        error.ErrorMessage.Should().Be("Reset was not requested");
+    }
+
+    [Fact]
+    public async Task VerifyPasswordResetCode_ShouldThrowValidationException_WhenResetCodeHasExpired()
+    {
+        // Arrange
+        const string code = "12345";
+        DateTime now = DateTime.UtcNow;
+
+        Account account = Fakes.GenerateAccount();
+        account.PasswordResetCode = "12345";
+        account.PasswordResetRequestedUtc = now.AddHours(-1);
+
+        _accountRepository.GetByEmailAsync(account.Email).Returns(account);
+
+        _globalSettingsService.GetSettingCachedAsync(WellKnownGlobalSettings.PASSWORD_RESET_REQUEST_EXPIRATION_MINS, 5).Returns(5);
+        _dateTimeProvider.GetUtcNow().Returns(now);
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.VerifyPasswordResetCodeAsync(account.Email, code);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("ResetCode");
+        error.ErrorMessage.Should().Be("Code has expired");
     }
 }

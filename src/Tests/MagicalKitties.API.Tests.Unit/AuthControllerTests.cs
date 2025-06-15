@@ -443,7 +443,7 @@ public class AuthControllerTests
                                        };
 
         _accountService.ExistsByEmailAsync(request.Email).Returns(true);
-        _accountService.ResetPassword(Arg.Any<PasswordReset>()).Returns(true);
+        _accountService.ResetPasswordAsync(Arg.Any<PasswordReset>()).Returns(true);
 
         PasswordResetResponse expectedResponse = request.ToReset().ToResponse();
 

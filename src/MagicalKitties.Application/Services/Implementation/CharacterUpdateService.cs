@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Repositories;
@@ -44,7 +45,7 @@ public class CharacterUpdateService : ICharacterUpdateService
             DescriptionOption.description => await _characterUpdateRepository.UpdateDescriptionAsync(update, token),
             DescriptionOption.hometown => await _characterUpdateRepository.UpdateHometownAsync(update, token),
             DescriptionOption.xp => await _characterUpdateRepository.UpdateXPAsync(update, token),
-            _ => throw new ValidationException("Selected description option not valid")
+            _ => throw new ValidationException([new ValidationFailure("DescriptionOption", "Selected description option not valid")])
         };
     }
 
@@ -152,7 +153,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
                 return await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);
             default:
-                throw new ValidationException("Selected attribute option not valid");
+                throw new ValidationException([new ValidationFailure("AttributeOption", "Selected attribute option not valid")]);
         }
     }
 

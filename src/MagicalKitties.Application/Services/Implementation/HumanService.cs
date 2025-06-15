@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Repositories;
@@ -90,7 +91,7 @@ public class HumanService : IHumanService
         {
             DescriptionOption.name => await _humanRepository.UpdateNameAsync(update, token),
             DescriptionOption.description => await _humanRepository.UpdateDescriptionAsync(update, token),
-            _ => throw new ValidationException("Selected description option not valid")
+            _ => throw new ValidationException([new ValidationFailure("DescriptionOption", "Selected description option not valid")])
         };
     }
 
@@ -109,7 +110,7 @@ public class HumanService : IHumanService
             ProblemOption.emotion => await _problemRepository.UpdateEmotionAsync(update, token),
             ProblemOption.rank => await _problemRepository.UpdateRankAsync(update, token),
             ProblemOption.solved => await _problemRepository.UpdateSolvedAsync(update, token),
-            _ => throw new ValidationException("Selected problem option not valid")
+            _ => throw new ValidationException([new ValidationFailure("ProblemOption", "Selected problem option not valid")])
         };
     }
 

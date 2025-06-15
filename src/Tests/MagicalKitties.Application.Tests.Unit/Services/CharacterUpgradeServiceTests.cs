@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Specialized;
 using FluentValidation;
+using FluentValidation.Results;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
@@ -87,7 +89,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Cannot add upgrade. Upgrade is higher than the character's level.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Upgrade");
+        error.ErrorMessage.Should().Be("Cannot add upgrade. Upgrade is higher than the character's level.");
     }
 
     [Fact]
@@ -119,7 +129,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Option selected was outside the available options for this character.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("InvalidOption");
+        error.ErrorMessage.Should().Be("Option selected was outside the available options for this character.");
     }
 
     [Fact]
@@ -190,7 +208,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Attribute upgrade option was not valid.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("UpgradeOption");
+        error.ErrorMessage.Should().Be("Attribute upgrade option was not valid.");
     }
 
     [Fact]
@@ -225,7 +251,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Level 2 characters cannot have any Attribute above 3.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("AttributeMax3");
+        error.ErrorMessage.Should().Be("Level 2 characters cannot have any Attribute above 3.");
     }
 
     [Fact]
@@ -305,7 +339,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Tried to update Magical Power '22' but it was not found.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("MagicalPower");
+        error.ErrorMessage.Should().Be("Tried to update Magical Power '22' but it was not found.");
     }
 
     [Fact]
@@ -344,7 +386,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Bonus Feature '9' does not exist on Magical Power '33'");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("BonusFeature");
+        error.ErrorMessage.Should().Be("Bonus Feature '9' does not exist on Magical Power '33'");
     }
 
     [Fact]
@@ -428,7 +478,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Talent '99' does not exist.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Talent");
+        error.ErrorMessage.Should().Be("Talent '99' does not exist.");
     }
 
     [Fact]
@@ -464,7 +522,15 @@ public class CharacterUpgradeServiceTests
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
 
         // Assert
-        await action.Should().ThrowAsync<ValidationException>().WithMessage("Talent already present on character.");
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("TalentExists");
+        error.ErrorMessage.Should().Be("Talent already present on character.");
     }
 
     [Fact]

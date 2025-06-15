@@ -25,7 +25,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
 
         AccountResponse response = account.ToResponse();
 
-        return CreatedAtAction(nameof(Get), new { id = account.Id }, response);
+        return CreatedAtAction(nameof(Get), new { emailOrId = account.Id }, response);
     }
 
     [HttpGet(ApiEndpoints.Accounts.Get)]
@@ -124,6 +124,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
                                                   Username = username,
                                                   Expiration = DateTime.MinValue
                                               };
+        
         bool resendActivationResult = await accountService.ResendActivationAsync(activationRequest, token);
 
         // validations throw exceptions. False means account wasn't found.
