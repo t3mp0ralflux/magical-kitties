@@ -124,6 +124,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
                                                   Username = username,
                                                   Expiration = DateTime.MinValue
                                               };
+        
         bool resendActivationResult = await accountService.ResendActivationAsync(activationRequest, token);
 
         // validations throw exceptions. False means account wasn't found.

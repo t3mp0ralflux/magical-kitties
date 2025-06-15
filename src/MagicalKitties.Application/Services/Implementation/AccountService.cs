@@ -126,18 +126,22 @@ public class AccountService : IAccountService
             throw new ValidationException([new ValidationFailure("Account", "No Account found")]);
         }
 
+        // don't re-activate for no reason
+        if (existingAccount.ActivatedUtc.HasValue)
+        {
+            return true;
+        }
+
         if (existingAccount.ActivationCode != activation.ActivationCode || existingAccount.ActivationExpiration < _dateTimeProvider.GetUtcNow())
         {
             throw new ValidationException([new ValidationFailure("ActivationCode","Activation is invalid")]);
         }
-
+        
         existingAccount.AccountStatus = AccountStatus.active;
         existingAccount.ActivatedUtc = _dateTimeProvider.GetUtcNow();
         existingAccount.UpdatedUtc = _dateTimeProvider.GetUtcNow();
-
-        bool activated = await _accountRepository.ActivateAsync(existingAccount, token);
-
-        return activated;
+        
+        return await _accountRepository.ActivateAsync(existingAccount, token);;
     }
 
     public async Task<bool> ResendActivationAsync(AccountActivation activationRequest, CancellationToken token = default)
@@ -154,6 +158,11 @@ public class AccountService : IAccountService
             throw new ValidationException([new ValidationFailure("ActivationCode","Activation code invalid")]);
         }
 
+        if (account.ActivationExpiration > _dateTimeProvider.GetUtcNow())
+        {
+            throw new ValidationException([new ValidationFailure("ActivationExpiration", "Activation code active")]);
+        }
+        
         await CreateActivationData(account, token);
 
         bool success = await _accountRepository.UpdateActivationAsync(account, token);

@@ -491,6 +491,32 @@ public class AccountServiceTests
     }
 
     [Fact]
+    public async Task ActivateAsync_ShouldReturnTrue_WhenAccountIsAlreadyActive()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        DateTime now = DateTime.UtcNow;
+        account.ActivatedUtc = now;
+        _dateTimeProvider.GetUtcNow().Returns(now);
+        
+        _accountRepository.GetByUsernameAsync(account.Username).Returns(account);
+        
+        AccountActivation activation = new()
+                                       {
+                                           Username = account.Username,
+                                           ActivationCode = "test", // doesn't matter
+                                           Expiration = DateTime.MinValue
+                                       };
+        
+        // Act
+        bool result = await _sut.ActivateAsync(activation);
+
+        // Assert
+        result.Should().BeTrue();
+        await _accountRepository.DidNotReceiveWithAnyArgs().ActivateAsync(Arg.Any<Account>());
+    }
+
+    [Fact]
     public async Task ActivateAsync_ShouldReturnTrue_WhenActivationSucceeds()
     {
         // Arrange
@@ -572,6 +598,38 @@ public class AccountServiceTests
         ValidationFailure? error = exception.Errors.First();
         error.PropertyName.Should().Be("ActivationCode");
         error.ErrorMessage.Should().Be("Activation code invalid");
+    }
+    
+    [Fact]
+    public async Task ResendActivationAsync_ShouldThrowValidationException_WhenActivationCodeIsStillValid()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        account.ActivationCode = "Old and busted";
+        account.ActivationExpiration = DateTime.Now.AddMinutes(5);
+
+        _accountRepository.GetByUsernameAsync(account.Username).Returns(account);
+        
+        AccountActivation request = new()
+                                    {
+                                        Username = account.Username,
+                                        ActivationCode = "Old and busted",
+                                        Expiration = DateTime.MinValue
+                                    };
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.ResendActivationAsync(request);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("ActivationExpiration");
+        error.ErrorMessage.Should().Be("Activation code active");
     }
 
     [Fact]
