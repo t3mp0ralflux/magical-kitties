@@ -129,7 +129,8 @@ public class AccountService : IAccountService
         // don't re-activate for no reason
         if (existingAccount.ActivatedUtc.HasValue)
         {
-            return true;
+            _logger.LogWarning("{Username} tried to re-activate an already active account", activation.Username);
+            throw new ValidationException([new ValidationFailure("Account", "Activation is invalid")]);
         }
 
         if (existingAccount.ActivationCode != activation.ActivationCode || existingAccount.ActivationExpiration < _dateTimeProvider.GetUtcNow())
@@ -141,7 +142,7 @@ public class AccountService : IAccountService
         existingAccount.ActivatedUtc = _dateTimeProvider.GetUtcNow();
         existingAccount.UpdatedUtc = _dateTimeProvider.GetUtcNow();
         
-        return await _accountRepository.ActivateAsync(existingAccount, token);;
+        return await _accountRepository.ActivateAsync(existingAccount, token);
     }
 
     public async Task<bool> ResendActivationAsync(AccountActivation activationRequest, CancellationToken token = default)

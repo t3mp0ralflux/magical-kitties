@@ -509,11 +509,18 @@ public class AccountServiceTests
                                        };
         
         // Act
-        bool result = await _sut.ActivateAsync(activation);
+        Func<Task<bool>> action = async () => await _sut.ActivateAsync(activation);
 
         // Assert
-        result.Should().BeTrue();
-        await _accountRepository.DidNotReceiveWithAnyArgs().ActivateAsync(Arg.Any<Account>());
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Account");
+        error.ErrorMessage.Should().Be("Activation is invalid");
     }
 
     [Fact]
