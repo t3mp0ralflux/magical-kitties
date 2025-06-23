@@ -156,26 +156,23 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
     }
 
     [HttpPost(ApiEndpoints.Auth.RequestPasswordReset)]
-    [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RequestPasswordReset([FromRoute] string email, CancellationToken token)
+    [ProducesResponseType<PasswordResetResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request, CancellationToken token)
     {
-        await accountService.RequestPasswordReset(email, token); // DO NOT SURFACE TO USER. If the account isn't found, it'll fail in silence.
+        await accountService.RequestPasswordReset(request.Email, token); // DO NOT SURFACE TO USER. If the account isn't found, it'll fail in silence.
 
-        return Ok(email);
+        PasswordResetResponse response = new PasswordResetResponse { Email = request.Email };
+
+        return Ok(response);
     }
-
+    
     [HttpPost(ApiEndpoints.Auth.VerifyPasswordResetCode)]
     [ProducesResponseType<OkResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> VerifyPasswordResetCode([FromRoute] string email, [FromBody] PasswordResetVerification verification, CancellationToken token)
+    public async Task<IActionResult> VerifyPasswordResetCode([FromBody] PasswordResetRequest verification, CancellationToken token)
     {
-        if (!string.Equals(email.ToLowerInvariant(), verification.Email.ToLowerInvariant()))
-        {
-            throw new ValidationException([new ValidationFailure("Email", "Email not valid")]);
-        }
-
         // throws ValidationExceptions if not valid
-        await accountService.VerifyPasswordResetCodeAsync(verification.Email, verification.Code, token);
+        await accountService.VerifyPasswordResetCodeAsync(verification.Email, verification.ResetCode, token);
 
         return Ok();
     }

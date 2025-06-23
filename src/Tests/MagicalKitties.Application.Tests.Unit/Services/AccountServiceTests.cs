@@ -88,7 +88,7 @@ public class AccountServiceTests
                                             ReceiverAccountId = account.Id,
                                             SenderEmail = serviceAccount.Email,
                                             RecipientEmail = account.Email,
-                                            Body = string.Format(testEmailFormat, string.Format(testLinkFormat, account.Username, "Test")),
+                                            Body = string.Format(testEmailFormat, string.Format(testLinkFormat, account.Username)),
                                             ResponseLog = $"{now}: Email created;"
                                         };
 
@@ -491,7 +491,7 @@ public class AccountServiceTests
     }
 
     [Fact]
-    public async Task ActivateAsync_ShouldReturnTrue_WhenAccountIsAlreadyActive()
+    public async Task ActivateAsync_ShouldThrowValidationException_WhenAccountIsAlreadyActive()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();

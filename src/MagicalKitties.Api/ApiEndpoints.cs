@@ -23,8 +23,8 @@ public static class ApiEndpoints
         public const string Logout = $"{Base}/logout/{{accountId:guid}}";
         public const string LoginByToken = $"{Base}/login/token";
         public const string PasswordReset = $"{Base}/passwordreset";
-        public const string RequestPasswordReset = $"{Base}/passwordreset/{{email}}";
-        public const string VerifyPasswordResetCode = $"{Base}/passwordreset/{{email}}/verify";
+        public const string RequestPasswordReset = $"{Base}/passwordreset/request";
+        public const string VerifyPasswordResetCode = $"{Base}/passwordreset/verify";
     }
 
     public static class Characters

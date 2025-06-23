@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Text;
+using FluentValidation;
 using FluentValidation.Results;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Auth;
@@ -284,8 +285,11 @@ public class AccountService : IAccountService
             return;
         }
 
-        string activationLink = string.Format(ApplicationAssumptions.ActivationLinkFormat, account.Username, account.ActivationCode);
-        string resendLink = string.Format(ApplicationAssumptions.ResendActivationLinkFormat, account.Username, account.ActivationCode);
+        string combinedInfo = $"{account.Username};{account.ActivationCode}";
+        string encodedInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(combinedInfo));
+
+        string activationLink = string.Format(ApplicationAssumptions.ActivationLinkFormat, encodedInfo);
+        string resendLink = string.Format(ApplicationAssumptions.ResendActivationLinkFormat, encodedInfo);
 
         EmailData data = new()
                          {
@@ -323,6 +327,11 @@ public class AccountService : IAccountService
             _logger.LogError("Password Reset email format was not found. Cannot send email");
             return;
         }
+        
+        string combinedInfo = $"{account.Email};{account.PasswordResetCode}";
+        string encodedInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(combinedInfo));
+
+        string resetLink = string.Format(ApplicationAssumptions.PasswordResetLinkFormat, encodedInfo);
 
         EmailData data = new()
                          {
@@ -334,7 +343,7 @@ public class AccountService : IAccountService
                              ReceiverAccountId = account.Id,
                              SenderEmail = serviceAccount.Email,
                              RecipientEmail = account.Email,
-                             Body = string.Format(emailFormat, account.PasswordResetCode, expirationMinutes),
+                             Body = string.Format(emailFormat, resetLink, expirationMinutes),
                              ResponseLog = $"{_dateTimeProvider.GetUtcNow()}: Email created;"
                          };
 
