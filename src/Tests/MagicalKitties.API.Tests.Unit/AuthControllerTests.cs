@@ -388,12 +388,16 @@ public class AuthControllerTests
         const string email = "email@email.com";
         _accountService.RequestPasswordReset(email).Returns(false);
 
+        PasswordResetRequest request = new PasswordResetRequest { Email = email, Password = "test", ResetCode = "test" };
+
+        PasswordResetResponse expectedResponse = new PasswordResetResponse { Email = email };
+
         // Act
-        OkObjectResult result = (OkObjectResult)await _sut.RequestPasswordReset(email, CancellationToken.None);
+        OkObjectResult result = (OkObjectResult)await _sut.RequestPasswordReset(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(200);
-        result.Value.Should().Be(email);
+        result.Value.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]
@@ -402,13 +406,17 @@ public class AuthControllerTests
         // Arrange
         const string email = "email@email.com";
         _accountService.RequestPasswordReset(email).Returns(true);
+        
+        PasswordResetRequest request = new PasswordResetRequest { Email = email, Password = "test", ResetCode = "test" };
+        
+        PasswordResetResponse expectedResponse = new PasswordResetResponse { Email = email };
 
         // Act
-        OkObjectResult result = (OkObjectResult)await _sut.RequestPasswordReset(email, CancellationToken.None);
+        OkObjectResult result = (OkObjectResult)await _sut.RequestPasswordReset(request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(200);
-        result.Value.Should().Be(email);
+        result.Value.Should().BeEquivalentTo(expectedResponse);
     }
 
     [Fact]

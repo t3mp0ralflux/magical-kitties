@@ -88,7 +88,7 @@ public class AccountServiceTests
                                             ReceiverAccountId = account.Id,
                                             SenderEmail = serviceAccount.Email,
                                             RecipientEmail = account.Email,
-                                            Body = string.Format(testEmailFormat, string.Format(testLinkFormat, account.Username, "Test")),
+                                            Body = string.Format(testEmailFormat, string.Format(testLinkFormat, account.Username)),
                                             ResponseLog = $"{now}: Email created;"
                                         };
 
@@ -491,7 +491,7 @@ public class AccountServiceTests
     }
 
     [Fact]
-    public async Task ActivateAsync_ShouldReturnTrue_WhenAccountIsAlreadyActive()
+    public async Task ActivateAsync_ShouldThrowValidationException_WhenAccountIsAlreadyActive()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -509,11 +509,18 @@ public class AccountServiceTests
                                        };
         
         // Act
-        bool result = await _sut.ActivateAsync(activation);
+        Func<Task<bool>> action = async () => await _sut.ActivateAsync(activation);
 
         // Assert
-        result.Should().BeTrue();
-        await _accountRepository.DidNotReceiveWithAnyArgs().ActivateAsync(Arg.Any<Account>());
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("Account");
+        error.ErrorMessage.Should().Be("Activation is invalid");
     }
 
     [Fact]
