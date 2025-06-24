@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MagicalKitties.Api.Controllers;
 
 [ApiController]
-public class AuthController(IAccountService accountService, IRefreshTokenService refreshTokenService, IPasswordHasher passwordHasher, IJwtTokenService jwtTokenService, IAuthService authService, IDateTimeProvider dateTimeProvider)
+public class AuthController(IAccountService accountService, IRefreshTokenService refreshTokenService, IPasswordHasher passwordHasher, IJwtTokenService jwtTokenService, IAuthService authService)
     : ControllerBase
 {
     [HttpPost(ApiEndpoints.Auth.Login)]

@@ -129,12 +129,9 @@ public class CharacterRepository : ICharacterRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        string orderClause = string.Empty;
-
-        if (options.SortField is not null)
-        {
-            orderClause = $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}";
-        }
+        string orderClause = options.SortField is not null 
+            ? $"order by c.{options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}" 
+            : "order by c.name asc";
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
                                                                                                                 select {CharacterFields}, {CharacterStatFields}

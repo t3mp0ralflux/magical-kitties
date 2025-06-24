@@ -93,7 +93,7 @@ public static class ContractMapping
 
     public static GetAllAccountsOptions ToOptions(this GetAllAccountsRequest request)
     {
-        string? sortField = request.SortBy?.Trim('+', '-');
+        string? sortField = request.SortBy?.ToLowerInvariant().Trim('+', '-');
         if (sortField is not null && sortField == "lastlogin")
         {
             sortField = "last_login_utc";
@@ -171,7 +171,10 @@ public static class ContractMapping
                                                       AccountId = x.AccountId,
                                                       Id = x.Id,
                                                       Name = x.Name,
-                                                      Username = x.Username
+                                                      Username = x.Username,
+                                                      Level = x.Level,
+                                                      HumanName = x.Humans.FirstOrDefault()?.Name,
+                                                      MagicalPowers = x.MagicalPowers.Select(y=>y.Name).ToList()
                                                   }),
                    Page = page,
                    PageSize = pageSize,
@@ -208,16 +211,16 @@ public static class ContractMapping
 
     public static MKAppCharacters.GetAllCharactersOptions ToOptions(this MKCtrCharacterRequests.GetAllCharactersRequest request, Guid accountId)
     {
+        string? sortField = request.SortBy?.ToLowerInvariant().Trim('+', '-');
+        
         return new MKAppCharacters.GetAllCharactersOptions
                {
                    AccountId = accountId,
                    Name = request.Name,
-                   Class = request.Class,
                    Level = request.Level,
-                   Species = request.Species,
                    Page = request.Page,
                    PageSize = request.PageSize,
-                   SortField = request.SortBy,
+                   SortField = sortField,
                    SortOrder = request.SortBy is null ? SortOrder.unordered : request.SortBy.StartsWith('-') ? SortOrder.descending : SortOrder.ascending
                };
     }

@@ -4,6 +4,7 @@ using FluentAssertions.Collections;
 using FluentAssertions.Specialized;
 using FluentValidation;
 using FluentValidation.Results;
+using FluentValidation.TestHelper;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Validators.Accounts;
 using ValidationException = FluentValidation.ValidationException;
@@ -20,7 +21,7 @@ public class GetAllAccountsOptionsValidatorTests
     }
 
     [Fact]
-    public async Task Validator_ShouldThrowAsync_WhenSearchFieldIsInvalid()
+    public async Task Validator_ShouldThrowAsync_WhenSortFieldIsInvalid()
     {
         // Arrange
         GetAllAccountsOptions options = new()
@@ -31,15 +32,10 @@ public class GetAllAccountsOptionsValidatorTests
                                         };
 
         // Act
-        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(options);
+        TestValidationResult<GetAllAccountsOptions>? result = await _sut.TestValidateAsync(options);
 
         // Assert
-        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
-
-        AndWhichConstraint<GenericCollectionAssertions<ValidationFailure>, ValidationFailure>? errorList = result.Subject.FirstOrDefault()?.Errors.Should().ContainSingle();
-        ValidationFailure? error = result.Subject.First().Errors.First();
-        error.PropertyName.Should().Be("SortField");
-        error.ErrorMessage.Should().Be("You can only sort by Username or Lastlogin");
+        result.ShouldHaveValidationErrorFor(x=>x.SortField).WithErrorMessage("You can only sort by Username or Lastlogin");
     }
 
     [Theory]
@@ -56,14 +52,9 @@ public class GetAllAccountsOptionsValidatorTests
                                         };
 
         // Act
-        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(options);
+        TestValidationResult<GetAllAccountsOptions>? result = await _sut.TestValidateAsync(options);
 
-        // Assert
-        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
-
-        AndWhichConstraint<GenericCollectionAssertions<ValidationFailure>, ValidationFailure>? errorList = result.Subject.FirstOrDefault()?.Errors.Should().ContainSingle();
-        ValidationFailure? error = result.Subject.First().Errors.First();
-        error.PropertyName.Should().Be("Page");
+        result.ShouldHaveValidationErrorFor(x => x.Page);
     }
 
     [Theory]
@@ -82,31 +73,33 @@ public class GetAllAccountsOptionsValidatorTests
                                         };
 
         // Act
-        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(options);
+        TestValidationResult<GetAllAccountsOptions>? result = await _sut.TestValidateAsync(options);
 
-        // Assert
-        ExceptionAssertions<ValidationException>? result = await action.Should().ThrowAsync<ValidationException>();
-
-        AndWhichConstraint<GenericCollectionAssertions<ValidationFailure>, ValidationFailure>? errorList = result.Subject.FirstOrDefault()?.Errors.Should().ContainSingle();
-        ValidationFailure? error = result.Subject.First().Errors.First();
-        error.PropertyName.Should().Be("PageSize");
+        result.ShouldHaveValidationErrorFor(x => x.PageSize).WithErrorMessage("You can get between 1 and 25 accounts per page");
     }
 
-    [Fact]
-    public async Task Validator_DoesNotThrowError_WhenValidationSucceeds()
+    [Theory]
+    [InlineData("username", 1, 10)]
+    [InlineData("last_login_utc", 1, 10)]
+    [InlineData(null, 5, 10)]
+    [InlineData(null, 25, 10)]
+    [InlineData(null, 1, 1)]
+    [InlineData(null, 1, 15)]
+    [InlineData(null, 1, 25)]
+    public async Task Validator_DoesNotThrowError_WhenValidationSucceeds(string? sortField, int page, int pageSize)
     {
         // Arrange
         Faker<GetAllAccountsOptions>? options = new Faker<GetAllAccountsOptions>()
                                                 .RuleFor(x => x.AccountRole, f => AccountRole.standard)
                                                 .RuleFor(x => x.AccountStatus, f => AccountStatus.active)
-                                                .RuleFor(x => x.SortField, "username")
+                                                .RuleFor(x => x.SortField, _ => sortField)
                                                 .RuleFor(x => x.Page, f => f.Random.Int(1, 100))
                                                 .RuleFor(x => x.PageSize, f => f.Random.Int(1, 25));
 
         // Act
-        Func<Task> action = async () => await _sut.ValidateAndThrowAsync(options);
-
+        TestValidationResult<GetAllAccountsOptions>? result = await _sut.TestValidateAsync(options);
+        
         // Assert
-        await action.Should().NotThrowAsync<ValidationException>();
+        result.ShouldNotHaveAnyValidationErrors();
     }
 }
