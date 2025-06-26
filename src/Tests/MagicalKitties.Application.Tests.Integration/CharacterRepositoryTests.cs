@@ -137,6 +137,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _characterUpdateRepository.UpdateCurrentOwiesAsync(update);
         await _characterUpdateRepository.UpdateCurrentTreatsAsync(update);
 
+        await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
+        
         foreach (Human human in character.Humans)
         {
             await _humanRepository.CreateAsync(human);
@@ -147,8 +149,36 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
             }
         }
 
-        await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
+        Guid deletedHumanId = Guid.NewGuid();
+        Human deletedHuman = new Human
+                             {
+                                 Id = deletedHumanId,
+                                 CharacterId = character.Id,
+                                 Name = "Deleted",
+                                 Description = "Deleted",
+                                 DeletedUtc = now.AddHours(-1),
+                                 Problems =
+                                 [
+                                     new Problem
+                                     {
+                                         Id = Guid.NewGuid(),
+                                         HumanId = deletedHumanId,
+                                         Rank = 1,
+                                         Solved = false,
+                                         Source = "Your mom",
+                                         DeletedUtc = now.AddHours(-1),
+                                         Emotion = "Disappointed"
+                                     }
+                                 ]
+                             };
 
+        await _humanRepository.CreateAsync(deletedHuman);
+
+        foreach (Problem problem in deletedHuman.Problems)
+        {
+            await _problemRepository.CreateProblemAsync(problem);
+        }
+        
         // Act
         Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
@@ -383,6 +413,97 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
         deletedCharacter.Should().NotBeNull();
         deletedCharacter.DeletedUtc.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CopyAsync_ShouldCreateDuplicateCharacterAndReturnNewCharacter_WhenExistingCharacterIsCopied()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes
+                              .GenerateCharacter(account)
+                              .WithBaselineData()
+                              .WithHumanData()
+                              .WithUpgrades();
+
+        DateTime now = DateTime.UtcNow;
+        _dateTimeProvider.GetUtcNow().Returns(now);
+
+        await _accountRepository.CreateAsync(account);
+        await _sut.CreateAsync(character);
+
+        AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
+        AttributeUpdate secondTalentUpdate = new()
+                                             {
+                                                 AccountId = account.Id,
+                                                 CharacterId = character.Id,
+                                                 TalentChange = new EndowmentChange
+                                                                {
+                                                                    NewId = 42,
+                                                                    PreviousId = 42
+                                                                }
+                                             };
+
+        await _characterUpdateRepository.UpdateLevelAsync(update);
+        await _characterUpdateRepository.UpdateCunningAsync(update);
+        await _characterUpdateRepository.UpdateCuteAsync(update);
+        await _characterUpdateRepository.UpdateFierceAsync(update);
+
+        await _characterUpdateRepository.CreateFlawAsync(update);
+        await _characterUpdateRepository.CreateTalentAsync(update);
+        await _characterUpdateRepository.CreateTalentAsync(secondTalentUpdate);
+        await _characterUpdateRepository.CreateMagicalPowerAsync(update);
+
+        await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update);
+        await _characterUpdateRepository.UpdateCurrentOwiesAsync(update);
+        await _characterUpdateRepository.UpdateCurrentTreatsAsync(update);
+
+        await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
+
+        Character copiedCharacter = character.CreateCopy();
+        
+        // Act
+        bool success = await _sut.CopyAsync(copiedCharacter);
+
+        // Assert
+        success.Should().BeTrue();
+
+        Character? result = await _sut.GetByIdAsync(copiedCharacter.AccountId, copiedCharacter.Id);
+        result.Should().NotBeNull();
+        
+        // I know there's a shload of exceptions below, but the Id's for the sub items are all going to be different even down to the Human Problems. Those are evaluated explicitly below this block.
+        result.Should().BeEquivalentTo(character, options =>
+                                                  {
+                                                      options.Excluding(x => x.Id);
+                                                      options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
+                                                      options.For(x => x.Upgrades).Exclude(x => x.Choice);
+                                                      options.For(x => x.Upgrades).Exclude(x => x.Id);
+                                                      options.For(x => x.Humans).Exclude(x => x.Id);
+                                                      options.For(x => x.Humans).Exclude(x => x.CharacterId);
+                                                      options.For(x => x.Humans).For(y=> y.Problems).Exclude(z => z.Id);
+                                                      options.For(x => x.Humans).For(y=> y.Problems).Exclude(z => z.HumanId);
+                                                      return options;
+                                                  });
+
+        result.Id.Should().Be(copiedCharacter.Id);
+        foreach (Human resultHuman in result.Humans)
+        {
+            Human? humanMatch = copiedCharacter.Humans.FirstOrDefault(x => x.Id == resultHuman.Id);
+
+            humanMatch.Should().NotBeNull();
+            
+            resultHuman.Id.Should().Be(humanMatch.Id);
+            resultHuman.CharacterId.Should().Be(copiedCharacter.Id);
+            
+            foreach (Problem resultHumanProblem in resultHuman.Problems)
+            {
+                Problem? problemMatch = copiedCharacter.Humans.First(x => x.Id == resultHuman.Id).Problems.FirstOrDefault(y => y.Id == resultHumanProblem.Id);
+                problemMatch.Should().NotBeNull();
+                
+                resultHumanProblem.Id.Should().Be(problemMatch.Id);
+                resultHumanProblem.HumanId.Should().Be(resultHuman.Id);
+            }
+        }
     }
 
     public static IEnumerable<object[]> GetSingleSearchCharacterNameData()

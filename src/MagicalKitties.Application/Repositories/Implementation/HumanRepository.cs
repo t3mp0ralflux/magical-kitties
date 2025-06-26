@@ -28,13 +28,14 @@ public class HumanRepository : IHumanRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   insert into human(id, character_id, name, description, deleted_utc)
-                                                                                  values(@Id, @CharacterId, @Name, @Description, null)
+                                                                                  values(@Id, @CharacterId, @Name, @Description, @DeletedUtc)
                                                                                   """, new
                                                                                        {
                                                                                            human.Id,
                                                                                            human.CharacterId,
                                                                                            human.Name,
-                                                                                           human.Description
+                                                                                           human.Description,
+                                                                                           human.DeletedUtc
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
