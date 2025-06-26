@@ -164,8 +164,9 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     }
 
     [SkipIfEnvironmentMissingTheory]
-    [InlineData(null, null, "Bingus")]
-    public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoItemsAreFound(string? characterClass, int? level, string? name)
+    [InlineData( "Bingus")]
+    [InlineData( "5")]
+    public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoItemsAreFound(string searchInput)
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -179,9 +180,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                               AccountId = account.Id,
                                               Page = 1,
                                               PageSize = 5,
-                                              Class = characterClass,
-                                              Level = level,
-                                              Name = name
+                                              SearchInput = searchInput
                                           };
 
         // Act
@@ -209,7 +208,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                               AccountId = account.Id,
                                               Page = 1,
                                               PageSize = 5,
-                                              Name = characterName
+                                              SearchInput = characterName
                                           };
 
         // Act
@@ -280,7 +279,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                               AccountId = account.Id,
                                               Page = 1,
                                               PageSize = 5,
-                                              Name = "Bingus"
+                                              SearchInput = "Bingus"
                                           };
         // Act
         int result = await _sut.GetCountAsync(options);
@@ -304,7 +303,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                               AccountId = account.Id,
                                               Page = 1,
                                               PageSize = 5,
-                                              Name = character.Name
+                                              SearchInput = character.Name
                                           };
         // Act
         int result = await _sut.GetCountAsync(options);

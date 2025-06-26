@@ -151,7 +151,7 @@ public class CharacterControllerTests
 
         GetAllCharactersRequest request = new()
                                           {
-                                              Name = "Test",
+                                              SearchInput = "Test",
                                               Page = 1,
                                               PageSize = 5
                                           };
@@ -183,7 +183,7 @@ public class CharacterControllerTests
 
         GetAllCharactersRequest request = new()
                                           {
-                                              Name = "Test",
+                                              SearchInput = "Test",
                                               Page = 1,
                                               PageSize = 5
                                           };
@@ -193,7 +193,26 @@ public class CharacterControllerTests
         _characterService.GetAllAsync(Arg.Any<GetAllCharactersOptions>()).Returns(characters);
         _characterService.GetCountAsync(Arg.Any<GetAllCharactersOptions>()).Returns(characters.Count);
 
-        CharactersResponse expectedResponse = characters.ToGetAllResponse(request.Page, request.PageSize, characters.Count);
+        CharactersResponse expectedResponse = new CharactersResponse()
+                           {
+                               Page = request.Page,
+                               PageSize = request.PageSize,
+                               Total = characters.Count,
+                               Items =
+                               [
+                                   new GetAllCharacterResponse()
+                                   {
+                                       Id = character.Id,
+                                       AccountId = account.Id,
+                                       Username = account.Username,
+                                       Name = character.Name,
+                                       HumanName = characters[0].Humans.FirstOrDefault()?.Name,
+                                       Level = character.Level,
+                                       MagicalPowers = character.MagicalPowers.Select(x => x.Name).ToList(),
+
+                                   }
+                               ]
+                           };
 
         // Act
         OkObjectResult result = (OkObjectResult)await _sut.GetAll(request, CancellationToken.None);

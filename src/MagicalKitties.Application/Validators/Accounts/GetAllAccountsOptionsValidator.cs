@@ -13,8 +13,8 @@ public class GetAllAccountsOptionsValidator : AbstractValidator<GetAllAccountsOp
 
     public GetAllAccountsOptionsValidator()
     {
-        RuleFor(x => x.SortField).Must(x => x is null || AcceptableSortFields.Contains(x)).WithMessage("You can only sort by Username or Lastlogin");
         RuleFor(x => x.Page).GreaterThanOrEqualTo(1);
         RuleFor(x => x.PageSize).InclusiveBetween(1, 25).WithMessage("You can get between 1 and 25 accounts per page");
+        RuleFor(x => x.SortField).Must(x => x is null || AcceptableSortFields.Contains(x)).WithMessage("You can only sort by Username or Lastlogin");
     }
 }

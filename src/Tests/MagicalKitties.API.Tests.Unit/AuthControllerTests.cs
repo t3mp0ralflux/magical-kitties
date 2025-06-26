@@ -23,13 +23,10 @@ public class AuthControllerTests
     private readonly IAuthService _authService = Substitute.For<IAuthService>();
     private readonly IJwtTokenService _jwtService = Substitute.For<IJwtTokenService>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
-    private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
-    private readonly IGlobalSettingsService _globalSettingsService = Substitute.For<IGlobalSettingsService>();
-    private readonly IConfiguration _configuration = Substitute.For<IConfiguration>();
     
     public AuthControllerTests()
     {
-        _sut = new AuthController(_accountService, _refreshTokenService, _passwordHasher, _jwtService, _authService, _dateTimeProvider);
+        _sut = new AuthController(_accountService, _refreshTokenService, _passwordHasher, _jwtService, _authService);
     }
 
     public AuthController _sut { get; set; }
