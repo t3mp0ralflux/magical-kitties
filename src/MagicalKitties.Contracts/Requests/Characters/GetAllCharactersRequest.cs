@@ -2,7 +2,6 @@
 
 public class GetAllCharactersRequest : PagedRequest
 {
-    public string? Name { get; init; }
-    public int? Level { get; init; }
+    public string? SearchInput { get; init; }
     public string? SortBy { get; init; }
 }

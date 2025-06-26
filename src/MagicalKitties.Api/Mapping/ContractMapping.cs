@@ -216,8 +216,7 @@ public static class ContractMapping
         return new MKAppCharacters.GetAllCharactersOptions
                {
                    AccountId = accountId,
-                   Name = request.Name,
-                   Level = request.Level,
+                   SearchInput = request.SearchInput,
                    Page = request.Page,
                    PageSize = request.PageSize,
                    SortField = sortField,

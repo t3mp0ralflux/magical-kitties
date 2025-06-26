@@ -151,7 +151,7 @@ public class CharacterControllerTests
 
         GetAllCharactersRequest request = new()
                                           {
-                                              Name = "Test",
+                                              SearchInput = "Test",
                                               Page = 1,
                                               PageSize = 5
                                           };
@@ -183,7 +183,7 @@ public class CharacterControllerTests
 
         GetAllCharactersRequest request = new()
                                           {
-                                              Name = "Test",
+                                              SearchInput = "Test",
                                               Page = 1,
                                               PageSize = 5
                                           };

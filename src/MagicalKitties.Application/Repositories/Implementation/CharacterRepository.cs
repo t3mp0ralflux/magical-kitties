@@ -130,15 +130,15 @@ public class CharacterRepository : ICharacterRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string orderClause = options.SortField is not null 
-            ? $"order by c.{options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}" 
-            : "order by c.name asc";
+            ? $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}" 
+            : "order by name asc";
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
                                                                                                                 select {CharacterFields}, {CharacterStatFields}
                                                                                                                 from character c
                                                                                                                 inner join characterstat cs on c.id = cs.character_id
                                                                                                                 where c.account_id = @AccountId
-                                                                                                                and (@Name is null or lower(c.name) like ('%' || @Name || '%'))
+                                                                                                                and (@SearchInput is null or lower(c.name) like ('%' || @SearchInput || '%') or to_char(cs.level, 'FM99MI') = @SearchInput)
                                                                                                                 and c.deleted_utc is null
                                                                                                                 {orderClause}
                                                                                                                 limit @pageSize
@@ -146,7 +146,7 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                 """, new
                                                                                                                      {
                                                                                                                          options.AccountId,
-                                                                                                                         Name = options.Name?.ToLowerInvariant(),
+                                                                                                                         SearchInput = options.SearchInput?.ToLowerInvariant(),
                                                                                                                          pageSize = options.PageSize,
                                                                                                                          pageOffset = (options.Page - 1) * options.PageSize
                                                                                                                      }, cancellationToken: token));
@@ -166,7 +166,7 @@ public class CharacterRepository : ICharacterRepository
                                                                                            """, new
                                                                                                 {
                                                                                                     options.AccountId,
-                                                                                                    Name = options.Name?.ToLowerInvariant()
+                                                                                                    Name = options.SearchInput?.ToLowerInvariant()
                                                                                                 }, cancellationToken: token));
 
         return result;
