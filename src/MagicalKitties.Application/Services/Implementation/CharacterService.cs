@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Repositories;
 
@@ -8,13 +9,15 @@ public class CharacterService : ICharacterService
 {
     private readonly ICharacterRepository _characterRepository;
     private readonly IValidator<Character> _characterValidator;
+    private readonly ICharacterUpdateRepository _characterUpdateRepository;
     private readonly IValidator<GetAllCharactersOptions> _optionsValidator;
 
-    public CharacterService(ICharacterRepository characterRepository, IValidator<Character> characterValidator, IValidator<GetAllCharactersOptions> optionsValidator)
+    public CharacterService(ICharacterRepository characterRepository, IValidator<Character> characterValidator, IValidator<GetAllCharactersOptions> optionsValidator, ICharacterUpdateRepository characterUpdateRepository)
     {
         _characterRepository = characterRepository;
         _characterValidator = characterValidator;
         _optionsValidator = optionsValidator;
+        _characterUpdateRepository = characterUpdateRepository;
     }
 
     public async Task<bool> CreateAsync(Character character, CancellationToken token = default)
@@ -24,6 +27,25 @@ public class CharacterService : ICharacterService
         bool result = await _characterRepository.CreateAsync(character, token);
 
         return result;
+    }
+
+    public async Task<Character> CopyAsync(Account account, Guid id, CancellationToken token = default)
+    {
+        Character? existingCharacter = await _characterRepository.GetByIdAsync(account.Id, id, false, token);
+
+        Character characterCopy = new Character()
+                                  {
+                                      Id = Guid.NewGuid(),
+                                      AccountId = account.Id,
+                                      Username = account.Username,
+                                      Name = $"{existingCharacter!.Name} - Copy",
+                                      Description = existingCharacter.Description,
+                                      Hometown = existingCharacter.Hometown
+                                  };
+        
+        await _characterRepository.CreateAsync(characterCopy, token);
+
+        await _characterUpdateRepository.CopyCharacterInformation(existingCharacter, characterCopy);
     }
 
     public Task<bool> ExistsByIdAsync(Guid characterId, CancellationToken token = default)

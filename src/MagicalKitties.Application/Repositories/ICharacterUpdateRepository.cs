@@ -1,4 +1,5 @@
-﻿using MagicalKitties.Application.Models.Characters.Updates;
+﻿using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Characters.Updates;
 
 namespace MagicalKitties.Application.Repositories;
 
@@ -22,4 +23,5 @@ public interface ICharacterUpdateRepository
     Task<bool> UpdateCurrentTreatsAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateCurrentInjuriesAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateIncapacitatedStatus(AttributeUpdate update, CancellationToken token = default);
+    Task<bool> CopyCharacterInformation(Character existingCharacter, Character characterCopy, CancellationToken token = default);
 }
