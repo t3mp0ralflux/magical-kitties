@@ -14,10 +14,10 @@ public class Character
     public required string Name { get; set; }
 
     [Column("created_utc")]
-    public DateTime CreatedUtc { get; init; }
+    public DateTime CreatedUtc { get; init; } = DateTime.UtcNow;
 
     [Column("updated_utc")]
-    public DateTime UpdatedUtc { get; init; }
+    public DateTime UpdatedUtc { get; init; } = DateTime.UtcNow;
 
     [Column("deleted_utc")]
     public DateTime? DeletedUtc { get; set; }
@@ -106,7 +106,7 @@ public class Character
                    Level = this.Level,
                    Hometown = this.Hometown,
                    Username = this.Username,
-                   Name = this.Name,
+                   Name = $"{this.Name} - Copy",
                };
     }
 }

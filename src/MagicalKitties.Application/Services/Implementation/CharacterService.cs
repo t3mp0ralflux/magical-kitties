@@ -27,7 +27,7 @@ public class CharacterService : ICharacterService
         return result;
     }
 
-    public async Task<Character?> CopyAsync(Account account, Guid id, CancellationToken token = default)
+    public async Task<Character> CopyAsync(Account account, Guid id, CancellationToken token = default)
     {
         Character? existingCharacter = await _characterRepository.GetByIdAsync(account.Id, id, false, token);
 

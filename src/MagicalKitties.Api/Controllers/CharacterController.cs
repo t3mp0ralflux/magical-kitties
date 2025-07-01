@@ -73,7 +73,7 @@ public class CharacterController(IAccountService accountService, ICharacterServi
         }
 
         Character characterCopy = await characterService.CopyAsync(account, id, token);
-
+        
         CharacterResponse response = characterCopy.ToResponse();
         
         return CreatedAtAction(nameof(Get), new { id = characterCopy.Id }, response);
