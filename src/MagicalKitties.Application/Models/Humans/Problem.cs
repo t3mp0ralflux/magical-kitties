@@ -15,4 +15,8 @@ public class Problem
     public required string Emotion { get; init; }
     public required int Rank { get; init; }
     public required bool Solved { get; init; }
+    
+    [JsonPropertyName("deleted_utc")]
+    [Column("deleted_utc")]
+    public DateTime? DeletedUtc { get; set; }
 }

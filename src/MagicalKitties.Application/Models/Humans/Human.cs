@@ -14,4 +14,8 @@ public class Human
     public required string Name { get; init; }
     public required string Description { get; init; } = "";
     public List<Problem> Problems { get; set; } = [];
+    
+    [JsonPropertyName("deleted_utc")]
+    [Column("deleted_utc")]
+    public DateTime? DeletedUtc { get; set; }
 }

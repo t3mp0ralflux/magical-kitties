@@ -2,6 +2,8 @@
 using FluentValidation;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
+using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
@@ -240,5 +242,69 @@ public class CharacterServiceTests
 
         // Assert
         result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CopyAsync_ShouldReturnCopiedCharacter_WhenCharacterIsCopied()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account)
+                                   .WithBaselineData()
+                                   .WithHumanData()
+                                   .WithUpgrades();
+
+        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterRepository.CopyAsync(Arg.Any<Character>()).Returns(true);
+        
+        // Act
+        Character result = await _sut.CopyAsync(account, character.Id);
+
+        // Assert
+        result.Name.Should().Be($"{character.Name} - Copy");
+        result.Id.Should().NotBe(character.Id);
+        
+        // Excludes are specifically checked next
+        result.Should().BeEquivalentTo(character, options =>
+                                                  {
+                                                      options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
+                                                      options.Excluding(x => x.Id);
+                                                      options.Excluding(x => x.Name);
+                                                      options.Excluding(x => x.Humans);
+
+                                                      return options;
+                                                  });
+        
+        foreach (Human resultHuman in result.Humans)
+        {
+            Human? humanMatch = character.Humans.FirstOrDefault(x => x.Name == resultHuman.Name);
+            
+            humanMatch.Should().NotBeNull();
+            resultHuman.Should().BeEquivalentTo(humanMatch, options =>
+                                                       {
+                                                           options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
+                                                           options.Excluding(x => x.Id);
+                                                           options.Excluding(x => x.CharacterId);
+                                                           options.Excluding(x => x.Problems);
+                                                           return options;
+                                                       });
+
+            resultHuman.CharacterId.Should().Be(result.Id);
+            foreach (Problem resultHumanProblem in resultHuman.Problems)
+            {
+                Problem? problemMatch = humanMatch.Problems.FirstOrDefault(x => x.Emotion == resultHumanProblem.Emotion);
+                
+                problemMatch.Should().NotBeNull();
+                resultHumanProblem.Should().BeEquivalentTo(problemMatch, options =>
+                                                                         {
+                                                                             options.Excluding(x => x.Id);
+                                                                             options.Excluding(x => x.HumanId);
+
+                                                                             return options;
+                                                                         });
+
+                resultHumanProblem.HumanId.Should().Be(resultHuman.Id);
+            }
+        }
     }
 }

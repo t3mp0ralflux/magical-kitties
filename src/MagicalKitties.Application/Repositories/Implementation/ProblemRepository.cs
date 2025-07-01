@@ -25,7 +25,7 @@ public class ProblemRepository : IProblemRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
-                                                                                  values (@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, null)
+                                                                                  values (@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, @DeletedUtc)
                                                                                   """, new
                                                                                        {
                                                                                            problem.Id,
@@ -33,7 +33,8 @@ public class ProblemRepository : IProblemRepository
                                                                                            problem.Source,
                                                                                            problem.Emotion,
                                                                                            problem.Rank,
-                                                                                           problem.Solved
+                                                                                           problem.Solved,
+                                                                                           problem.DeletedUtc
                                                                                        }, cancellationToken: token));
 
         transaction.Commit();

@@ -1,7 +1,11 @@
 ﻿using System.Data;
 using Dapper;
 using MagicalKitties.Application.Database;
+using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Models.MagicalPowers;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Services;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -472,7 +476,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
 
         return result > 0;
     }
-
+    
     private async Task<int> UpdateCharacterUpdateUtcAsync(Guid characterId, IDbConnection connection, CancellationToken token)
     {
         return await connection.ExecuteAsyncWithRetry(new CommandDefinition("""

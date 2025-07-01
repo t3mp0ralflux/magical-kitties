@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Repositories;
 
@@ -24,6 +25,17 @@ public class CharacterService : ICharacterService
         bool result = await _characterRepository.CreateAsync(character, token);
 
         return result;
+    }
+
+    public async Task<Character> CopyAsync(Account account, Guid id, CancellationToken token = default)
+    {
+        Character? existingCharacter = await _characterRepository.GetByIdAsync(account.Id, id, false, token);
+
+        Character copiedCharacter = existingCharacter!.CreateCopy();
+
+        await _characterRepository.CopyAsync(copiedCharacter, token);
+
+        return copiedCharacter;
     }
 
     public Task<bool> ExistsByIdAsync(Guid characterId, CancellationToken token = default)

@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Text;
+using System.Text.Json;
 using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models;
@@ -87,6 +89,7 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                                         'name', h.name,
                                                                                                                                                                                         'description', h.description,
                                                                                                                                                                                         'characterId', h.character_id,
+                                                                                                                                                                                        'deleted_utc', h.deleted_utc,
                                                                                                                                                                                         'problems', problems
                                                                                                                                                                                      )
                                                                                                                                                                             )
@@ -101,13 +104,14 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                                             'source', p.source,
                                                                                                                                                                                             'solved', p.solved,
                                                                                                                                                                                             'emotion', p.emotion,
-                                                                                                                                                                                            'rank', p.rank
+                                                                                                                                                                                            'rank', p.rank,
+                                                                                                                                                                                            'deleted_utc', p.deleted_utc
                                                                                                                                                                                     )
                                                                                                                                                                             ) problems
                                                                                                                                                                         from problem p
                                                                                                                                                                         group by p.human_id
                                                                                                                                                                     ) p on h.id = p.human_id
-                                                                                                                                                                    where h.character_id = @id) humans
+                                                                                                                                                                    where h.character_id = @id and h.deleted_utc is null) humans
                                                                                                                                                                     from character c
                                                                                                                                                                     inner join characterstat cs on c.id = cs.character_id
                                                                                                                                                                     where c.id = @id
@@ -199,6 +203,157 @@ public class CharacterRepository : ICharacterRepository
                                                                                            DeletedUtc = _dateTimeProvider.GetUtcNow(),
                                                                                            id
                                                                                        }, cancellationToken: token));
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    public async Task<bool> CopyAsync(Character existingCharacter, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+        
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown, upgrades)
+                                                                                  values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown, @Upgrades)
+                                                                                  """, new
+                                                                                       {
+                                                                                           existingCharacter.Id,
+                                                                                           existingCharacter.AccountId,
+                                                                                           existingCharacter.Name,
+                                                                                           existingCharacter.Username,
+                                                                                           CreatedUtc = _dateTimeProvider.GetUtcNow(),
+                                                                                           UpdatedUtc = _dateTimeProvider.GetUtcNow(),
+                                                                                           existingCharacter.Description,
+                                                                                           existingCharacter.Hometown,
+                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(existingCharacter.Upgrades)),
+                                                                                       }, cancellationToken: token));
+
+        if (result < 0)
+        {
+            return false;
+        }
+        
+        result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                              insert into characterstat(id, character_id, level, current_xp, max_owies, current_owies, starting_treats, current_treats, current_injuries, cute, cunning, fierce, incapacitated)
+                                                                              values (@Id, @CharacterId, @Level, @CurrentXp, @MaxOwies, @CurrentOwies, @StartingTreats, @CurrentTreats, @CurrentInjuries, @Cute, @Cunning, @Fierce, @Incapacitated)
+                                                                              """, new
+                                                                                   {
+                                                                                       Id = Guid.NewGuid(),
+                                                                                       CharacterId = existingCharacter.Id,
+                                                                                       existingCharacter.Level,
+                                                                                       existingCharacter.CurrentXp,
+                                                                                       existingCharacter.MaxOwies,
+                                                                                       existingCharacter.CurrentOwies,
+                                                                                       existingCharacter.StartingTreats,
+                                                                                       existingCharacter.CurrentTreats,
+                                                                                       existingCharacter.CurrentInjuries,
+                                                                                       existingCharacter.Cute,
+                                                                                       existingCharacter.Cunning,
+                                                                                       existingCharacter.Fierce,
+                                                                                       existingCharacter.Incapacitated
+                                                                                   }, cancellationToken: token));
+        
+        if (result < 0)
+        {
+            return false;
+        }
+        
+        if(existingCharacter.Flaw is not null)
+        {
+            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into characterflaw(id, character_id, flaw_id)
+                                                                                  values(@Id, @CharacterId, @FlawId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           CharacterId = existingCharacter.Id,
+                                                                                           FlawId = existingCharacter.Flaw?.Id
+                                                                                       }, cancellationToken: token));
+            if (result < 0)
+            {
+                return false;
+            }
+        }
+        
+        foreach (Talent existingCharacterTalent in existingCharacter.Talents)
+        {
+            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into charactertalent(id, character_id, talent_id)
+                                                                                  values (@Id, @CharacterId, @TalentId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           CharacterId = existingCharacter.Id,
+                                                                                           TalentId = existingCharacterTalent.Id
+                                                                                       }, cancellationToken: token));
+
+            if (result < 0)
+            {
+                return false;
+            }
+        }
+        
+        foreach (MagicalPower existingCharacterMagicalPower in existingCharacter.MagicalPowers)
+        {
+            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id)
+                                                                                  values (@Id, @CharacterId, @MagicalPowerId)
+                                                                                  """, new
+                                                                                       {
+                                                                                           Id = Guid.NewGuid(),
+                                                                                           CharacterId = existingCharacter.Id,
+                                                                                           MagicalPowerId = existingCharacterMagicalPower.Id
+                                                                                       }, cancellationToken: token));
+
+            if (result < 0)
+            {
+                return false;
+            }
+        }
+        
+        foreach (Human existingCharacterHuman in existingCharacter.Humans)
+        {
+            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  insert into human(id, character_id, name, description, deleted_utc)
+                                                                                  values (@Id, @CharacterId, @Name, @Description, @DeletedUtc)
+                                                                                  """, new
+                                                                                       {
+                                                                                           existingCharacterHuman.Id,
+                                                                                           CharacterId = existingCharacter.Id,
+                                                                                           existingCharacterHuman.Name,
+                                                                                           existingCharacterHuman.Description,
+                                                                                           existingCharacterHuman.DeletedUtc
+                                                                                       }, cancellationToken: token));
+            
+            if (result < 0)
+            {
+                return false;
+            }
+            
+            foreach (Problem problem in existingCharacterHuman.Problems)
+            {
+                result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                      insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
+                                                                                      values (@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, @DeletedUtc)
+                                                                                      """, new
+                                                                                           {
+                                                                                               problem.Id,
+                                                                                               problem.HumanId,
+                                                                                               problem.Source,
+                                                                                               problem.Emotion,
+                                                                                               problem.Rank,
+                                                                                               problem.Solved,
+                                                                                               problem.DeletedUtc
+                                                                                           }, cancellationToken: token));
+            
+                if (result < 0)
+                {
+                    return false;
+                }
+            }
+        }
+        
         transaction.Commit();
 
         return result > 0;

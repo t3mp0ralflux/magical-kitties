@@ -52,6 +52,33 @@ public class CharacterController(IAccountService accountService, ICharacterServi
         return CreatedAtAction(nameof(Get), new { id = character.Id }, response);
     }
 
+    [HttpPost(ApiEndpoints.Characters.Copy)]
+    [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Copy([FromRoute] Guid id, CancellationToken token)
+    {
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        bool characterExists = await characterService.ExistsByIdAsync(id, token);
+
+        if (!characterExists)
+        {
+            return NotFound();
+        }
+
+        Character characterCopy = await characterService.CopyAsync(account, id, token);
+        
+        CharacterResponse response = characterCopy.ToResponse();
+        
+        return CreatedAtAction(nameof(Get), new { id = characterCopy.Id }, response);
+    }
+
     [HttpGet(ApiEndpoints.Characters.Get)]
     [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]

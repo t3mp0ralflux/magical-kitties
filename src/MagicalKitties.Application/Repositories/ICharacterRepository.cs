@@ -10,4 +10,5 @@ public interface ICharacterRepository
     Task<int> GetCountAsync(GetAllCharactersOptions options, CancellationToken token = default);
     Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken token = default);
+    Task<bool> CopyAsync(Character existingCharacter, CancellationToken token = default);
 }
