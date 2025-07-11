@@ -18,29 +18,16 @@ public class AttributeUpdateValidatorTests
     public AttributeUpdateValidator _sut { get; set; }
 
     [Fact]
-    public async Task Validator_ShouldThrowAsync_WhenAccountIdIsMissing()
-    {
-        // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(Guid.Empty);
-
-        // Act
-        TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Update.AccountId);
-    }
-
-    [Fact]
     public async Task Validator_ShouldThrowAsync_WhenCharacterIdIsMissing()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(characterId: Guid.Empty);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: null);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Update.CharacterId);
+        result.ShouldHaveValidationErrorFor(x => x.Update.Character);
     }
 
     [Theory]

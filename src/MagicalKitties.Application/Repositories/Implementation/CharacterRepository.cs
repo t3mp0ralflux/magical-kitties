@@ -63,7 +63,7 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
+    public async Task<Character?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
@@ -115,9 +115,8 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                     from character c
                                                                                                                                                                     inner join characterstat cs on c.id = cs.character_id
                                                                                                                                                                     where c.id = @id
-                                                                                                                                                                    and c.account_id = @accountId
                                                                                                                                                                     {shouldIncludeDeleted}
-                                                                                                                                                                    """, new { id, accountId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
+                                                                                                                                                                    """, new { id }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
                                                                                                                                                                                                                                        {
                                                                                                                                                                                                                                            character.Flaw = string.IsNullOrWhiteSpace(flaw?.Name) ? null : flaw;
                                                                                                                                                                                                                                            character.Talents = talents;

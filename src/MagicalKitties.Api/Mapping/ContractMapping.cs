@@ -241,12 +241,11 @@ public static class ContractMapping
                };
     }
 
-    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, Guid accountId)
+    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, MKAppCharacters.Character character)
     {
         return new AttributeUpdate
                {
-                   AccountId = accountId,
-                   CharacterId = request.CharacterId,
+                   Character = character,
                    Cunning = request.Cunning,
                    Cute = request.Cute,
                    Fierce = request.Fierce,

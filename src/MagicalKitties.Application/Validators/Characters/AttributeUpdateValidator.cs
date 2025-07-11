@@ -9,11 +9,8 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
 {
     public AttributeUpdateValidator()
     {
-        RuleFor(x => x.Update.AccountId)
-            .NotNull()
-            .NotEmpty();
 
-        RuleFor(x => x.Update.CharacterId)
+        RuleFor(x => x.Update.Character)
             .NotNull()
             .NotEmpty();
 

@@ -24,13 +24,6 @@ public class CharacterUpdateService : ICharacterUpdateService
 
     public async Task<bool> UpdateDescriptionAsync(DescriptionOption option, DescriptionUpdate update, CancellationToken token = default)
     {
-        bool characterExists = await _characterRepository.ExistsByIdAsync(update.CharacterId, token);
-
-        if (!characterExists)
-        {
-            return false;
-        }
-
         DescriptionUpdateValidationContext validationContext = new()
                                                                {
                                                                    Option = option,
@@ -51,7 +44,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
     public async Task<bool> UpdateAttributeAsync(AttributeOption option, AttributeUpdate update, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(update.Character.Id, cancellationToken: token);
 
         if (character is null)
         {
@@ -157,9 +150,9 @@ public class CharacterUpdateService : ICharacterUpdateService
         }
     }
 
-    public async Task<bool> Reset(Guid accountId, Guid characterId, CancellationToken token = default)
+    public async Task<bool> Reset(Guid characterId, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(accountId, characterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(characterId, cancellationToken: token);
 
         if (character is null)
         {
@@ -168,8 +161,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
         AttributeUpdate update = new()
                                  {
-                                     AccountId = accountId,
-                                     CharacterId = characterId,
+                                     Character = character,
                                      CurrentOwies = 0,
                                      CurrentInjuries = 0,
                                      CurrentTreats = character.StartingTreats,

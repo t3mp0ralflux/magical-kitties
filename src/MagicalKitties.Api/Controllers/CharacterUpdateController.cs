@@ -14,7 +14,7 @@ namespace MagicalKitties.Api.Controllers;
 
 [Authorize]
 [ApiController]
-public class CharacterUpdateController(IAccountService accountService, ICharacterUpdateService characterUpdateService, ICharacterUpgradeService characterUpgradeService) : ControllerBase
+public class CharacterUpdateController(IAccountService accountService, ICharacterService characterService, ICharacterUpdateService characterUpdateService, ICharacterUpgradeService characterUpgradeService) : ControllerBase
 {
     [HttpPut(ApiEndpoints.Characters.UpdateDescription)]
     [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
@@ -30,13 +30,24 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
+        Character? character = await characterService.GetByIdAsync(request.CharacterId, token);
+
+        if (character is null)
+        {
+            return NotFound();
+        }
+
+        if (character.AccountId != account.Id)
+        {
+            return Unauthorized();
+        }
+
         MKCtrApplicationCharacterUpdates.DescriptionUpdate descriptionUpdate = request.ToUpdate(account.Id);
 
         // will throw validation errors
-        bool success = await characterUpdateService.UpdateDescriptionAsync((MKCtrApplicationCharacterUpdates.DescriptionOption)description, descriptionUpdate, token);
-
-        // returns not found if character not found
-        return success ? Ok($"{description.ToString()} updated successfully.") : NotFound("Character not found.");
+        await characterUpdateService.UpdateDescriptionAsync((MKCtrApplicationCharacterUpdates.DescriptionOption)description, descriptionUpdate, token);
+        
+        return Ok($"{description.ToString()} updated successfully.");
     }
 
     [HttpPut(ApiEndpoints.Characters.UpdateAttribute)]
@@ -53,7 +64,19 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(account.Id);
+        Character? character = await characterService.GetByIdAsync(request.CharacterId, token);
+
+        if (character is null)
+        {
+            return NotFound();
+        }
+
+        if (character.AccountId != account.Id)
+        {
+            return Unauthorized();
+        }
+
+        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(character);
 
         // will throw validation errors
         bool success = await characterUpdateService.UpdateAttributeAsync((MKCtrApplicationCharacterUpdates.AttributeOption)attribute, attributeUpdate, token);
@@ -74,12 +97,19 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        bool success = await characterUpdateService.Reset(account.Id, id, token);
+        Character? character = await characterService.GetByIdAsync(id, token);
 
-        if (!success)
+        if (character is null)
         {
             return NotFound();
         }
+
+        if (character.AccountId != account.Id)
+        {
+            return Unauthorized();
+        }
+
+        await characterUpdateService.Reset(id, token);
 
         return Ok("Character reset successfully.");
     }
@@ -94,6 +124,18 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        Character? character = await characterService.GetByIdAsync(characterId, token);
+
+        if (character is null)
+        {
+            return NotFound();
+        }
+
+        if (character.AccountId != account.Id)
         {
             return Unauthorized();
         }
@@ -120,6 +162,18 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
         if (account is null)
+        {
+            return Unauthorized();
+        }
+
+        Character? character = await characterService.GetByIdAsync(characterId, token);
+        
+        if (character is null)
+        {
+            return NotFound();
+        }
+
+        if (character.AccountId != account.Id)
         {
             return Unauthorized();
         }
