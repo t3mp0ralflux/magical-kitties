@@ -293,9 +293,6 @@ public static class Fakes
 
     public static AttributeUpdateValidationContext GenerateValidationContext(Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null)
     {
-        Account account = GenerateAccount();
-        Character newCharacter = GenerateCharacter(account);
-
         AttributeUpdate update = new()
                                  {
                                      Character = character,

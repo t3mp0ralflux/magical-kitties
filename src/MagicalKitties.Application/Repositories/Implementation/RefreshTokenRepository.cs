@@ -52,20 +52,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
 
         return result;
     }
-
-    public async Task<bool> Exists(Guid accountId, CancellationToken token = default)
-    {
-        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
-
-        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
-                                                                                           select count(id)
-                                                                                           from refreshtoken
-                                                                                           where account_id = @accountId
-                                                                                           """, new { accountId }, cancellationToken: token));
-
-        return result > 0;
-    }
-
+    
     public async Task<bool> DeleteRefreshToken(Guid accountId, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);

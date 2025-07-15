@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.TestHelper;
+using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
@@ -53,7 +54,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenAttributeIsDuplicated()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(cute: 3, attributeOption: AttributeOption.cute);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, cute: 3, attributeOption: AttributeOption.cute);
         updateContext.Character.Cunning = 3;
 
         // Act
@@ -206,13 +208,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenTalentChangeIdsAreOutOfRange(int previousId, int newId, string fieldName, string exceptionMessage)
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange talentChange = new()
                                        {
                                            NewId = newId,
                                            PreviousId = previousId
                                        };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(talentChange: talentChange, attributeOption: AttributeOption.talent);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
         updateContext.Character.Talents.Add(new Talent { Id = 66, Description = "Test", Name = "test", IsCustom = false });
 
         // Act
@@ -229,13 +232,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenDuplicateTalentIsFound()
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange talentChange = new()
                                        {
                                            NewId = 21,
                                            PreviousId = 21
                                        };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(talentChange: talentChange, attributeOption: AttributeOption.talent);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
 
         updateContext.Character.Talents.Add(new Talent { Id = 21, Description = "Test", Name = "Test", IsCustom = false });
 
@@ -253,13 +257,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenTalentIsAddedAndCharacterIsNotTheRightLevel()
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange talentChange = new()
                                        {
                                            NewId = 21,
                                            PreviousId = 21
                                        };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(talentChange: talentChange, attributeOption: AttributeOption.talent);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
         updateContext.Character.Level = 4;
         updateContext.Character.Talents.Add(new Talent { Id = 11, Name = "Test", Description = "TestTEst", IsCustom = false });
 
@@ -277,13 +282,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenTalentIsAddedAndCharacterAlreadyHasMax()
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange talentChange = new()
                                        {
                                            NewId = 21,
                                            PreviousId = 21
                                        };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(talentChange: talentChange, attributeOption: AttributeOption.talent);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
         updateContext.Character.Level = 6;
         updateContext.Character.Talents.Add(new Talent { Id = 11, Name = "Test", Description = "TestTEst", IsCustom = false });
         updateContext.Character.Talents.Add(new Talent { Id = 31, Name = "Test", Description = "TestTEst", IsCustom = false });
@@ -324,13 +330,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenMagicalPowerChangeIdsAreOutOfRange(int previousId, int newId, string fieldName, string exceptionMessage)
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange magicalPowerChange = new()
                                              {
                                                  NewId = newId,
                                                  PreviousId = previousId
                                              };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
         updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 66, Name = "test", Description = "test", IsCustom = false });
 
         // Act
@@ -349,13 +356,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenDuplicateMagicalPowerIsFound(bool isNestedPower)
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange magicalPowerChange = new()
                                              {
                                                  NewId = 21,
                                                  PreviousId = 21
                                              };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
 
         if (isNestedPower)
         {
@@ -380,13 +388,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenMagicalPowerIsAddedAndCharacterIsNotTheRightLevel()
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange magicalPowerChange = new()
                                              {
                                                  NewId = 21,
                                                  PreviousId = 21
                                              };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
         updateContext.Character.Level = 7;
         updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 22, Name = "Test", Description = "TestTest", IsCustom = false, BonusFeatures = [] });
 
@@ -404,7 +413,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenAttributeIsZero()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(cute: 0, attributeOption: AttributeOption.cute);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character ,cute: 0, attributeOption: AttributeOption.cute);
 
         updateContext.Character.Cunning = 0;
 
@@ -419,7 +429,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenCuteInformationIsCorrect()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(cute: 3, attributeOption: AttributeOption.cute);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, cute: 3, attributeOption: AttributeOption.cute);
 
         updateContext.Character.Cunning = 0;
         updateContext.Character.Cute = 0;
@@ -436,7 +447,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenCunningInformationIsCorrect()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(cunning: 3, attributeOption: AttributeOption.cunning);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, cunning: 3, attributeOption: AttributeOption.cunning);
 
         updateContext.Character.Cunning = 0;
         updateContext.Character.Cute = 0;
@@ -453,7 +465,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenFierceInformationIsCorrect()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(fierce: 3, attributeOption: AttributeOption.fierce);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, fierce: 3, attributeOption: AttributeOption.fierce);
 
         updateContext.Character.Cunning = 0;
         updateContext.Character.Cute = 0;
@@ -470,7 +483,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenLevelInformationIsCorrect()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(level: 3, attributeOption: AttributeOption.level);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, level: 3, attributeOption: AttributeOption.level);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -483,7 +497,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenOwiesInformationIsCorrect()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(currentOwies: 3, attributeOption: AttributeOption.currentowies);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, currentOwies: 3, attributeOption: AttributeOption.currentowies);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -496,7 +511,8 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenCurrentTreatsInformationIsCorrect()
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(currentTreats: 3, attributeOption: AttributeOption.currenttreats);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, currentTreats: 3, attributeOption: AttributeOption.currenttreats);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -509,13 +525,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenFlawInformationIsCorrect()
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange flawUpdate = new()
                                      {
                                          PreviousId = 31,
                                          NewId = 31
                                      };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(flawChange: flawUpdate, attributeOption: AttributeOption.flaw);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, flawChange: flawUpdate, attributeOption: AttributeOption.flaw);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -530,13 +547,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenTalentInformationIsCorrect(bool hasExisting)
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange talentUpdate = new()
                                        {
                                            PreviousId = 41,
                                            NewId = 31
                                        };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(talentChange: talentUpdate, attributeOption: AttributeOption.talent);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentUpdate, attributeOption: AttributeOption.talent);
 
         if (hasExisting)
         {
@@ -557,13 +575,14 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldNotThrowAsync_WhenMagicalPowerInformationIsCorrect(bool hasNested)
     {
         // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
         EndowmentChange magicalPowerUpdate = new()
                                              {
                                                  NewId = 31,
                                                  PreviousId = 41
                                              };
 
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(magicalPowerChange: magicalPowerUpdate, attributeOption: AttributeOption.magicalpower);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerUpdate, attributeOption: AttributeOption.magicalpower);
 
         if (hasNested)
         {

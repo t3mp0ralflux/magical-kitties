@@ -13,7 +13,8 @@ public static class WellKnownGlobalSettings
 
     public const string EMAIL_SEND_ATTEMPTS_MAX = "email_send_attempts_max";
     public const string EMAIL_SEND_BATCH_LIMIT = "email_send_batch_limit";
-    public const string JWT_TOKEN_SECRET = "jwt_token_secret";
+    public const string ACCESS_TOKEN_LIFETIME_HOURS = "access_token_lifetime_hours";
+    public const string REFRESH_TOKEN_LIFETIME_DAYS = "refresh_token_lifetime_days";
 
     public const string PASSWORD_REQUEST_DURATION_MINS = "password_request_duration_mins";
 
