@@ -37,7 +37,6 @@ public class CharacterUpdateService : ICharacterUpdateService
             DescriptionOption.name => await _characterUpdateRepository.UpdateNameAsync(update, token), // validated above. won't be null here.
             DescriptionOption.description => await _characterUpdateRepository.UpdateDescriptionAsync(update, token),
             DescriptionOption.hometown => await _characterUpdateRepository.UpdateHometownAsync(update, token),
-            DescriptionOption.xp => await _characterUpdateRepository.UpdateXPAsync(update, token),
             _ => throw new ValidationException([new ValidationFailure("DescriptionOption", "Selected description option not valid")])
         };
     }
@@ -145,6 +144,13 @@ public class CharacterUpdateService : ICharacterUpdateService
                 }
 
                 return await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);
+            case AttributeOption.xp:
+                if (character.Level == update.Level)
+                {
+                    return true;
+                }
+
+                return await _characterUpdateRepository.UpdateXPAsync(update, token);
             default:
                 throw new ValidationException([new ValidationFailure("AttributeOption", "Selected attribute option not valid")]);
         }

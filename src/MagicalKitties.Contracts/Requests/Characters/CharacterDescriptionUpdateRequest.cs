@@ -6,5 +6,4 @@ public class CharacterDescriptionUpdateRequest
     public string? Name { get; init; }
     public string? Description { get; init; }
     public string? Hometown { get; init; }
-    public int? XP { get; init; }
 }

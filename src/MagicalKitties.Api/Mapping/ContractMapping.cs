@@ -236,8 +236,7 @@ public static class ContractMapping
                    CharacterId = request.CharacterId,
                    Name = request.Name,
                    Description = request.Description,
-                   Hometown = request.Hometown,
-                   XP = request.XP
+                   Hometown = request.Hometown
                };
     }
 
@@ -250,6 +249,7 @@ public static class ContractMapping
                    Cute = request.Cute,
                    Fierce = request.Fierce,
                    Level = request.Level,
+                   XP = request.XP,
                    FlawChange = request.FlawChange?.ToUpdate(),
                    TalentChange = request.TalentChange?.ToUpdate(),
                    MagicalPowerChange = request.MagicalPowerChange?.ToUpdate(),

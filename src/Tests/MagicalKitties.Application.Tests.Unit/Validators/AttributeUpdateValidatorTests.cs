@@ -1,10 +1,14 @@
-﻿using FluentValidation;
+﻿using FluentAssertions;
+using FluentAssertions.Specialized;
+using FluentValidation;
+using FluentValidation.Results;
 using FluentValidation.TestHelper;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Validators.Characters;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Testing.Common;
 
 namespace MagicalKitties.Application.Tests.Unit.Validators;
@@ -83,6 +87,25 @@ public class AttributeUpdateValidatorTests
         // Assert
         result
             .ShouldHaveValidationErrorFor(x => x.Update.Level)
+            .WithErrorMessage(exceptionMessage)
+            .WithSeverity(Severity.Error);
+    }
+    
+    [Theory]
+    [InlineData(null, "'Update XP' must not be empty.")]
+    [InlineData(int.MinValue, "XP can only be between 0 and 10 inclusively.")]
+    [InlineData(int.MaxValue, "XP can only be between 0 and 10 inclusively.")]
+    public async Task Validator_ShouldThrowAsync_WhenXPIsInvalid(int? xp, string exceptionMessage)
+    {
+        // Arrange
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(xp: xp, attributeOption: AttributeOption.xp);
+
+        // Act
+        TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(x => x.Update.XP)
             .WithErrorMessage(exceptionMessage)
             .WithSeverity(Severity.Error);
     }

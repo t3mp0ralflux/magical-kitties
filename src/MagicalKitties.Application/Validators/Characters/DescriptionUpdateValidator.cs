@@ -21,24 +21,6 @@ public class DescriptionUpdateValidator : AbstractValidator<DescriptionUpdateVal
                                            }
 
                                            break;
-                                       case DescriptionOption.xp:
-                                           if (!update.Update.XP.HasValue)
-                                           {
-                                               context.AddFailure(new ValidationFailure(nameof(update.Update.XP), "XP cannot be empty"));
-                                               break;
-                                           }
-
-                                           switch (update.Update.XP.Value)
-                                           {
-                                               case < 0:
-                                                   context.AddFailure(new ValidationFailure(nameof(update.Update.XP), "XP cannot be negative"));
-                                                   break;
-                                               case > 100:
-                                                   context.AddFailure(new ValidationFailure(nameof(update.Update.XP), "XP value exceeds game capacity"));
-                                                   break;
-                                           }
-
-                                           break;
                                        case DescriptionOption.description:
                                        case DescriptionOption.hometown:
                                            // these can be empty, sure. leave em.

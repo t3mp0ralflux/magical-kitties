@@ -40,7 +40,7 @@ public class RuleService : IRuleService
                                Attributes = ["Cunning, Cute, Fierce"],
                                Flaws = flaws,
                                Talents = talents,
-                               MagicalPowers = magicalPowers,
+                               MagicalPowers = magicalPowers.OrderBy(x=>x.Id).ToList(),
                                Upgrades = upgrades,
                                ProblemSource = ProblemRule.ProblemSources,
                                Emotion = ProblemRule.EmotionSources,

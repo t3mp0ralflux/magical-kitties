@@ -1,4 +1,5 @@
-﻿using Bogus;
+﻿using System.Xml.XPath;
+using Bogus;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
@@ -291,7 +292,7 @@ public static class Fakes
                };
     }
 
-    public static AttributeUpdateValidationContext GenerateValidationContext(Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null)
+    public static AttributeUpdateValidationContext GenerateValidationContext(Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
     {
         AttributeUpdate update = new()
                                  {
@@ -305,7 +306,8 @@ public static class Fakes
                                      MagicalPowerChange = magicalPowerChange,
                                      TalentChange = talentChange,
                                      CurrentOwies = currentOwies,
-                                     CurrentInjuries = currentInjuries
+                                     CurrentInjuries = currentInjuries,
+                                     XP = xp
                                  };
 
         AttributeUpdateValidationContext fakeContext = new()

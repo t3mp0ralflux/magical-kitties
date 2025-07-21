@@ -1,10 +1,13 @@
 ﻿using FluentAssertions;
 using FluentValidation;
+using MagicalKitties.Application.Models.Accounts;
+using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
 using NSubstitute;
+using Testing.Common;
 
 namespace MagicalKitties.Application.Tests.Unit.Services;
 
@@ -83,7 +86,6 @@ public class CharacterUpdateServiceTests
         await _characterUpdateRepository.Received(1).UpdateNameAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateDescriptionAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateHometownAsync(Arg.Any<DescriptionUpdate>());
-        await _characterUpdateRepository.DidNotReceive().UpdateXPAsync(Arg.Any<DescriptionUpdate>());
     }
 
     [Fact]
@@ -109,7 +111,6 @@ public class CharacterUpdateServiceTests
         await _characterUpdateRepository.DidNotReceive().UpdateNameAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.Received(1).UpdateDescriptionAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateHometownAsync(Arg.Any<DescriptionUpdate>());
-        await _characterUpdateRepository.DidNotReceive().UpdateXPAsync(Arg.Any<DescriptionUpdate>());
     }
 
     [Fact]
@@ -135,25 +136,24 @@ public class CharacterUpdateServiceTests
         await _characterUpdateRepository.DidNotReceive().UpdateNameAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateDescriptionAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.Received(1).UpdateHometownAsync(Arg.Any<DescriptionUpdate>());
-        await _characterUpdateRepository.DidNotReceive().UpdateXPAsync(Arg.Any<DescriptionUpdate>());
     }
 
     [Fact]
-    public async Task UpdateDescriptionAsync_ShouldCallUpdateXPAndReturnTrue_WhenOptionIsSelected()
+    public async Task UpdateAttributeAsync_ShouldCallUpdateXPAndReturnTrue_WhenOptionIsSelected()
     {
         // Arrange
-        DescriptionUpdate update = new()
-                                   {
-                                       AccountId = Guid.NewGuid(),
-                                       CharacterId = Guid.NewGuid(),
-                                       XP = 69
-                                   };
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdate update = new()
+                                 {
+                                     Character = character,
+                                     XP = 69
+                                 };
 
-        _characterUpdateRepository.UpdateXPAsync(Arg.Any<DescriptionUpdate>()).Returns(true);
-        _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
+        _characterUpdateRepository.UpdateXPAsync(Arg.Any<AttributeUpdate>()).Returns(true);
+        _characterRepository.GetByIdAsync(update.Character.Id).Returns(character);
 
         // Act
-        bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.xp, update);
+        bool result = await _sut.UpdateAttributeAsync(AttributeOption.xp, update);
 
         // Assert
         result.Should().BeTrue();
@@ -161,6 +161,6 @@ public class CharacterUpdateServiceTests
         await _characterUpdateRepository.DidNotReceive().UpdateNameAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateDescriptionAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateHometownAsync(Arg.Any<DescriptionUpdate>());
-        await _characterUpdateRepository.Received(1).UpdateXPAsync(Arg.Any<DescriptionUpdate>());
+        await _characterUpdateRepository.Received(1).UpdateXPAsync(Arg.Any<AttributeUpdate>());
     }
 }

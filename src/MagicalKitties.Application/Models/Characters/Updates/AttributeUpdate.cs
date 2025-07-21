@@ -7,6 +7,7 @@ public class AttributeUpdate
     public int? Cunning { get; init; }
     public int? Fierce { get; init; }
     public int? Level { get; init; }
+    public int? XP { get; init; }
     public EndowmentChange? FlawChange { get; init; }
     public EndowmentChange? TalentChange { get; init; }
     public EndowmentChange? MagicalPowerChange { get; init; }

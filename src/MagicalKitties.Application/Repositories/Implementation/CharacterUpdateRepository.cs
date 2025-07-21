@@ -90,7 +90,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateXPAsync(DescriptionUpdate update, CancellationToken token = default)
+    public async Task<bool> UpdateXPAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -102,7 +102,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.XP,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -113,7 +113,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   where id = @CharacterId
                                                                                   """, new
                                                                                        {
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
         }
