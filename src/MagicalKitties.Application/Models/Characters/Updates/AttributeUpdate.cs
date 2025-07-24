@@ -2,12 +2,12 @@
 
 public class AttributeUpdate
 {
-    public required Guid AccountId { get; init; }
-    public required Guid CharacterId { get; init; }
+    public required Character Character { get; init; }
     public int? Cute { get; init; }
     public int? Cunning { get; init; }
     public int? Fierce { get; init; }
     public int? Level { get; init; }
+    public int? XP { get; init; }
     public EndowmentChange? FlawChange { get; init; }
     public EndowmentChange? TalentChange { get; init; }
     public EndowmentChange? MagicalPowerChange { get; init; }

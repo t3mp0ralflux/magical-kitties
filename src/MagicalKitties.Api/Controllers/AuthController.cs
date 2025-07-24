@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using FluentValidation;
 using FluentValidation.Results;
+using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application.Models.Accounts;
@@ -9,6 +10,7 @@ using MagicalKitties.Application.Services;
 using MagicalKitties.Contracts.Requests.Auth;
 using MagicalKitties.Contracts.Responses.Auth;
 using MagicalKitties.Contracts.Responses.Errors;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,8 +53,8 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
             return Unauthorized("Username or password is incorrect");
         }
 
-        string accessToken = jwtTokenService.GenerateToken(account);
-        string refreshToken = jwtTokenService.GenerateRefreshToken();
+        string accessToken = jwtTokenService.GenerateAccessToken(account);
+        string refreshToken = jwtTokenService.GenerateRefreshToken(account);
 
         // create that new refresh token
         await refreshTokenService.UpsertRefreshToken(account, accessToken, refreshToken, token);
@@ -104,13 +106,6 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
         {
             return Unauthorized("Your account status is not active. Contact support.");
         }
-
-        bool existingToken = await refreshTokenService.Exists(account.Id, token);
-
-        if (!existingToken)
-        {
-            return Unauthorized("Refresh token is invalid");
-        }
         
         bool validToken = await refreshTokenService.ValidateRefreshToken(account.Id, authToken, token);
 
@@ -119,8 +114,46 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
             return Unauthorized("Refresh token is invalid");
         }
 
-        string newAccessToken = jwtTokenService.GenerateToken(account);
-        string newRefreshToken = jwtTokenService.GenerateRefreshToken();
+        string newAccessToken = jwtTokenService.GenerateAccessToken(account);
+        string newRefreshToken = jwtTokenService.GenerateRefreshToken(account);
+        
+        RefreshToken responseToken = await refreshTokenService.UpsertRefreshToken(account, newAccessToken, newRefreshToken, token);
+        
+        AccountLogin accountLogin = account.ToLogin();
+
+        await authService.LoginAsync(accountLogin, token);
+
+        LoginResponse response = new LoginResponse
+                                 {
+                                     Account = account.ToResponse(),
+                                     AccessToken = newAccessToken,
+                                     RefreshToken = responseToken.Token
+                                 };
+
+        return Ok(response);
+    }
+
+    [Authorize(AuthConstants.RefreshTokenPolicyName)]
+    [HttpPost(ApiEndpoints.Auth.RefreshToken)]
+    [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UnauthorizedObjectResult>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RefreshLoginToken(CancellationToken token)  
+    {
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
+
+        if (account is null)
+        {
+            // TODO: add in SSO login logic here
+            return NotFound();
+        }
+
+        if (account.AccountStatus != AccountStatus.active)
+        {
+            return BadRequest("Your account status is not active. Contact support.");
+        }
+        
+        string newAccessToken = jwtTokenService.GenerateAccessToken(account);
+        string newRefreshToken = jwtTokenService.GenerateRefreshToken(account);
         
         RefreshToken responseToken = await refreshTokenService.UpsertRefreshToken(account, newAccessToken, newRefreshToken, token);
         
@@ -141,16 +174,29 @@ public class AuthController(IAccountService accountService, IRefreshTokenService
     [HttpPost(ApiEndpoints.Auth.Logout)]
     [ProducesResponseType<OkResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Logout([FromRoute] Guid accountId, CancellationToken token)
+    [ProducesResponseType<ForbidResult>(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Logout([FromRoute] string refreshToken, CancellationToken token)
     {
-        Account? account = await accountService.GetByIdAsync(accountId.ToString(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail()!, token);
 
         if (account is null)
         {
             return NotFound();
         }
 
-        await refreshTokenService.DeleteRefreshToken(accountId, token);
+        RefreshToken? validToken = await refreshTokenService.GetRefreshToken(account.Id, token);
+
+        if (validToken is null)
+        {
+            return Ok(); // no refresh token? ok they're already logged out, probably.
+        }
+
+        if (!string.Equals(refreshToken, validToken.Token, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return Forbid();
+        }
+
+        await refreshTokenService.DeleteRefreshToken(account.Id, token);
 
         return Ok();
     }

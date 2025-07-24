@@ -72,7 +72,7 @@ public class CharacterController(IAccountService accountService, ICharacterServi
             return NotFound();
         }
 
-        Character characterCopy = await characterService.CopyAsync(account, id, token);
+        Character characterCopy = await characterService.CopyAsync(id, token);
         
         CharacterResponse response = characterCopy.ToResponse();
         
@@ -92,7 +92,7 @@ public class CharacterController(IAccountService accountService, ICharacterServi
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(account.Id, id, token);
+        Character? character = await characterService.GetByIdAsync(id, token);
 
         if (character is null)
         {

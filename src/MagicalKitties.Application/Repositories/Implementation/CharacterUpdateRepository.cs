@@ -90,7 +90,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateXPAsync(DescriptionUpdate update, CancellationToken token = default)
+    public async Task<bool> UpdateXPAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -102,7 +102,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.XP,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -113,7 +113,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   where id = @CharacterId
                                                                                   """, new
                                                                                        {
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
         }
@@ -135,12 +135,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.Cunning,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -160,12 +160,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.Cute,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -185,12 +185,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.Fierce,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -210,12 +210,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.Level,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -234,13 +234,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            FlawId = update.FlawChange!.NewId
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -260,12 +260,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.FlawChange!.NewId,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -284,13 +284,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            TalentId = update.TalentChange!.NewId
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -311,13 +311,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.TalentChange!.NewId,
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            update.TalentChange!.PreviousId
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -336,13 +336,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            MagicalPowerId = update.MagicalPowerChange!.NewId
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -363,13 +363,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.MagicalPowerChange!.NewId,
-                                                                                           update.CharacterId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            update.MagicalPowerChange!.PreviousId
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -389,12 +389,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.CurrentOwies,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -414,12 +414,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.CurrentTreats,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -439,12 +439,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.CurrentInjuries,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -464,12 +464,12 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   """, new
                                                                                        {
                                                                                            update.Incapacitated,
-                                                                                           update.CharacterId
+                                                                                           CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
         {
-            result = await UpdateCharacterUpdateUtcAsync(update.CharacterId, connection, token);
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();

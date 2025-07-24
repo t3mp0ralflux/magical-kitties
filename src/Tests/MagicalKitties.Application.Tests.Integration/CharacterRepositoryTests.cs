@@ -19,8 +19,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     private readonly CharacterUpdateRepository _characterUpdateRepository;
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly HumanRepository _humanRepository;
-    private readonly UpgradeRepository _upgradeRepository;
     private readonly ProblemRepository _problemRepository;
+    private readonly UpgradeRepository _upgradeRepository;
 
     public CharacterRepositoryTests(ApplicationApiFactory apiFactory)
     {
@@ -43,6 +43,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateNewCharacter(account);
 
+        _dateTimeProvider.GetUtcNow().Returns(DateTime.UtcNow);
+
         await _accountRepository.CreateAsync(account);
 
         // Act
@@ -51,9 +53,9 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? createdCharacter = await _sut.GetByIdAsync(account.Id, character.Id);
+        Character? createdCharacter = await _sut.GetByIdAsync(character.Id);
         createdCharacter.Should().NotBeNull();
-        createdCharacter.Should().BeEquivalentTo(character);
+        createdCharacter.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
     }
 
     [SkipIfEnvironmentMissingFact]
@@ -67,7 +69,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(account.Id, Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -87,7 +89,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _sut.CreateAsync(character);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
+        Character? result = await _sut.GetByIdAsync(character.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -111,11 +113,10 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _accountRepository.CreateAsync(account);
         await _sut.CreateAsync(character);
 
-        AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
+        AttributeUpdate update = Fakes.GenerateAttributeUpdate(character);
         AttributeUpdate secondTalentUpdate = new()
                                              {
-                                                 AccountId = account.Id,
-                                                 CharacterId = character.Id,
+                                                 Character = character,
                                                  TalentChange = new EndowmentChange
                                                                 {
                                                                     NewId = 42,
@@ -138,7 +139,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _characterUpdateRepository.UpdateCurrentTreatsAsync(update);
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
-        
+
         foreach (Human human in character.Humans)
         {
             await _humanRepository.CreateAsync(human);
@@ -150,7 +151,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         }
 
         Guid deletedHumanId = Guid.NewGuid();
-        Human deletedHuman = new Human
+        Human deletedHuman = new()
                              {
                                  Id = deletedHumanId,
                                  CharacterId = character.Id,
@@ -178,13 +179,13 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         {
             await _problemRepository.CreateProblemAsync(problem);
         }
-        
+
         // Act
-        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
+        Character? result = await _sut.GetByIdAsync(character.Id);
 
         // Assert
         result.Should().NotBeNull();
-        
+
         result.Should().BeEquivalentTo(character, options =>
                                                   {
                                                       options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
@@ -194,8 +195,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     }
 
     [SkipIfEnvironmentMissingTheory]
-    [InlineData( "Bingus")]
-    [InlineData( "5")]
+    [InlineData("Bingus")]
+    [InlineData("5")]
     public async Task GetAllAsync_ShouldReturnEmptyList_WhenNoItemsAreFound(string searchInput)
     {
         // Arrange
@@ -409,7 +410,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? deletedCharacter = await _sut.GetByIdAsync(account.Id, character.Id, true);
+        Character? deletedCharacter = await _sut.GetByIdAsync(character.Id, true);
 
         deletedCharacter.Should().NotBeNull();
         deletedCharacter.DeletedUtc.Should().NotBeNull();
@@ -432,11 +433,10 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _accountRepository.CreateAsync(account);
         await _sut.CreateAsync(character);
 
-        AttributeUpdate update = Fakes.GenerateAttributeUpdate(account.Id, character.Id);
+        AttributeUpdate update = Fakes.GenerateAttributeUpdate(character);
         AttributeUpdate secondTalentUpdate = new()
                                              {
-                                                 AccountId = account.Id,
-                                                 CharacterId = character.Id,
+                                                 Character = character,
                                                  TalentChange = new EndowmentChange
                                                                 {
                                                                     NewId = 42,
@@ -461,45 +461,48 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
 
         Character copiedCharacter = character.CreateCopy();
-        
+
         // Act
         bool success = await _sut.CopyAsync(copiedCharacter);
 
         // Assert
         success.Should().BeTrue();
 
-        Character? result = await _sut.GetByIdAsync(copiedCharacter.AccountId, copiedCharacter.Id);
+        Character? result = await _sut.GetByIdAsync(copiedCharacter.Id);
         result.Should().NotBeNull();
-        
+
         // I know there's a shload of exceptions below, but the Id's for the sub items are all going to be different even down to the Human Problems. Those are evaluated explicitly below this block.
         result.Should().BeEquivalentTo(character, options =>
                                                   {
                                                       options.Excluding(x => x.Id);
+                                                      options.Excluding(x => x.Name);
                                                       options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
                                                       options.For(x => x.Upgrades).Exclude(x => x.Choice);
                                                       options.For(x => x.Upgrades).Exclude(x => x.Id);
                                                       options.For(x => x.Humans).Exclude(x => x.Id);
                                                       options.For(x => x.Humans).Exclude(x => x.CharacterId);
-                                                      options.For(x => x.Humans).For(y=> y.Problems).Exclude(z => z.Id);
-                                                      options.For(x => x.Humans).For(y=> y.Problems).Exclude(z => z.HumanId);
+                                                      options.For(x => x.Humans).For(y => y.Problems).Exclude(z => z.Id);
+                                                      options.For(x => x.Humans).For(y => y.Problems).Exclude(z => z.HumanId);
                                                       return options;
                                                   });
 
         result.Id.Should().Be(copiedCharacter.Id);
+        result.Name.Should().Be(copiedCharacter.Name);
+
         foreach (Human resultHuman in result.Humans)
         {
             Human? humanMatch = copiedCharacter.Humans.FirstOrDefault(x => x.Id == resultHuman.Id);
 
             humanMatch.Should().NotBeNull();
-            
+
             resultHuman.Id.Should().Be(humanMatch.Id);
             resultHuman.CharacterId.Should().Be(copiedCharacter.Id);
-            
+
             foreach (Problem resultHumanProblem in resultHuman.Problems)
             {
                 Problem? problemMatch = copiedCharacter.Humans.First(x => x.Id == resultHuman.Id).Problems.FirstOrDefault(y => y.Id == resultHumanProblem.Id);
                 problemMatch.Should().NotBeNull();
-                
+
                 resultHumanProblem.Id.Should().Be(problemMatch.Id);
                 resultHumanProblem.HumanId.Should().Be(resultHuman.Id);
             }

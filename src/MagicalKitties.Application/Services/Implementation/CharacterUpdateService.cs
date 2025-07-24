@@ -24,13 +24,6 @@ public class CharacterUpdateService : ICharacterUpdateService
 
     public async Task<bool> UpdateDescriptionAsync(DescriptionOption option, DescriptionUpdate update, CancellationToken token = default)
     {
-        bool characterExists = await _characterRepository.ExistsByIdAsync(update.CharacterId, token);
-
-        if (!characterExists)
-        {
-            return false;
-        }
-
         DescriptionUpdateValidationContext validationContext = new()
                                                                {
                                                                    Option = option,
@@ -44,14 +37,13 @@ public class CharacterUpdateService : ICharacterUpdateService
             DescriptionOption.name => await _characterUpdateRepository.UpdateNameAsync(update, token), // validated above. won't be null here.
             DescriptionOption.description => await _characterUpdateRepository.UpdateDescriptionAsync(update, token),
             DescriptionOption.hometown => await _characterUpdateRepository.UpdateHometownAsync(update, token),
-            DescriptionOption.xp => await _characterUpdateRepository.UpdateXPAsync(update, token),
             _ => throw new ValidationException([new ValidationFailure("DescriptionOption", "Selected description option not valid")])
         };
     }
 
     public async Task<bool> UpdateAttributeAsync(AttributeOption option, AttributeUpdate update, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(update.Character.Id, cancellationToken: token);
 
         if (character is null)
         {
@@ -152,14 +144,21 @@ public class CharacterUpdateService : ICharacterUpdateService
                 }
 
                 return await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);
+            case AttributeOption.xp:
+                if (character.Level == update.Level)
+                {
+                    return true;
+                }
+
+                return await _characterUpdateRepository.UpdateXPAsync(update, token);
             default:
                 throw new ValidationException([new ValidationFailure("AttributeOption", "Selected attribute option not valid")]);
         }
     }
 
-    public async Task<bool> Reset(Guid accountId, Guid characterId, CancellationToken token = default)
+    public async Task<bool> Reset(Guid characterId, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(accountId, characterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(characterId, cancellationToken: token);
 
         if (character is null)
         {
@@ -168,8 +167,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
         AttributeUpdate update = new()
                                  {
-                                     AccountId = accountId,
-                                     CharacterId = characterId,
+                                     Character = character,
                                      CurrentOwies = 0,
                                      CurrentInjuries = 0,
                                      CurrentTreats = character.StartingTreats,

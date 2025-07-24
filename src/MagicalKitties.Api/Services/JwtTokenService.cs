@@ -12,8 +12,8 @@ namespace MagicalKitties.Api.Services;
 
 public interface IJwtTokenService
 {
-    string GenerateToken(Account account);
-    string GenerateRefreshToken();
+    string GenerateAccessToken(Account account);
+    string GenerateRefreshToken(Account account);
     bool ValidateCustomToken(string accessToken);
     string? GetEmailFromToken(string jwtToken);
 }
@@ -21,23 +21,25 @@ public interface IJwtTokenService
 public class JwtTokenService : IJwtTokenService
 {
     private readonly IConfiguration _config;
-    private readonly TimeSpan _tokenLifetime;
+    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly TimeSpan _accessTokenLifetime;
+    private readonly TimeSpan _refreshTokenLifetime;
     private readonly JwtSecurityTokenHandler _tokenHandler = new JwtSecurityTokenHandler();
 
-    public JwtTokenService(IConfiguration configuration, IGlobalSettingsService globalSettingsService)
+    public JwtTokenService(IConfiguration configuration, IGlobalSettingsService globalSettingsService, IDateTimeProvider dateTimeProvider)
     {
         _config = configuration;
+        this._dateTimeProvider = dateTimeProvider;
 
-        int lifetimeHours = globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.JWT_TOKEN_SECRET, 1).Result;
-        _tokenLifetime = TimeSpan.FromHours(lifetimeHours);
+        int accessLifetimeHours = globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.ACCESS_TOKEN_LIFETIME_HOURS, 1).Result;
+        _accessTokenLifetime = TimeSpan.FromHours(accessLifetimeHours);
+
+        int refreshLifeTimeDays = globalSettingsService.GetSettingAsync(WellKnownGlobalSettings.REFRESH_TOKEN_LIFETIME_DAYS, 7).Result;
+        _refreshTokenLifetime = TimeSpan.FromDays(refreshLifeTimeDays);
     }
 
-    public string GenerateToken(Account account)
+    public string GenerateAccessToken(Account account)
     {
-        string tokenSecret = _config["Jwt:Key"]!;
-
-        byte[] key = Encoding.UTF8.GetBytes(tokenSecret);
-
         List<Claim> claims =
         [
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -46,11 +48,32 @@ public class JwtTokenService : IJwtTokenService
             new(AuthConstants.AdminUserClaimName, (account.AccountRole == AccountRole.admin).ToString().ToLower()),
             new(AuthConstants.TrustedUserClaimName, (account.AccountRole is AccountRole.admin or AccountRole.trusted).ToString().ToLower())
         ];
+        
+        return this.GenerateToken(claims, _dateTimeProvider.GetUtcNow().Add(_accessTokenLifetime));
+    }
+
+    public string GenerateRefreshToken(Account account)
+    {
+        List<Claim> claims =
+        [
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Email, account.Email),
+            new(AuthConstants.RefreshTokenClaimName, "true")
+        ];
+        
+        return this.GenerateToken(claims, _dateTimeProvider.GetUtcNow().Add(_refreshTokenLifetime));
+    }
+
+    private string GenerateToken(List<Claim> claims, DateTime expiryUtc)
+    {
+        string tokenSecret = _config["Jwt:Key"]!;
+
+        byte[] key = Encoding.UTF8.GetBytes(tokenSecret);
 
         SecurityTokenDescriptor tokenDescriptor = new()
                                                   {
                                                       Subject = new ClaimsIdentity(claims),
-                                                      Expires = DateTime.UtcNow.Add(_tokenLifetime),
+                                                      Expires = expiryUtc,
                                                       Issuer = _config["Jwt:Issuer"],
                                                       Audience = _config["Jwt:Audience"],
                                                       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -61,16 +84,6 @@ public class JwtTokenService : IJwtTokenService
         string jwt = _tokenHandler.WriteToken(newToken);
 
         return jwt;
-    }
-
-    public string GenerateRefreshToken()
-    {
-        byte[] randomNumber = new byte[32];
-
-        using RandomNumberGenerator numberGenerator = RandomNumberGenerator.Create();
-        numberGenerator.GetBytes(randomNumber);
-
-        return Convert.ToBase64String(randomNumber);
     }
 
     public bool ValidateCustomToken(string accessToken)

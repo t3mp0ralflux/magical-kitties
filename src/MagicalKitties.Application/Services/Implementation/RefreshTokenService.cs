@@ -48,12 +48,7 @@ public class RefreshTokenService : IRefreshTokenService
 
         return existingToken;
     }
-
-    public Task<bool> Exists(Guid accountId, CancellationToken token = default)
-    {
-        return _refreshTokenRepository.Exists(accountId, token);
-    }
-
+    
     public Task<RefreshToken?> GetRefreshToken(Guid accountId, CancellationToken token = default)
     {
         return _refreshTokenRepository.GetRefreshToken(accountId, token);

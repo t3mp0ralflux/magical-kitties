@@ -110,7 +110,7 @@ public class CharacterControllerTests
 
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterService.GetByIdAsync(character.Id).Returns(character);
 
         CharacterResponse expectedResponse = character.ToResponse();
 

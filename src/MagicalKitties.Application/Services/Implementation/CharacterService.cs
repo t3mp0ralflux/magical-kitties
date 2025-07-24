@@ -27,9 +27,9 @@ public class CharacterService : ICharacterService
         return result;
     }
 
-    public async Task<Character> CopyAsync(Account account, Guid id, CancellationToken token = default)
+    public async Task<Character> CopyAsync(Guid id, CancellationToken token = default)
     {
-        Character? existingCharacter = await _characterRepository.GetByIdAsync(account.Id, id, false, token);
+        Character? existingCharacter = await _characterRepository.GetByIdAsync(id, false, token);
 
         Character copiedCharacter = existingCharacter!.CreateCopy();
 
@@ -43,9 +43,9 @@ public class CharacterService : ICharacterService
         return _characterRepository.ExistsByIdAsync(characterId, token);
     }
 
-    public async Task<Character?> GetByIdAsync(Guid accountId, Guid id, CancellationToken token = default)
+    public async Task<Character?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        Character? result = await _characterRepository.GetByIdAsync(accountId, id, cancellationToken: token);
+        Character? result = await _characterRepository.GetByIdAsync(id, cancellationToken: token);
 
         return result;
     }

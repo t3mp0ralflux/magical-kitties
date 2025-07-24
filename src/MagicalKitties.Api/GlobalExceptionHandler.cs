@@ -25,18 +25,28 @@ public class GlobalExceptionHandler : IExceptionHandler
             case ValidationException validationException:
             {
                 httpContext.Response.StatusCode = 400;
-                ValidationFailureResponse validationFailureResponse = new()
-                                                                      {
-                                                                          Errors = validationException.Errors.Select(x => new ValidationResponse
-                                                                                                                          {
-                                                                                                                              PropertyName = x.PropertyName,
-                                                                                                                              Message = x.ErrorMessage
-                                                                                                                          })
-                                                                      };
+                // ValidationFailureResponse validationFailureResponse = new()
+                //                                                       {
+                //                                                           Errors = 
+                //                                                       };
+                
+                problemDetails = new ProblemDetails
+                                 {
+                                     Status = StatusCodes.Status400BadRequest,
+                                     Title = "Validation Exception",
+                                     Detail = "One or more validation exceptions have occurred. See extentions for details.",
+                                     Type = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/400",
+                                 };
 
-                await httpContext.Response.WriteAsJsonAsync(validationFailureResponse, cancellationToken);
-
-                return true;
+                problemDetails.Extensions.TryAdd("errors", validationException.Errors.Select(x => new ValidationResponse
+                                                                                                  {
+                                                                                                      PropertyName = x.PropertyName,
+                                                                                                      Message = x.ErrorMessage
+                                                                                                  }));
+                
+                //await httpContext.Response.WriteAsJsonAsync(validationFailureResponse, cancellationToken);
+                break;
+                //return true;
             }
             case PostgresException postgresException:
                 if (postgresException.Message.Contains("duplicate"))
@@ -81,7 +91,6 @@ public class GlobalExceptionHandler : IExceptionHandler
                                      Detail = "A server error has occurred.",
                                      Type = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/500"
                                  };
-                _logger.LogError(exception, "Uncaught DB error detected. Message: {Message}", exception.Message);
 
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 

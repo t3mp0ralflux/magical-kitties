@@ -151,8 +151,8 @@ public class AuthControllerTests
 
         _accountService.GetByEmailAsync(request.Email, CancellationToken.None).Returns(account);
         _passwordHasher.Verify(request.Password, account.Password).Returns(true);
-        _jwtService.GenerateToken(account).Returns(expectedToken);
-        _jwtService.GenerateRefreshToken().Returns(expectedRefreshToken);
+        _jwtService.GenerateAccessToken(Arg.Any<Account>()).Returns(expectedToken);
+        _jwtService.GenerateRefreshToken(Arg.Any<Account>()).Returns(expectedRefreshToken);
         _authService.LoginAsync(Arg.Any<AccountLogin>()).Returns(true);
 
         LoginResponse expectedResult = new LoginResponse
@@ -249,7 +249,6 @@ public class AuthControllerTests
         Account account = Fakes.GenerateAccount();
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
-        _refreshTokenService.Exists(account.Id).Returns(false);
         
         const string token = "ThisIsALoginToken";
         const string refreshToken = "ThisIsARefreshToken";
@@ -294,7 +293,6 @@ public class AuthControllerTests
                                        ExpirationUtc = DateTime.UtcNow.AddMinutes(5)
                                    };
         
-        _refreshTokenService.Exists(account.Id).Returns(true);
         _refreshTokenService.GetRefreshToken(account.Id).Returns(storedToken);
         _refreshTokenService.ValidateRefreshToken(account.Id, Arg.Any<AuthToken>()).Returns(false);
 
@@ -338,15 +336,14 @@ public class AuthControllerTests
         _jwtService.ValidateCustomToken(token).Returns(true);
         _jwtService.GetEmailFromToken(token).Returns(account.Email);
         
-        _refreshTokenService.Exists(account.Id).Returns(true);
         _refreshTokenService.GetRefreshToken(account.Id).Returns(storedToken);
         _refreshTokenService.ValidateRefreshToken(account.Id, Arg.Any<AuthToken>()).Returns(true);
 
         const string expectedAccessToken = "ThisIsANewToken";
         const string expectedRefreshToken = "ThisIsANewRefreshToken";
 
-        _jwtService.GenerateToken(Arg.Any<Account>()).Returns(expectedAccessToken);
-        _jwtService.GenerateRefreshToken().Returns(expectedRefreshToken);
+        _jwtService.GenerateAccessToken(Arg.Any<Account>()).Returns(expectedAccessToken);
+        _jwtService.GenerateRefreshToken(Arg.Any<Account>()).Returns(expectedRefreshToken);
 
         _refreshTokenService.UpsertRefreshToken(Arg.Any<Account>(), expectedAccessToken, expectedRefreshToken).Returns(new RefreshToken
                                                                                                                        {

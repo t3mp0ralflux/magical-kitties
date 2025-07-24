@@ -71,17 +71,11 @@ builder.Services
                                    x.Audience = config["Jwt:Audience"];
                                    x.TokenValidationParameters = new TokenValidationParameters
                                                                  {
-                                                                     // IssuerSigningKeys = [
-                                                                     //     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
-                                                                     //     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Google:ClientSecret"]!))
-                                                                     // ],
                                                                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!)),
                                                                      ValidateIssuerSigningKey = true,
                                                                      ValidateLifetime = true,
                                                                      ValidIssuer = config["Jwt:Issuer"],
                                                                      ValidAudience = config["Jwt:Audience"],
-                                                                     // ValidIssuers = [config["Jwt:Issuer"], config["Google:Issuer"]],
-                                                                     // ValidAudiences = [config["Jwt:Audience"], config["Google:Audience"]],
                                                                      ValidateIssuer = true,
                                                                      ValidateAudience = true
                                                                  };
@@ -122,7 +116,8 @@ builder.Services.AddAuthorizationBuilder()
        .AddPolicy(AuthConstants.TrustedUserPolicyName, p => p.RequireAssertion(c =>
                                                                                    c.User.HasClaim(m => m is { Type: AuthConstants.AdminUserClaimName, Value: "true" }) ||
                                                                                    c.User.HasClaim(m => m is { Type: AuthConstants.TrustedUserClaimName, Value: "true" })
-                                                       ));
+                                                                                   ))
+       .AddPolicy(AuthConstants.RefreshTokenPolicyName, p => p.RequireClaim(AuthConstants.RefreshTokenClaimName, "true"));
 
 builder.Services.AddApiVersioning(x =>
                                   {

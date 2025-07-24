@@ -51,7 +51,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns((Character?)null);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns((Character?)null);
 
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
@@ -83,7 +83,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
 
         // Act
         Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
@@ -122,7 +122,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
 
         // Act
@@ -162,7 +162,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
 
@@ -199,7 +199,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -242,7 +242,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -284,7 +284,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -330,7 +330,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -377,7 +377,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -424,7 +424,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -469,7 +469,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -513,7 +513,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
@@ -557,7 +557,7 @@ public class CharacterUpgradeServiceTests
                                               }
                                 };
 
-        _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId).Returns(character);
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());

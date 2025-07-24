@@ -9,11 +9,8 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
 {
     public AttributeUpdateValidator()
     {
-        RuleFor(x => x.Update.AccountId)
-            .NotNull()
-            .NotEmpty();
 
-        RuleFor(x => x.Update.CharacterId)
+        RuleFor(x => x.Update.Character)
             .NotNull()
             .NotEmpty();
 
@@ -34,6 +31,12 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
             .InclusiveBetween(1, 10)
             .WithMessage("Level can only be between 1 and 10 inclusively.")
             .When(x => x.Option == AttributeOption.level);
+
+        RuleFor(x => x.Update.XP)
+            .NotNull()
+            .InclusiveBetween(0, 10)
+            .WithMessage("XP can only be between 0 and 10 inclusively.")
+            .When(x=>x.Option == AttributeOption.xp);
 
         RuleFor(x => x.Update.CurrentOwies)
             .NotNull()
@@ -243,6 +246,24 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
                 if (context.InstanceToValidate.Character.MagicalPowers.Count == 3 && !previousMagicalPowerExists)
                 {
                     context.AddFailure(new ValidationFailure($"{fieldName}.NewId", "Even the Undead cannot have four Magical Powers."));
+                }
+
+                return;
+            case AttributeOption.xp:
+                if (!context.InstanceToValidate.Update.XP.HasValue)
+                {
+                    context.AddFailure(new ValidationFailure(nameof(context.InstanceToValidate.Update.XP), "XP cannot be empty"));
+                    break;
+                }
+
+                switch (context.InstanceToValidate.Update.XP.Value)
+                {
+                    case < 0:
+                        context.AddFailure(new ValidationFailure(nameof(context.InstanceToValidate.Update.XP), "XP cannot be negative"));
+                        break;
+                    case > 100:
+                        context.AddFailure(new ValidationFailure(nameof(context.InstanceToValidate.Update.XP), "XP value exceeds game capacity"));
+                        break;
                 }
 
                 return;

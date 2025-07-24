@@ -1,4 +1,5 @@
-﻿using Bogus;
+﻿using System.Xml.XPath;
+using Bogus;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
@@ -261,12 +262,11 @@ public static class Fakes
         return fakeHuman;
     }
 
-    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Guid characterId)
+    public static AttributeUpdate GenerateAttributeUpdate(Character character)
     {
         return new AttributeUpdate
                {
-                   AccountId = accountId,
-                   CharacterId = characterId,
+                   Character = character,
                    Cunning = 3,
                    Cute = 2,
                    Fierce = 1,
@@ -292,15 +292,11 @@ public static class Fakes
                };
     }
 
-    public static AttributeUpdateValidationContext GenerateValidationContext(Guid? accountId = null, Guid? characterId = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null)
+    public static AttributeUpdateValidationContext GenerateValidationContext(Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
     {
-        Account account = GenerateAccount();
-        Character character = GenerateCharacter(account);
-
         AttributeUpdate update = new()
                                  {
-                                     AccountId = accountId ?? account.Id,
-                                     CharacterId = characterId ?? character.Id,
+                                     Character = character,
                                      Cunning = cunning,
                                      Cute = cute,
                                      Fierce = fierce,
@@ -310,7 +306,8 @@ public static class Fakes
                                      MagicalPowerChange = magicalPowerChange,
                                      TalentChange = talentChange,
                                      CurrentOwies = currentOwies,
-                                     CurrentInjuries = currentInjuries
+                                     CurrentInjuries = currentInjuries,
+                                     XP = xp
                                  };
 
         AttributeUpdateValidationContext fakeContext = new()
