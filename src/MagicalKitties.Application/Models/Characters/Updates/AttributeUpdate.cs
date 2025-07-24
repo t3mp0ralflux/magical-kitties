@@ -21,4 +21,5 @@ public class EndowmentChange
 {
     public required int PreviousId { get; init; }
     public required int NewId { get; init; }
+    public required bool IsPrimary { get; init; }
 }

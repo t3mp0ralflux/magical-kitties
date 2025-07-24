@@ -74,14 +74,20 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                      from flaw f
                                                                                                                                                                      inner join characterflaw cf on f.id = cf.flaw_id
                                                                                                                                                                      where character_id = @id) as flaw,
-                                                                                                                                                                    (select json_agg(t.*)
-                                                                                                                                                                    from talent t
+                                                                                                                                                                    (with talent_info as 
+                                                                                                                                                                        (select t.*, ct.is_primary from talent t
                                                                                                                                                                     inner join charactertalent ct on t.id = ct.talent_id
-                                                                                                                                                                    where character_id = @id) as talents,
-                                                                                                                                                                    (select json_agg(mp.*)
-                                                                                                                                                                     from magicalpower mp
-                                                                                                                                                                     inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
-                                                                                                                                                                     where character_id = @id) as magicalpowers,
+                                                                                                                                                                    where character_id = @id)
+                                                                                                                                                                    select json_agg(talent_info.*)
+                                                                                                                                                                    from talent_info
+                                                                                                                                                                    ) as talents,
+                                                                                                                                                                    (with mp_info as 
+                                                                                                                                                                        (select mp.*, cmp.is_primary from magicalpower mp
+                                                                                                                                                                    inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
+                                                                                                                                                                    where character_id = @id)
+                                                                                                                                                                    select json_agg(mp_info.*)
+                                                                                                                                                                    from mp_info
+                                                                                                                                                                     ) as magicalpowers,
                                                                                                                                                                     (select json_agg(
                                                                                                                                                                                      json_build_object(
                                                                                                                                                                                         'id', h.id,

@@ -279,13 +279,14 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactertalent(id, character_id, talent_id)
-                                                                                  values(@Id, @CharacterId, @TalentId)
+                                                                                  insert into charactertalent(id, character_id, talent_id, is_primary)
+                                                                                  values(@Id, @CharacterId, @TalentId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = update.Character.Id,
-                                                                                           TalentId = update.TalentChange!.NewId
+                                                                                           TalentId = update.TalentChange!.NewId,
+                                                                                           update.TalentChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -308,11 +309,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   set talent_id = @NewId
                                                                                   where character_id = @CharacterId
                                                                                   and talent_id = @PreviousId
+                                                                                  and is_primary = @IsPrimary
                                                                                   """, new
                                                                                        {
                                                                                            update.TalentChange!.NewId,
                                                                                            CharacterId = update.Character.Id,
-                                                                                           update.TalentChange!.PreviousId
+                                                                                           update.TalentChange!.PreviousId,
+                                                                                           update.TalentChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -331,13 +334,14 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id)
-                                                                                  values(@Id, @CharacterId, @MagicalPowerId)
+                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id, is_primary)
+                                                                                  values(@Id, @CharacterId, @MagicalPowerId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = update.Character.Id,
-                                                                                           MagicalPowerId = update.MagicalPowerChange!.NewId
+                                                                                           MagicalPowerId = update.MagicalPowerChange!.NewId,
+                                                                                           update.MagicalPowerChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -360,11 +364,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   set magical_power_id = @NewId
                                                                                   where character_id = @CharacterId
                                                                                   and magical_power_id = @PreviousId
+                                                                                  and is_primary = @IsPrimary
                                                                                   """, new
                                                                                        {
                                                                                            update.MagicalPowerChange!.NewId,
                                                                                            CharacterId = update.Character.Id,
-                                                                                           update.MagicalPowerChange!.PreviousId
+                                                                                           update.MagicalPowerChange!.PreviousId,
+                                                                                           update.MagicalPowerChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)

@@ -90,6 +90,7 @@ create table if not exists charactertalent(
     id UUID primary key,
     character_id UUID references character(id),
     talent_id numeric references talent(id),
+    is_primary bool default false not null,
     UNIQUE(character_id, talent_id)
 );
 
@@ -115,6 +116,7 @@ create table if not exists charactermagicalpower(
     id UUID primary key,
     character_id UUID references character(id),
     magical_power_id numeric references magicalpower(id),
+    is_primary bool default false not null,
     selected_bonuses text,
     UNIQUE(character_id, magical_power_id)
 );

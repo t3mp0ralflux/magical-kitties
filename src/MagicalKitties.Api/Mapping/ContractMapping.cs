@@ -265,7 +265,8 @@ public static class ContractMapping
         return new EndowmentChange
                {
                    PreviousId = request.PreviousId,
-                   NewId = request.NewId
+                   NewId = request.NewId,
+                   IsPrimary = request.IsPrimary
                };
     }
 
@@ -463,7 +464,8 @@ public static class ContractMapping
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
-                   IsCustom = request.IsCustom
+                   IsCustom = request.IsCustom,
+                   IsPrimary = request.IsPrimary
                };
     }
 
@@ -474,7 +476,8 @@ public static class ContractMapping
                    Id = talent.Id,
                    Name = talent.Name,
                    Description = talent.Description,
-                   IsCustom = talent.IsCustom
+                   IsCustom = talent.IsCustom,
+                   IsPrimary = talent.IsPrimary
                };
     }
 
@@ -523,7 +526,8 @@ public static class ContractMapping
                    Name = request.Name,
                    Description = request.Description,
                    IsCustom = request.IsCustom,
-                   BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList()
+                   BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList(),
+                   IsPrimary = request.IsPrimary
                };
     }
 
@@ -535,7 +539,8 @@ public static class ContractMapping
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
                    IsCustom = magicalPower.IsCustom,
-                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
+                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList(),
+                   IsPrimary = magicalPower.IsPrimary
                };
     }
 

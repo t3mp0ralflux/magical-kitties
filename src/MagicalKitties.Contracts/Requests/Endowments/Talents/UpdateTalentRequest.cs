@@ -2,4 +2,5 @@
 
 public class UpdateTalentRequest : UpdateEndowmentRequest
 {
+    public required bool IsPrimary { get; set; }
 }
