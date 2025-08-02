@@ -230,7 +230,7 @@ public class CharacterUpdateControllerTests
         MKCtrCharacterRequests.UpgradeUpsertRequest request = new MKCtrCharacterRequests.UpgradeUpsertRequest()
                                                               {
                                                                   AttributeOption = option,
-                                                                  Level = 2,
+                                                                  Block = 1,
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This doesn't matter"
@@ -253,7 +253,7 @@ public class CharacterUpdateControllerTests
         MKCtrCharacterRequests.UpgradeUpsertRequest request = new MKCtrCharacterRequests.UpgradeUpsertRequest()
                                                               {
                                                                   AttributeOption = MKCtrCharacterRequests.AttributeOption.cute,
-                                                                  Level = 2,
+                                                                  Block = 1,
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This doesn't matter"
@@ -283,7 +283,7 @@ public class CharacterUpdateControllerTests
         MKCtrCharacterRequests.UpgradeUpsertRequest request = new MKCtrCharacterRequests.UpgradeUpsertRequest()
                                                               {
                                                                   AttributeOption = MKCtrCharacterRequests.AttributeOption.cute,
-                                                                  Level = 2,
+                                                                  Block = 1,
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This doesn't matter"

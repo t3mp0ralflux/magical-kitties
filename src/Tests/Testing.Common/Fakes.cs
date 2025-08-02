@@ -1,4 +1,5 @@
-﻿using System.Xml.XPath;
+﻿using System.Text.Json;
+using System.Xml.XPath;
 using Bogus;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
@@ -119,7 +120,8 @@ public static class Fakes
                 Id = 22,
                 Name = "Claws",
                 Description = "You are very proud of your razor-sharp claws, and can use them in all sorts of clever ways.",
-                IsCustom = false
+                IsCustom = false,
+                IsPrimary = true
             },
             new Talent
             {
@@ -137,6 +139,7 @@ public static class Fakes
                 Name = "Invisibility",
                 Description = "You can turn invisible. Nobody can see you, but they can still hear, smell, and touch you. Objects you wear or carry are still visible.",
                 IsCustom = false,
+                IsPrimary = true,
                 BonusFeatures =
                 [
                     new MagicalPower
@@ -211,39 +214,35 @@ public static class Fakes
                            {
                                Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
                                Block = 1,
-                               Option = AttributeOption.cute,
-                               Level = 2
+                               Option = AttributeOption.cute
                            };
 
         Upgrade upgrade3 = new()
                            {
                                Id = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b"),
                                Block = 1,
-                               Option = AttributeOption.currentowies,
-                               Level = 3
+                               Option = AttributeOption.currentowies
                            };
         Upgrade upgrade4 = new()
                            {
                                Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
                                Block = 1,
                                Option = AttributeOption.magicalpowerbonus,
-                               Level = 4,
-                               Choice = new BonusFeatureUpgrade
+                               Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                         {
                                             MagicalPowerId = 33,
                                             BonusFeatureId = 1
-                                        }
+                                        })
                            };
         Upgrade upgrade5 = new()
                            {
                                Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                Block = 2,
                                Option = AttributeOption.talent,
-                               Level = 4,
-                               Choice = new GainTalentUpgrade
+                               Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                         {
                                             TalentId = 42
-                                        }
+                                        })
                            };
 
         character.Upgrades = [upgrade2, upgrade3, upgrade4, upgrade5];
@@ -274,17 +273,20 @@ public static class Fakes
                    FlawChange = new EndowmentChange
                                 {
                                     NewId = 11,
-                                    PreviousId = 11
+                                    PreviousId = 11,
+                                    IsPrimary = true
                                 },
                    TalentChange = new EndowmentChange
                                   {
                                       NewId = 22,
-                                      PreviousId = 22
+                                      PreviousId = 22,
+                                      IsPrimary = true
                                   },
                    MagicalPowerChange = new EndowmentChange
                                         {
                                             NewId = 33,
-                                            PreviousId = 33
+                                            PreviousId = 33,
+                                            IsPrimary = true
                                         },
                    CurrentOwies = 2,
                    CurrentTreats = 6,

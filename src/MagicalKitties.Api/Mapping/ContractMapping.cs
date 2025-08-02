@@ -280,8 +280,7 @@ public static class ContractMapping
                    Upgrade = new MKAppCharacters.Upgrade
                              {
                                  Id = request.UpgradeId,
-                                 Block = request.Level,
-                                 Level = request.Level,
+                                 Block = request.Block,
                                  Option = (AttributeOption)request.AttributeOption,
                                  Choice = request.Value
                              }
@@ -299,7 +298,6 @@ public static class ContractMapping
                              {
                                  Id = request.UpgradeId,
                                  Block = -1,
-                                 Level = -1,
                                  Option = AttributeOption.cunning, // doesn't matter
                                  Choice = request.Value
                              }

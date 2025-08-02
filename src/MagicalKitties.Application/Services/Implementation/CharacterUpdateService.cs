@@ -89,6 +89,13 @@ public class CharacterUpdateService : ICharacterUpdateService
                     return true;
                 }
 
+                // going down a level, so reset XP and upgrades
+                if (update.Level < character.Level)
+                {
+                    await _characterUpdateRepository.UpdateXPAsync(update, token);
+                    await _characterUpdateRepository.ClearUpgradesOnCharacter(update, token);
+                }
+
                 return await _characterUpdateRepository.UpdateLevelAsync(update, token);
             case AttributeOption.flaw:
                 if (character.Flaw is null)

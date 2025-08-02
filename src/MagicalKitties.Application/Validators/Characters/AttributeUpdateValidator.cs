@@ -28,8 +28,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
 
         RuleFor(x => x.Update.Level)
             .NotNull()
-            .InclusiveBetween(1, 10)
-            .WithMessage("Level can only be between 1 and 10 inclusively.")
+            .Custom(ValidateLevel)
             .When(x => x.Option == AttributeOption.level);
 
         RuleFor(x => x.Update.XP)
@@ -289,6 +288,24 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
                 (> 46 or < 41) and
                 (> 56 or < 51) and
                 (> 66 or < 61);
+        }
+    }
+
+    private static void ValidateLevel(int? value, ValidationContext<AttributeUpdateValidationContext> context)
+    {
+        if (value is null)
+        {
+            context.AddFailure(new ValidationFailure(nameof(AttributeUpdate.Level), "'Update Level' must not be empty."));
+        }
+        
+        if (value is < 1 or > 10)
+        {
+            context.AddFailure(new ValidationFailure(nameof(AttributeUpdate.Level), "Level can only be between 1 and 10 inclusively."));
+        }
+        
+        if (context.InstanceToValidate.Update.XP != 0)
+        {
+            context.AddFailure(new ValidationFailure(nameof(AttributeUpdate.XP), "XP has to be zero if level is changing."));
         }
     }
 }

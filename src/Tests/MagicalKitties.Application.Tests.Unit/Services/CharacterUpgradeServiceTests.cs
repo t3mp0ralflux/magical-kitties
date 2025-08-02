@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Text.Json;
+using FluentAssertions;
 using FluentAssertions.Specialized;
 using FluentValidation;
 using FluentValidation.Results;
@@ -46,7 +47,6 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.NewGuid(),
                                                   Block = 1,
-                                                  Level = 2,
                                                   Option = AttributeOption.cute
                                               }
                                 };
@@ -77,9 +77,8 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.NewGuid(),
                                                   Block = 2,
-                                                  Level = 5,
                                                   Option = AttributeOption.talent,
-                                                  Choice = 42
+                                                  Choice = "42"
                                               }
                                 };
 
@@ -117,7 +116,6 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.NewGuid(),
                                                   Block = 1,
-                                                  Level = 2,
                                                   Option = AttributeOption.cute
                                               }
                                 };
@@ -157,7 +155,6 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
                                                   Block = 1,
-                                                  Level = 2,
                                                   Option = AttributeOption.cute
                                               }
                                 };
@@ -194,7 +191,6 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
                                                   Block = 1,
-                                                  Level = 2,
                                                   Option = (AttributeOption)o
                                               }
                                 };
@@ -237,7 +233,6 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
                                                   Block = 1,
-                                                  Level = 2,
                                                   Option = AttributeOption.cunning
                                               }
                                 };
@@ -279,7 +274,6 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
                                                   Block = 1,
-                                                  Level = 2,
                                                   Option = AttributeOption.cute
                                               }
                                 };
@@ -320,13 +314,12 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
                                                   Block = 1,
-                                                  Level = 2,
-                                                  Choice = new BonusFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 22,
                                                                BonusFeatureId = 1,
                                                                IsNested = false
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -367,13 +360,12 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
                                                   Block = 1,
-                                                  Level = 2,
-                                                  Choice = new BonusFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 33,
                                                                BonusFeatureId = 9,
                                                                IsNested = false
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -414,13 +406,12 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
                                                   Block = 1,
-                                                  Level = 2,
-                                                  Choice = new BonusFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 33,
                                                                BonusFeatureId = 2,
                                                                IsNested = false
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -438,7 +429,16 @@ public class CharacterUpgradeServiceTests
         result.Should().BeTrue();
         Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.magicalpowerbonus);
         updatedUpgrade.Should().NotBeNull();
-        ((BonusFeatureUpgrade)updatedUpgrade.Choice).BonusFeatureId.Should().Be(2);
+
+        try
+        {
+            JsonSerializer.Deserialize<BonusFeatureUpgrade>(updatedUpgrade.Choice!)!.BonusFeatureId.Should().Be(2);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Could not parse upgrade Choice for BonusFeatureUpgrade");
+        }
+        
     }
 
     #endregion
@@ -461,11 +461,10 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                                   Block = 2,
-                                                  Level = 5,
-                                                  Choice = new GainTalentUpgrade
+                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                                            {
                                                                TalentId = 99
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -505,11 +504,10 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                                   Block = 2,
-                                                  Level = 5,
-                                                  Choice = new GainTalentUpgrade
+                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                                            {
                                                                TalentId = 22
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -549,11 +547,10 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
                                                   Block = 2,
-                                                  Level = 5,
-                                                  Choice = new GainTalentUpgrade
+                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                                            {
                                                                TalentId = 43
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -571,7 +568,15 @@ public class CharacterUpgradeServiceTests
         result.Should().BeTrue();
         Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.talent);
         updatedUpgrade.Should().NotBeNull();
-        ((GainTalentUpgrade)updatedUpgrade.Choice).TalentId.Should().Be(43);
+
+        try
+        {
+            JsonSerializer.Deserialize<GainTalentUpgrade>(updatedUpgrade.Choice!)!.TalentId.Should().Be(43);
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail("Could not parse upgrade Choice for GainTalentUpgrade");
+        }
     }
 
     #endregion

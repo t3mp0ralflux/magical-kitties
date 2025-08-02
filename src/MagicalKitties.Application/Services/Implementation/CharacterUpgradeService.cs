@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Text.Json;
+using FluentValidation;
 using FluentValidation.Results;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
@@ -99,9 +100,16 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     break;
 
                 case UpgradeOption.bonusFeature:
-                    BonusFeatureUpgrade bonusFeatureUpdate = (BonusFeatureUpgrade)update.Upgrade.Choice!;
-                    BonusFeatureUpgrade existingFeature = (BonusFeatureUpgrade)existingUpgrade.Choice!;
+                    BonusFeatureUpgrade bonusFeatureUpdate = JsonSerializer.Deserialize<BonusFeatureUpgrade>(update.Upgrade.Choice!, JsonSerializerOptions.Web)!;
+                    BonusFeatureUpgrade? existingFeature = null;
 
+                    if (existingUpgrade.Choice is not null)
+                    {
+                        existingFeature = JsonSerializer.Deserialize<BonusFeatureUpgrade>(existingUpgrade.Choice);
+                    }
+
+                    existingFeature ??= bonusFeatureUpdate;
+                    
                     if (bonusFeatureUpdate.IsNested)
                     {
                         if (bonusFeatureUpdate.NestedMagicalPowerId != existingFeature.NestedMagicalPowerId)
@@ -135,11 +143,6 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                             throw new ValidationException([new ValidationFailure("MagicalPower",$"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
                         }
 
-                        if (bonusFeatureUpdate.BonusFeatureId == existingFeature.BonusFeatureId)
-                        {
-                            break; // they're the same, no need to update
-                        }
-
                         MagicalPower? magicalPower = magicalPowers.FirstOrDefault(x => x.Id == existingFeature.MagicalPowerId);
                         if (magicalPower is null)
                         {
@@ -147,7 +150,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                             break; // do nothing 'cause this should never happen.
                         }
 
-                        if (!magicalPower.BonusFeatures.Exists(x => x.Id == bonusFeatureUpdate.BonusFeatureId))
+                        if (bonusFeatureUpdate.BonusFeatureId.HasValue && !magicalPower.BonusFeatures.Exists(x => x.Id == bonusFeatureUpdate.BonusFeatureId))
                         {
                             throw new ValidationException([new ValidationFailure("BonusFeature",$"Bonus Feature '{bonusFeatureUpdate.BonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
                         }
@@ -155,11 +158,11 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         existingFeature.BonusFeatureId = bonusFeatureUpdate.BonusFeatureId;
                     }
 
-                    existingUpgrade.Choice = existingFeature;
+                    existingUpgrade.Choice = JsonSerializer.Serialize(existingFeature);
                     break;
                 case UpgradeOption.talent:
-                    GainTalentUpgrade talentUpdate = (GainTalentUpgrade)update.Upgrade.Choice!;
-                    GainTalentUpgrade existingTalent = (GainTalentUpgrade)existingUpgrade.Choice!;
+                    GainTalentUpgrade talentUpdate = JsonSerializer.Deserialize<GainTalentUpgrade>(update.Upgrade.Choice!)!;
+                    GainTalentUpgrade existingTalent = JsonSerializer.Deserialize<GainTalentUpgrade>(existingUpgrade.Choice!)!;
 
                     if (talentUpdate.TalentId == existingTalent.TalentId)
                     {
@@ -184,11 +187,11 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     existingTalent.TalentId = talentUpdate.TalentId;
 
-                    existingUpgrade.Choice = existingTalent;
+                    existingUpgrade.Choice = JsonSerializer.Serialize(existingTalent);
                     break;
                 case UpgradeOption.magicalPower:
-                    NewMagicalPowerUpgrade magicalPowerUpdate = (NewMagicalPowerUpgrade)update.Upgrade.Choice!;
-                    NewMagicalPowerUpgrade existingMagicalPower = (NewMagicalPowerUpgrade)existingUpgrade.Choice!;
+                    NewMagicalPowerUpgrade magicalPowerUpdate = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(update.Upgrade.Choice!)!;
+                    NewMagicalPowerUpgrade existingMagicalPower = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(existingUpgrade.Choice!)!;
 
                     if (magicalPowerUpdate.MagicalPowerId == existingMagicalPower.MagicalPowerId)
                     {
@@ -214,7 +217,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     existingMagicalPower.MagicalPowerId = magicalPowerUpdate.MagicalPowerId;
 
-                    existingUpgrade.Choice = existingMagicalPower;
+                    existingUpgrade.Choice = JsonSerializer.Serialize(existingMagicalPower);
                     break;
                 case UpgradeOption.owieLimit:
                 case UpgradeOption.treatsValue:
@@ -259,7 +262,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         switch (update.UpgradeOption)
         {
             case UpgradeOption.talent:
-                GainTalentUpgrade talentUpgrade = (GainTalentUpgrade)upgrade.Choice!;
+                GainTalentUpgrade talentUpgrade = JsonSerializer.Deserialize<GainTalentUpgrade>(upgrade.Choice!)!;
 
                 if (character!.Talents.FirstOrDefault(x => x.Id == talentUpgrade.TalentId) is not null)
                 {
@@ -268,7 +271,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                 break;
             case UpgradeOption.magicalPower:
-                NewMagicalPowerUpgrade magicalPowerUpgrade = (NewMagicalPowerUpgrade)upgrade.Choice!;
+                NewMagicalPowerUpgrade magicalPowerUpgrade = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(upgrade.Choice!)!;
 
                 if (character!.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpgrade.MagicalPowerId) is not null)
                 {

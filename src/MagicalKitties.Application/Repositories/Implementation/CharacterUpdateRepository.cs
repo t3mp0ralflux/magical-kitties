@@ -107,15 +107,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
 
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           CharacterId = update.Character.Id,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -482,7 +474,26 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
 
         return result > 0;
     }
-    
+
+    public async Task<bool> ClearUpgradesOnCharacter(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set upgrades = null
+                                                                                  where id = @Id
+                                                                                  """, new
+                                                                                       {
+                                                                                          update.Character.Id
+                                                                                       }, cancellationToken: token));
+
+        transaction.Commit();
+
+        return result > 0;
+    }
+
     private async Task<int> UpdateCharacterUpdateUtcAsync(Guid characterId, IDbConnection connection, CancellationToken token)
     {
         return await connection.ExecuteAsyncWithRetry(new CommandDefinition("""

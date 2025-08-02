@@ -120,7 +120,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                                  TalentChange = new EndowmentChange
                                                                 {
                                                                     NewId = 42,
-                                                                    PreviousId = 42
+                                                                    PreviousId = 42,
+                                                                    IsPrimary = false
                                                                 }
                                              };
 
@@ -440,7 +441,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                                  TalentChange = new EndowmentChange
                                                                 {
                                                                     NewId = 42,
-                                                                    PreviousId = 42
+                                                                    PreviousId = 42,
+                                                                    IsPrimary = false
                                                                 }
                                              };
 
