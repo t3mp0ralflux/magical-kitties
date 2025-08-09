@@ -23,9 +23,9 @@ public class UpgradeRepository : IUpgradeRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         IEnumerable<UpgradeRule> result = await connection.QueryAsyncWithRetry<UpgradeRule>(new CommandDefinition("""
-                                                                                                                  select ur.id, ur.block, ur.upgradechoice, uc.name as Value 
+                                                                                                                  select ur.id, ur.block, ur.upgrade_choice, uc.name as Value, uc.upgrade_option 
                                                                                                                   from upgradechoice uc 
-                                                                                                                  join upgraderule ur on uc.id = ur.upgradechoice
+                                                                                                                  join upgraderule ur on uc.id = ur.upgrade_choice
                                                                                                                   """, cancellationToken: token));
 
         return result.ToList();

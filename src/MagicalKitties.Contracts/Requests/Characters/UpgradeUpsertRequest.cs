@@ -6,5 +6,5 @@ public class UpgradeUpsertRequest
     public required UpgradeOption UpgradeOption { get; init; }
     public required AttributeOption AttributeOption { get; init; }
     public required int Block { get; init; }
-    public string? Value { get; init; }
+    public object? Value { get; init; }
 }

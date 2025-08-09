@@ -252,7 +252,7 @@ public class CharacterServiceTests
         Character character = Fakes.GenerateCharacter(account)
                                    .WithBaselineData()
                                    .WithHumanData()
-                                   .WithUpgrades();
+                                   .WithUpgrades(Fakes.GenerateUpgradeRules());
 
         _characterRepository.GetByIdAsync(character.Id).Returns(character);
         _characterRepository.CopyAsync(Arg.Any<Character>()).Returns(true);

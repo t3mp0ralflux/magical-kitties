@@ -144,7 +144,9 @@ public class CharacterUpgradeServiceTests
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        character.Level = 2;
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        
+        character.Level = 5;
 
         UpgradeRequest update = new()
                                 {
@@ -153,14 +155,14 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.talent,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
-                                                  Block = 1,
+                                                  Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
+                                                  Block = 2,
                                                   Option = AttributeOption.cute
                                               }
                                 };
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
-        _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
+        _upgradeRepository.GetRulesAsync().Returns(rules);
         _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
 
         // Act
@@ -177,7 +179,8 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithUpgrades(rules);
         character.Level = 2;
 
         Enum.TryParse(typeof(AttributeOption), "-1", out object? o);
@@ -189,7 +192,7 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.attribute3,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
                                                   Option = (AttributeOption)o
                                               }
@@ -220,7 +223,8 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
         character.Level = 2;
 
         // generator has Cunning set to 3. Below level 5 can't have any attribute above 3.
@@ -231,7 +235,7 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.attribute3,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
                                                   Option = AttributeOption.cunning
                                               }
@@ -262,7 +266,8 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
         character.Level = 2;
 
         UpgradeRequest update = new()
@@ -272,7 +277,7 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.attribute3,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
                                                   Option = AttributeOption.cute
                                               }
@@ -302,7 +307,8 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
         character.Level = 2;
 
         UpgradeRequest update = new()
@@ -312,14 +318,14 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.bonusFeature,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                  Choice = new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 22,
                                                                BonusFeatureId = 1,
                                                                IsNested = false
-                                                           })
+                                                           }
                                               }
                                 };
 
@@ -348,7 +354,8 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
         character.Level = 2;
 
         UpgradeRequest update = new()
@@ -358,14 +365,14 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.bonusFeature,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                  Choice = new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 33,
                                                                BonusFeatureId = 9,
                                                                IsNested = false
-                                                           })
+                                                           }
                                               }
                                 };
 
@@ -394,7 +401,9 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
+        
         character.Level = 2;
 
         UpgradeRequest update = new()
@@ -404,23 +413,24 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.bonusFeature,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
+                                                  Id = rules.First(x=>x.UpgradeOption == UpgradeOption.bonusFeature).Id,
                                                   Block = 1,
-                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                  Choice = new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 33,
                                                                BonusFeatureId = 2,
                                                                IsNested = false
-                                                           })
+                                                           }
                                               }
                                 };
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
-        _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
-        await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
+        //await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
 
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
@@ -432,7 +442,7 @@ public class CharacterUpgradeServiceTests
 
         try
         {
-            JsonSerializer.Deserialize<BonusFeatureUpgrade>(updatedUpgrade.Choice!)!.BonusFeatureId.Should().Be(2);
+            ((BonusFeatureUpgrade)updatedUpgrade.Choice!).BonusFeatureId.Should().Be(2);
         }
         catch (Exception ex)
         {
@@ -450,8 +460,11 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
 
+        character.Level = 5;
+        
         UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
@@ -459,17 +472,17 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.talent,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
+                                                  Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
                                                   Block = 2,
-                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
+                                                  Choice = new GainTalentUpgrade
                                                            {
                                                                TalentId = 99
-                                                           })
+                                                           }
                                               }
                                 };
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
-        _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
+        _upgradeRepository.GetRulesAsync().Returns(rules);
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
@@ -493,7 +506,8 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
 
         UpgradeRequest update = new()
                                 {
@@ -502,12 +516,12 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.talent,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.talent, Block: 2 }).Id,
                                                   Block = 2,
-                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
+                                                  Choice = new GainTalentUpgrade
                                                            {
                                                                TalentId = 22
-                                                           })
+                                                           }
                                               }
                                 };
 
@@ -536,7 +550,10 @@ public class CharacterUpgradeServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
+
+        character.Level = 5;
 
         UpgradeRequest update = new()
                                 {
@@ -545,17 +562,17 @@ public class CharacterUpgradeServiceTests
                                     UpgradeOption = UpgradeOption.talent,
                                     Upgrade = new Upgrade
                                               {
-                                                  Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
+                                                  Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
                                                   Block = 2,
-                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
+                                                  Choice = new GainTalentUpgrade
                                                            {
                                                                TalentId = 43
-                                                           })
+                                                           }
                                               }
                                 };
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
-        _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
+        _upgradeRepository.GetRulesAsync().Returns(rules);
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
@@ -571,7 +588,7 @@ public class CharacterUpgradeServiceTests
 
         try
         {
-            JsonSerializer.Deserialize<GainTalentUpgrade>(updatedUpgrade.Choice!)!.TalentId.Should().Be(43);
+            ((GainTalentUpgrade)updatedUpgrade.Choice!).TalentId.Should().Be(43);
         }
         catch (Exception ex)
         {

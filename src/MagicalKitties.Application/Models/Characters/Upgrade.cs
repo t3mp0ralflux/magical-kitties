@@ -7,5 +7,5 @@ public class Upgrade
     public required Guid Id { get; init; }
     public required int Block { get; init; }
     public AttributeOption Option { get; set; }
-    public string? Choice { get; set; }
+    public object? Choice { get; set; }
 }

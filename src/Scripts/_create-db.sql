@@ -123,14 +123,15 @@ create table if not exists charactermagicalpower(
 
 create table if not exists upgradechoice(
     id UUID primary key,
-    name text
+    name text,
+    upgrade_option numeric not null
 );
 
 create table if not exists upgraderule(
     id UUID primary key,
     block numeric not null,
-    upgradechoice UUID references upgradechoice(id),
-    UNIQUE(block, upgradechoice)
+    upgrade_choice UUID references upgradechoice(id),
+    UNIQUE(block, upgrade_choice)
 );
 
 create table if not exists email(

@@ -7,6 +7,7 @@ using MagicalKitties.Application.Models.Characters.Upgrades;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -100,12 +101,26 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     break;
 
                 case UpgradeOption.bonusFeature:
-                    BonusFeatureUpgrade bonusFeatureUpdate = JsonSerializer.Deserialize<BonusFeatureUpgrade>(update.Upgrade.Choice!, JsonSerializerOptions.Web)!;
+                    BonusFeatureUpgrade? bonusFeatureUpdate;
                     BonusFeatureUpgrade? existingFeature = null;
+
+                    try
+                    {
+                        bonusFeatureUpdate = JsonSerializer.Deserialize<BonusFeatureUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                    }
+                    catch (Exception ex)
+                    {
+                       throw new BadHttpRequestException("Bonus feature upgrade payload was incorrect. Please verify and try again.");
+                    }
+
+                    if (bonusFeatureUpdate is null)
+                    {
+                        throw new BadHttpRequestException("Bonus feature upgrade payload was incorrect. Please verify and try again.");
+                    }
 
                     if (existingUpgrade.Choice is not null)
                     {
-                        existingFeature = JsonSerializer.Deserialize<BonusFeatureUpgrade>(existingUpgrade.Choice);
+                        existingFeature = (BonusFeatureUpgrade)existingUpgrade.Choice;
                     }
 
                     existingFeature ??= bonusFeatureUpdate;
@@ -158,15 +173,28 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         existingFeature.BonusFeatureId = bonusFeatureUpdate.BonusFeatureId;
                     }
 
-                    existingUpgrade.Choice = JsonSerializer.Serialize(existingFeature);
+                    existingUpgrade.Choice = existingFeature;
+                    
                     break;
                 case UpgradeOption.talent:
-                    GainTalentUpgrade talentUpdate = JsonSerializer.Deserialize<GainTalentUpgrade>(update.Upgrade.Choice!)!;
-                    GainTalentUpgrade existingTalent = JsonSerializer.Deserialize<GainTalentUpgrade>(existingUpgrade.Choice!)!;
+                    GainTalentUpgrade talentUpdate = (GainTalentUpgrade)update.Upgrade.Choice!;
+                    GainTalentUpgrade? existingTalent = null;
 
-                    if (talentUpdate.TalentId == existingTalent.TalentId)
+                    if (existingUpgrade.Choice is not null)
                     {
-                        break; // nothing to see here, it's the same
+                        existingTalent = (GainTalentUpgrade)existingUpgrade.Choice;
+                    }
+
+                    if (existingTalent is null)
+                    {
+                        existingTalent = talentUpdate;
+                    }
+                    else
+                    {
+                        if (talentUpdate.TalentId == existingTalent.TalentId)
+                        {
+                            break; // nothing to see here, it's the same
+                        }
                     }
 
                     if (talents.FirstOrDefault(x => x.Id == existingTalent.TalentId) is null)
@@ -187,15 +215,27 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     existingTalent.TalentId = talentUpdate.TalentId;
 
-                    existingUpgrade.Choice = JsonSerializer.Serialize(existingTalent);
+                    existingUpgrade.Choice = existingTalent;
                     break;
                 case UpgradeOption.magicalPower:
-                    NewMagicalPowerUpgrade magicalPowerUpdate = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(update.Upgrade.Choice!)!;
-                    NewMagicalPowerUpgrade existingMagicalPower = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(existingUpgrade.Choice!)!;
+                    NewMagicalPowerUpgrade magicalPowerUpdate = (NewMagicalPowerUpgrade)update.Upgrade.Choice!;
+                    NewMagicalPowerUpgrade? existingMagicalPower = null;
 
-                    if (magicalPowerUpdate.MagicalPowerId == existingMagicalPower.MagicalPowerId)
+                    if (existingUpgrade.Choice is not null)
                     {
-                        break; // not changing the magical power, skip.
+                        existingMagicalPower = (NewMagicalPowerUpgrade)existingUpgrade.Choice!;
+                    }
+
+                    if (existingMagicalPower is null)
+                    {
+                        existingMagicalPower = magicalPowerUpdate;
+                    }
+                    else
+                    {
+                        if (magicalPowerUpdate.MagicalPowerId == existingMagicalPower.MagicalPowerId)
+                        {
+                            break; // not changing the magical power, skip.
+                        }    
                     }
 
                     if (magicalPowers.FirstOrDefault(x => x.Id == existingMagicalPower.MagicalPowerId) is null)
@@ -235,7 +275,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         List<UpgradeRule> upgradeRules = await GetValuesCachedAsync("Rules", () => _upgradeRepository.GetRulesAsync(token));
         List<UpgradeRule> levelRules = upgradeRules.Where(x => x.Block <= update.Upgrade.Block).ToList();
 
-        if (levelRules.FirstOrDefault(x => x.UpgradeChoice == update.Upgrade.Id) is null)
+        if (levelRules.FirstOrDefault(x => x.Id == update.Upgrade.Id) is null)
         {
             // out of range, throw hands
             throw new ValidationException([new ValidationFailure("InvalidOption", "Option selected was outside the available options for this character.")]);
@@ -262,7 +302,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         switch (update.UpgradeOption)
         {
             case UpgradeOption.talent:
-                GainTalentUpgrade talentUpgrade = JsonSerializer.Deserialize<GainTalentUpgrade>(upgrade.Choice!)!;
+                GainTalentUpgrade talentUpgrade = (GainTalentUpgrade)upgrade.Choice!;
 
                 if (character!.Talents.FirstOrDefault(x => x.Id == talentUpgrade.TalentId) is not null)
                 {
@@ -271,7 +311,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                 break;
             case UpgradeOption.magicalPower:
-                NewMagicalPowerUpgrade magicalPowerUpgrade = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(upgrade.Choice!)!;
+                NewMagicalPowerUpgrade magicalPowerUpgrade = (NewMagicalPowerUpgrade)upgrade.Choice!;
 
                 if (character!.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpgrade.MagicalPowerId) is not null)
                 {

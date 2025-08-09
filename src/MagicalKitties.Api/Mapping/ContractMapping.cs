@@ -282,7 +282,7 @@ public static class ContractMapping
                                  Id = request.UpgradeId,
                                  Block = request.Block,
                                  Option = (AttributeOption)request.AttributeOption,
-                                 Choice = request.Value
+                                 Choice = request.Value,
                              }
                };
     }
@@ -652,7 +652,8 @@ public static class ContractMapping
                {
                    Id = rule.Id,
                    Block = rule.Block,
-                   Value = rule.Value
+                   Value = rule.Value,
+                   UpgradeOption = (MKCtrCharacterRequests.UpgradeOption)rule.UpgradeOption
                };
     }
 

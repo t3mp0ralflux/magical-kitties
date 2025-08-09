@@ -208,41 +208,41 @@ public static class Fakes
         return character;
     }
 
-    public static Character WithUpgrades(this Character character)
+    public static Character WithUpgrades(this Character character, List<UpgradeRule> upgradeRules)
     {
         Upgrade upgrade2 = new()
                            {
-                               Id = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
+                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                Block = 1,
                                Option = AttributeOption.cute
                            };
 
         Upgrade upgrade3 = new()
                            {
-                               Id = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b"),
+                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.owieLimit, Block: 1 }).Id,
                                Block = 1,
                                Option = AttributeOption.currentowies
                            };
         Upgrade upgrade4 = new()
                            {
-                               Id = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
+                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                Block = 1,
                                Option = AttributeOption.magicalpowerbonus,
-                               Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                               Choice = new BonusFeatureUpgrade
                                         {
                                             MagicalPowerId = 33,
                                             BonusFeatureId = 1
-                                        })
+                                        }
                            };
         Upgrade upgrade5 = new()
                            {
-                               Id = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
+                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.talent, Block: 2 }).Id,
                                Block = 2,
                                Option = AttributeOption.talent,
-                               Choice = JsonSerializer.Serialize(new GainTalentUpgrade
+                               Choice = new GainTalentUpgrade
                                         {
                                             TalentId = 42
-                                        })
+                                        }
                            };
 
         character.Upgrades = [upgrade2, upgrade3, upgrade4, upgrade5];
@@ -330,29 +330,29 @@ public static class Fakes
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("6a244a6e-5fd9-4574-93e1-78193c7d85b6"),
-                Value = "Improve Attribute 3"
+                Value = "Improve Attribute 3",
+                UpgradeOption = UpgradeOption.attribute3
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("7712d17b-e553-402c-8467-4d9b2389956b"),
-                Value = "Increase Owie"
+                Value = "Increase Owie",
+                UpgradeOption = UpgradeOption.owieLimit
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 1,
-                UpgradeChoice = Guid.Parse("d54036bb-a755-4d86-8774-78715bbf1d30"),
-                Value = "Gain Bonus Feature"
+                Value = "Gain Bonus Feature",
+                UpgradeOption = UpgradeOption.bonusFeature
             },
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
                 Block = 2,
-                UpgradeChoice = Guid.Parse("84725926-e714-4fee-8143-a05d58a24589"),
-                Value = "Gain Talent" // rude much?
+                Value = "Gain Talent", // rude much?
+                UpgradeOption = UpgradeOption.talent
             }
         ];
     }

@@ -105,7 +105,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                               .GenerateCharacter(account)
                               .WithBaselineData()
                               .WithHumanData()
-                              .WithUpgrades();
+                              .WithUpgrades(Fakes.GenerateUpgradeRules());
 
         DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);
@@ -426,7 +426,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                               .GenerateCharacter(account)
                               .WithBaselineData()
                               .WithHumanData()
-                              .WithUpgrades();
+                              .WithUpgrades(Fakes.GenerateUpgradeRules());
 
         DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);

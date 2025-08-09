@@ -194,6 +194,12 @@ builder.Services.Configure<HostOptions>(x =>
                                             x.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore; // will log error, but don't want complete death.
                                         });
 
+builder.Host.UseDefaultServiceProvider((_, options) =>
+                                       {
+                                           options.ValidateOnBuild = true;
+                                           options.ValidateScopes = true;
+                                       });
+
 WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
