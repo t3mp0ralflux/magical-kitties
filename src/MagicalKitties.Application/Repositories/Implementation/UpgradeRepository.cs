@@ -43,7 +43,7 @@ public class UpgradeRepository : IUpgradeRepository
                                                                                   """, new
                                                                                        {
                                                                                            characterId,
-                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(upgrades)),
+                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(upgrades, JsonSerializerOptions.Web)),
                                                                                            Now = _dateTimeProvider.GetUtcNow()
                                                                                        }, cancellationToken: token));
 
