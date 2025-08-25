@@ -214,35 +214,39 @@ public static class Fakes
                            {
                                Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                Block = 1,
-                               Option = AttributeOption.cute
+                               Option = UpgradeOption.attribute3,
+                               Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                        {
+                                            AttributeOption = AttributeOption.cute
+                                        })
                            };
 
         Upgrade upgrade3 = new()
                            {
                                Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.owieLimit, Block: 1 }).Id,
                                Block = 1,
-                               Option = AttributeOption.currentowies
+                               Option = UpgradeOption.owieLimit
                            };
         Upgrade upgrade4 = new()
                            {
                                Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                Block = 1,
-                               Option = AttributeOption.magicalpowerbonus,
-                               Choice = new BonusFeatureUpgrade
+                               Option = UpgradeOption.bonusFeature,
+                               Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                         {
                                             MagicalPowerId = 33,
                                             BonusFeatureId = 1
-                                        }
+                                        })
                            };
         Upgrade upgrade5 = new()
                            {
                                Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.talent, Block: 2 }).Id,
                                Block = 2,
-                               Option = AttributeOption.talent,
-                               Choice = new GainTalentUpgrade
+                               Option = UpgradeOption.talent,
+                               Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                         {
                                             TalentId = 42
-                                        }
+                                        })
                            };
 
         character.Upgrades = [upgrade2, upgrade3, upgrade4, upgrade5];

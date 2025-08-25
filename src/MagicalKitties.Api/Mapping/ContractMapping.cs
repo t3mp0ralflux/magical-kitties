@@ -281,7 +281,7 @@ public static class ContractMapping
                              {
                                  Id = request.UpgradeId,
                                  Block = request.Block,
-                                 Option = (AttributeOption)request.AttributeOption,
+                                 Option = (UpgradeOption)request.UpgradeOption,
                                  Choice = request.Value,
                              }
                };
@@ -298,7 +298,7 @@ public static class ContractMapping
                              {
                                  Id = request.UpgradeId,
                                  Block = -1,
-                                 Option = AttributeOption.cunning, // doesn't matter
+                                 Option = UpgradeOption.talent, // doesn't matter
                                  Choice = request.Value
                              }
                };

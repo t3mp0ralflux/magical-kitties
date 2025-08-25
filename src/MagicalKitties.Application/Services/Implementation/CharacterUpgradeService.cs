@@ -61,14 +61,38 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                 // attributes have to check level rules and see if they can update to that value or not.
                 case UpgradeOption.attribute3:
                 case UpgradeOption.attribute4:
-                    int maxPropertyValue = update.Upgrade.Option switch
+                    ImproveAttributeFeatureUpgrade? improveAttributeUpdate;
+                    ImproveAttributeFeatureUpgrade? existingAttributeImprovement = null;
+
+                    try
+                    {
+                        improveAttributeUpdate = JsonSerializer.Deserialize<ImproveAttributeFeatureUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new BadHttpRequestException("Improve Attribute upgrade payload was incorrect. Please verify and try again.");
+                    }
+
+                    if (improveAttributeUpdate is null)
+                    {
+                        throw new BadHttpRequestException("Improve Attribute upgrade payload was incorrect. Please verify and try again.");
+                    }
+
+                    if (existingUpgrade.Choice is not null)
+                    {
+                        existingAttributeImprovement = JsonSerializer.Deserialize<ImproveAttributeFeatureUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                    }
+
+                    existingAttributeImprovement ??= improveAttributeUpdate;
+                    
+                    int maxPropertyValue = improveAttributeUpdate.AttributeOption switch
                     {
                         AttributeOption.cunning => character.Cunning,
                         AttributeOption.cute => character.Cute,
                         AttributeOption.fierce => character.Fierce,
                         _ => throw new ValidationException([new ValidationFailure("UpgradeOption","Attribute upgrade option was not valid.")])
                     };
-
+                    
                     if (update.UpgradeOption == UpgradeOption.attribute3)
                     {
                         if (character.Level < 5)
@@ -85,19 +109,21 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         {
                             throw new ValidationException([new ValidationFailure("CharacterLevel","This upgrade is invalid for characters less than level 5.")]);
                         }
-
+                    
                         if (maxPropertyValue + 1 > 4)
                         {
                             throw new ValidationException([new ValidationFailure("AttributeMaxLevel",$"Level {character.Level} characters cannot have an Attribute above 3.")]);
                         }
                     }
-
+                    
                     if (existingUpgrade.Option == update.Upgrade.Option)
                     {
                         break; // they're the same, no bother to do anything.
                     }
 
-                    existingUpgrade.Option = update.Upgrade.Option;
+                    existingAttributeImprovement.AttributeOption = improveAttributeUpdate.AttributeOption;
+                    
+                    existingUpgrade.Choice = existingAttributeImprovement;
                     break;
 
                 case UpgradeOption.bonusFeature:
@@ -120,7 +146,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (existingUpgrade.Choice is not null)
                     {
-                        existingFeature = (BonusFeatureUpgrade)existingUpgrade.Choice;
+                        existingFeature = JsonSerializer.Deserialize<BonusFeatureUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
 
                     existingFeature ??= bonusFeatureUpdate;
@@ -218,9 +244,23 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     existingUpgrade.Choice = existingTalent;
                     break;
                 case UpgradeOption.magicalPower:
-                    NewMagicalPowerUpgrade magicalPowerUpdate = (NewMagicalPowerUpgrade)update.Upgrade.Choice!;
+                    NewMagicalPowerUpgrade? magicalPowerUpdate;
                     NewMagicalPowerUpgrade? existingMagicalPower = null;
 
+                    try
+                    {
+                        magicalPowerUpdate = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new BadHttpRequestException("MagicalPower update payload was incorrect. Please verify and try again.");
+                    }
+
+                    if (magicalPowerUpdate is null)
+                    {
+                        throw new BadHttpRequestException("MagicalPower update payload was incorrect. Please verify and try again.");
+                    }
+                    
                     if (existingUpgrade.Choice is not null)
                     {
                         existingMagicalPower = (NewMagicalPowerUpgrade)existingUpgrade.Choice!;
@@ -311,7 +351,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                 break;
             case UpgradeOption.magicalPower:
-                NewMagicalPowerUpgrade magicalPowerUpgrade = (NewMagicalPowerUpgrade)upgrade.Choice!;
+                NewMagicalPowerUpgrade magicalPowerUpgrade = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(upgrade.Choice.ToString(), JsonSerializerOptions.Web);
 
                 if (character!.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpgrade.MagicalPowerId) is not null)
                 {

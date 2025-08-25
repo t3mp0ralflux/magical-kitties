@@ -47,7 +47,7 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.NewGuid(),
                                                   Block = 1,
-                                                  Option = AttributeOption.cute
+                                                  Option = UpgradeOption.attribute3
                                               }
                                 };
 
@@ -77,7 +77,7 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.NewGuid(),
                                                   Block = 2,
-                                                  Option = AttributeOption.talent,
+                                                  Option = UpgradeOption.talent,
                                                   Choice = "42"
                                               }
                                 };
@@ -116,7 +116,7 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = Guid.NewGuid(),
                                                   Block = 1,
-                                                  Option = AttributeOption.cute
+                                                  Option = UpgradeOption.bonusFeature
                                               }
                                 };
 
@@ -157,7 +157,7 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
                                                   Block = 2,
-                                                  Option = AttributeOption.cute
+                                                  Option = UpgradeOption.talent
                                               }
                                 };
 
@@ -194,7 +194,11 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Option = (AttributeOption)o
+                                                  Option = UpgradeOption.attribute3,
+                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                                           {
+                                                               AttributeOption = (AttributeOption)o
+                                                           })
                                               }
                                 };
 
@@ -237,7 +241,11 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Option = AttributeOption.cunning
+                                                  Option = UpgradeOption.attribute3,
+                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                                           {
+                                                               AttributeOption = AttributeOption.cunning
+                                                           }, JsonSerializerOptions.Web)
                                               }
                                 };
 
@@ -279,7 +287,11 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Option = AttributeOption.cute
+                                                  Option = UpgradeOption.attribute3,
+                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                                           {
+                                                               AttributeOption = AttributeOption.cute
+                                                           })
                                               }
                                 };
 
@@ -295,7 +307,7 @@ public class CharacterUpgradeServiceTests
 
         // Assert
         result.Should().BeTrue();
-        character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.cute).Should().NotBeNull();
+        character.Upgrades.FirstOrDefault(x => x.Option == UpgradeOption.attribute3).Should().NotBeNull();
     }
 
     #endregion
@@ -320,12 +332,12 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Choice = new BonusFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 22,
                                                                BonusFeatureId = 1,
                                                                IsNested = false
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -367,12 +379,12 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                                   Block = 1,
-                                                  Choice = new BonusFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 33,
                                                                BonusFeatureId = 9,
                                                                IsNested = false
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -415,12 +427,12 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x.UpgradeOption == UpgradeOption.bonusFeature).Id,
                                                   Block = 1,
-                                                  Choice = new BonusFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
                                                            {
                                                                MagicalPowerId = 33,
                                                                BonusFeatureId = 2,
                                                                IsNested = false
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -429,15 +441,13 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-
-        //await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
-
+        
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         result.Should().BeTrue();
-        Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.magicalpowerbonus);
+        Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == UpgradeOption.bonusFeature);
         updatedUpgrade.Should().NotBeNull();
 
         try
@@ -575,15 +585,13 @@ public class CharacterUpgradeServiceTests
         _upgradeRepository.GetRulesAsync().Returns(rules);
         _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
-
-        await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
-
+        
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
 
         // Assert
         result.Should().BeTrue();
-        Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == AttributeOption.talent);
+        Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == UpgradeOption.talent);
         updatedUpgrade.Should().NotBeNull();
 
         try
