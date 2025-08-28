@@ -195,7 +195,7 @@ public class CharacterUpgradeServiceTests
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
                                                   Option = UpgradeOption.attribute3,
-                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeUpgrade
                                                            {
                                                                AttributeOption = (AttributeOption)o
                                                            })
@@ -242,7 +242,7 @@ public class CharacterUpgradeServiceTests
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
                                                   Option = UpgradeOption.attribute3,
-                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeUpgrade
                                                            {
                                                                AttributeOption = AttributeOption.cunning
                                                            }, JsonSerializerOptions.Web)
@@ -288,7 +288,7 @@ public class CharacterUpgradeServiceTests
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                                   Block = 1,
                                                   Option = UpgradeOption.attribute3,
-                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeFeatureUpgrade
+                                                  Choice = JsonSerializer.Serialize(new ImproveAttributeUpgrade
                                                            {
                                                                AttributeOption = AttributeOption.cute
                                                            })

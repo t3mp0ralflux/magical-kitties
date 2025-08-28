@@ -61,12 +61,12 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                 // attributes have to check level rules and see if they can update to that value or not.
                 case UpgradeOption.attribute3:
                 case UpgradeOption.attribute4:
-                    ImproveAttributeFeatureUpgrade? improveAttributeUpdate;
-                    ImproveAttributeFeatureUpgrade? existingAttributeImprovement = null;
+                    ImproveAttributeUpgrade? improveAttributeUpdate;
+                    ImproveAttributeUpgrade? existingAttributeImprovement = null;
 
                     try
                     {
-                        improveAttributeUpdate = JsonSerializer.Deserialize<ImproveAttributeFeatureUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                        improveAttributeUpdate = JsonSerializer.Deserialize<ImproveAttributeUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
                     catch (Exception ex)
                     {
@@ -80,7 +80,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (existingUpgrade.Choice is not null)
                     {
-                        existingAttributeImprovement = JsonSerializer.Deserialize<ImproveAttributeFeatureUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                        existingAttributeImprovement = JsonSerializer.Deserialize<ImproveAttributeUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
 
                     existingAttributeImprovement ??= improveAttributeUpdate;
@@ -116,11 +116,6 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         }
                     }
                     
-                    if (existingUpgrade.Option == update.Upgrade.Option)
-                    {
-                        break; // they're the same, no bother to do anything.
-                    }
-
                     existingAttributeImprovement.AttributeOption = improveAttributeUpdate.AttributeOption;
                     
                     existingUpgrade.Choice = existingAttributeImprovement;
