@@ -90,6 +90,7 @@ create table if not exists charactertalent(
     id UUID primary key,
     character_id UUID references character(id),
     talent_id numeric references talent(id),
+    is_primary bool default false not null,
     UNIQUE(character_id, talent_id)
 );
 
@@ -115,20 +116,22 @@ create table if not exists charactermagicalpower(
     id UUID primary key,
     character_id UUID references character(id),
     magical_power_id numeric references magicalpower(id),
+    is_primary bool default false not null,
     selected_bonuses text,
     UNIQUE(character_id, magical_power_id)
 );
 
 create table if not exists upgradechoice(
     id UUID primary key,
-    name text
+    name text,
+    upgrade_option numeric not null
 );
 
 create table if not exists upgraderule(
     id UUID primary key,
     block numeric not null,
-    upgradechoice UUID references upgradechoice(id),
-    UNIQUE(block, upgradechoice)
+    upgrade_choice UUID references upgradechoice(id),
+    UNIQUE(block, upgrade_choice)
 );
 
 create table if not exists email(

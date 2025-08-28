@@ -48,7 +48,7 @@ public static class ApplicationServiceCollectionExtensions
 
         #endregion
 
-        services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Transient); // set to singleton as it'll be one.
+        services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Transient); 
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

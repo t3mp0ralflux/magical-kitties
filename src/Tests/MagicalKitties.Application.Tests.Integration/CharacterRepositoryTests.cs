@@ -105,7 +105,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                               .GenerateCharacter(account)
                               .WithBaselineData()
                               .WithHumanData()
-                              .WithUpgrades();
+                              .WithUpgrades(Fakes.GenerateUpgradeRules());
 
         DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);
@@ -120,7 +120,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                                  TalentChange = new EndowmentChange
                                                                 {
                                                                     NewId = 42,
-                                                                    PreviousId = 42
+                                                                    PreviousId = 42,
+                                                                    IsPrimary = false
                                                                 }
                                              };
 
@@ -425,7 +426,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                               .GenerateCharacter(account)
                               .WithBaselineData()
                               .WithHumanData()
-                              .WithUpgrades();
+                              .WithUpgrades(Fakes.GenerateUpgradeRules());
 
         DateTime now = DateTime.UtcNow;
         _dateTimeProvider.GetUtcNow().Returns(now);
@@ -440,7 +441,8 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                                  TalentChange = new EndowmentChange
                                                                 {
                                                                     NewId = 42,
-                                                                    PreviousId = 42
+                                                                    PreviousId = 42,
+                                                                    IsPrimary = false
                                                                 }
                                              };
 

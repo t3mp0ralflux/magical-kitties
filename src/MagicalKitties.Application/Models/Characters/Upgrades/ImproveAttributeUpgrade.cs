@@ -2,8 +2,7 @@
 
 namespace MagicalKitties.Application.Models.Characters.Upgrades;
 
-public class StatLimitUpgrade
+public class ImproveAttributeUpgrade
 {
-    public AttributeOption Option { get; set; }
-    public int Value { get; set; }
+    public AttributeOption AttributeOption { get; set; }
 }

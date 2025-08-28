@@ -28,6 +28,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         SqlMapper.AddTypeHandler(typeof(List<Upgrade>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(object), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Flaw), new JsonTypeHandler());
+        //SqlMapper.AddTypeHandler(typeof(UpgradeRule), new JsonTypeHandler());
 
         DefaultTypeMap.MatchNamesWithUnderscores = true;
     }

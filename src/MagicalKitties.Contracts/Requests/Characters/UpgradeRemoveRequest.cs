@@ -2,7 +2,7 @@
 
 public class UpgradeRemoveRequest
 {
-    public required Guid UpgradeId { get; set; }
-    public required UpgradeOption UpgradeOption { get; set; }
-    public required object Value { get; set; }
+    public required Guid UpgradeId { get; init; }
+    public required UpgradeOption UpgradeOption { get; init; } 
+    public string? Value { get; init; }
 }

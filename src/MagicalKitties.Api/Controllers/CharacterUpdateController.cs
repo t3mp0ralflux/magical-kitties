@@ -119,7 +119,7 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ValidationException>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpsertUpgrade([FromRoute] Guid characterId, MKCtrCharacterRequests.UpgradeUpsertRequest request, CancellationToken token)
+    public async Task<IActionResult> UpsertUpgrade([FromRoute] Guid characterId, [FromBody]MKCtrCharacterRequests.UpgradeUpsertRequest request, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 

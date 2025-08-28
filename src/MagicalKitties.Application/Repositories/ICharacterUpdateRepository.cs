@@ -22,4 +22,5 @@ public interface ICharacterUpdateRepository
     Task<bool> UpdateCurrentTreatsAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateCurrentInjuriesAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateIncapacitatedStatus(AttributeUpdate update, CancellationToken token = default);
+    Task<bool> ClearUpgradesOnCharacter(AttributeUpdate update, CancellationToken token = default);
 }

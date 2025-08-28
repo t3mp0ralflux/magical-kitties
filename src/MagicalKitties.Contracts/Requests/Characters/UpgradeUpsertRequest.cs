@@ -2,9 +2,8 @@
 
 public class UpgradeUpsertRequest
 {
-    public required Guid UpgradeId { get; set; }
-    public required UpgradeOption UpgradeOption { get; set; }
-    public required AttributeOption AttributeOption { get; set; }
-    public required int Level { get; set; }
-    public required object Value { get; set; }
+    public required Guid UpgradeId { get; init; }
+    public required UpgradeOption UpgradeOption { get; init; }
+    public required int Block { get; init; }
+    public object? Value { get; init; }
 }

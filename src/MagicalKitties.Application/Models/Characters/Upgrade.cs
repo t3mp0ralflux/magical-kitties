@@ -6,7 +6,6 @@ public class Upgrade
 {
     public required Guid Id { get; init; }
     public required int Block { get; init; }
-    public required int Level { get; init; }
-    public AttributeOption Option { get; set; }
+    public UpgradeOption Option { get; set; }
     public object? Choice { get; set; }
 }

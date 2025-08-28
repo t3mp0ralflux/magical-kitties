@@ -1,7 +1,9 @@
-﻿using FluentValidation;
+﻿using System.Text.Json;
+using FluentValidation;
 using FluentValidation.Results;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Characters.Upgrades;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Validators.Characters;
 
@@ -12,14 +14,16 @@ public class CharacterUpdateService : ICharacterUpdateService
     private readonly IValidator<AttributeUpdateValidationContext> _attributeUpdateValidator;
     private readonly ICharacterRepository _characterRepository;
     private readonly ICharacterUpdateRepository _characterUpdateRepository;
+    private readonly IUpgradeRepository _upgradeRepository;
     private readonly IValidator<DescriptionUpdateValidationContext> _descriptionUpdateValidator;
 
-    public CharacterUpdateService(ICharacterRepository characterRepository, ICharacterUpdateRepository characterUpdateRepository, IValidator<DescriptionUpdateValidationContext> descriptionUpdateValidator, IValidator<AttributeUpdateValidationContext> attributeUpdateValidator)
+    public CharacterUpdateService(ICharacterRepository characterRepository, ICharacterUpdateRepository characterUpdateRepository, IValidator<DescriptionUpdateValidationContext> descriptionUpdateValidator, IValidator<AttributeUpdateValidationContext> attributeUpdateValidator, IUpgradeRepository upgradeRepository)
     {
         _characterRepository = characterRepository;
         _characterUpdateRepository = characterUpdateRepository;
         _descriptionUpdateValidator = descriptionUpdateValidator;
         _attributeUpdateValidator = attributeUpdateValidator;
+        _upgradeRepository = upgradeRepository;
     }
 
     public async Task<bool> UpdateDescriptionAsync(DescriptionOption option, DescriptionUpdate update, CancellationToken token = default)
@@ -89,6 +93,13 @@ public class CharacterUpdateService : ICharacterUpdateService
                     return true;
                 }
 
+                // going down a level, so reset XP and upgrades
+                if (update.Level < character.Level)
+                {
+                    await _characterUpdateRepository.UpdateXPAsync(update, token);
+                    await _characterUpdateRepository.ClearUpgradesOnCharacter(update, token);
+                }
+
                 return await _characterUpdateRepository.UpdateLevelAsync(update, token);
             case AttributeOption.flaw:
                 if (character.Flaw is null)
@@ -114,8 +125,39 @@ public class CharacterUpdateService : ICharacterUpdateService
                 {
                     return await _characterUpdateRepository.CreateMagicalPowerAsync(update, token);
                 }
+                
+                var removalSuccess = await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token);
 
-                return await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token);
+                if (!removalSuccess)
+                {
+                    return false;
+                }
+
+                List<Upgrade> relevantUpgrades = character.Upgrades.Where(x => x.Option == UpgradeOption.bonusFeature).ToList();
+                bool changesMade = false;
+                
+                foreach (Upgrade relevantUpgrade in relevantUpgrades)
+                {
+                    if (relevantUpgrade.Choice is null)
+                    {
+                        continue;
+                    }
+                    
+                    BonusFeatureUpgrade? choice = JsonSerializer.Deserialize<BonusFeatureUpgrade>(relevantUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                    
+                    if (choice?.MagicalPowerId == update.MagicalPowerChange?.PreviousId)
+                    {
+                        relevantUpgrade.Choice = null;
+                        changesMade = true;
+                    }
+                }
+
+                if (changesMade)
+                {
+                    await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
+                }
+
+                return true; 
             case AttributeOption.currentowies:
                 if (character.CurrentOwies == update.CurrentOwies)
                 {

@@ -15,6 +15,7 @@ public class CharacterUpdateServiceTests
 {
     private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
     private readonly ICharacterUpdateRepository _characterUpdateRepository = Substitute.For<ICharacterUpdateRepository>();
+    private readonly IUpgradeRepository _upgradeRepository = Substitute.For<IUpgradeRepository>();
     private readonly IValidator<DescriptionUpdateValidationContext> _descriptionValidator = Substitute.For<IValidator<DescriptionUpdateValidationContext>>();
     private readonly IValidator<AttributeUpdateValidationContext> _updateValidator = Substitute.For<IValidator<AttributeUpdateValidationContext>>();
 
@@ -22,7 +23,7 @@ public class CharacterUpdateServiceTests
 
     public CharacterUpdateServiceTests()
     {
-        _sut = new CharacterUpdateService(_characterRepository, _characterUpdateRepository, _descriptionValidator, _updateValidator);
+        _sut = new CharacterUpdateService(_characterRepository, _characterUpdateRepository, _descriptionValidator, _updateValidator, _upgradeRepository);
     }
 
     [Fact]

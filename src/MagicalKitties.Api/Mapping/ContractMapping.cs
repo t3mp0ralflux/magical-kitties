@@ -265,7 +265,8 @@ public static class ContractMapping
         return new EndowmentChange
                {
                    PreviousId = request.PreviousId,
-                   NewId = request.NewId
+                   NewId = request.NewId,
+                   IsPrimary = request.IsPrimary
                };
     }
 
@@ -279,10 +280,9 @@ public static class ContractMapping
                    Upgrade = new MKAppCharacters.Upgrade
                              {
                                  Id = request.UpgradeId,
-                                 Block = request.Level,
-                                 Level = request.Level,
-                                 Option = (AttributeOption)request.AttributeOption,
-                                 Choice = request.Value
+                                 Block = request.Block,
+                                 Option = (UpgradeOption)request.UpgradeOption,
+                                 Choice = request.Value,
                              }
                };
     }
@@ -298,8 +298,7 @@ public static class ContractMapping
                              {
                                  Id = request.UpgradeId,
                                  Block = -1,
-                                 Level = -1,
-                                 Option = AttributeOption.cunning, // doesn't matter
+                                 Option = UpgradeOption.talent, // doesn't matter
                                  Choice = request.Value
                              }
                };
@@ -463,7 +462,8 @@ public static class ContractMapping
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
-                   IsCustom = request.IsCustom
+                   IsCustom = request.IsCustom,
+                   IsPrimary = request.IsPrimary
                };
     }
 
@@ -474,7 +474,8 @@ public static class ContractMapping
                    Id = talent.Id,
                    Name = talent.Name,
                    Description = talent.Description,
-                   IsCustom = talent.IsCustom
+                   IsCustom = talent.IsCustom,
+                   IsPrimary = talent.IsPrimary
                };
     }
 
@@ -523,7 +524,8 @@ public static class ContractMapping
                    Name = request.Name,
                    Description = request.Description,
                    IsCustom = request.IsCustom,
-                   BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList()
+                   BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList(),
+                   IsPrimary = request.IsPrimary
                };
     }
 
@@ -535,7 +537,8 @@ public static class ContractMapping
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
                    IsCustom = magicalPower.IsCustom,
-                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList()
+                   BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList(),
+                   IsPrimary = magicalPower.IsPrimary
                };
     }
 
@@ -649,7 +652,8 @@ public static class ContractMapping
                {
                    Id = rule.Id,
                    Block = rule.Block,
-                   Value = rule.Value
+                   Value = rule.Value,
+                   UpgradeOption = (MKCtrCharacterRequests.UpgradeOption)rule.UpgradeOption
                };
     }
 

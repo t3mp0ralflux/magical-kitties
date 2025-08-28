@@ -107,15 +107,7 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
 
         if (result > 0)
         {
-            result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  update character
-                                                                                  set updated_utc = @Now
-                                                                                  where id = @CharacterId
-                                                                                  """, new
-                                                                                       {
-                                                                                           CharacterId = update.Character.Id,
-                                                                                           Now = _dateTimeProvider.GetUtcNow()
-                                                                                       }, cancellationToken: token));
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
         }
 
         transaction.Commit();
@@ -279,13 +271,14 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactertalent(id, character_id, talent_id)
-                                                                                  values(@Id, @CharacterId, @TalentId)
+                                                                                  insert into charactertalent(id, character_id, talent_id, is_primary)
+                                                                                  values(@Id, @CharacterId, @TalentId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = update.Character.Id,
-                                                                                           TalentId = update.TalentChange!.NewId
+                                                                                           TalentId = update.TalentChange!.NewId,
+                                                                                           update.TalentChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -308,11 +301,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   set talent_id = @NewId
                                                                                   where character_id = @CharacterId
                                                                                   and talent_id = @PreviousId
+                                                                                  and is_primary = @IsPrimary
                                                                                   """, new
                                                                                        {
                                                                                            update.TalentChange!.NewId,
                                                                                            CharacterId = update.Character.Id,
-                                                                                           update.TalentChange!.PreviousId
+                                                                                           update.TalentChange!.PreviousId,
+                                                                                           update.TalentChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -331,13 +326,14 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id)
-                                                                                  values(@Id, @CharacterId, @MagicalPowerId)
+                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id, is_primary)
+                                                                                  values(@Id, @CharacterId, @MagicalPowerId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = update.Character.Id,
-                                                                                           MagicalPowerId = update.MagicalPowerChange!.NewId
+                                                                                           MagicalPowerId = update.MagicalPowerChange!.NewId,
+                                                                                           update.MagicalPowerChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -360,11 +356,13 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                   set magical_power_id = @NewId
                                                                                   where character_id = @CharacterId
                                                                                   and magical_power_id = @PreviousId
+                                                                                  and is_primary = @IsPrimary
                                                                                   """, new
                                                                                        {
                                                                                            update.MagicalPowerChange!.NewId,
                                                                                            CharacterId = update.Character.Id,
-                                                                                           update.MagicalPowerChange!.PreviousId
+                                                                                           update.MagicalPowerChange!.PreviousId,
+                                                                                           update.MagicalPowerChange.IsPrimary
                                                                                        }, cancellationToken: token));
 
         if (result > 0)
@@ -476,7 +474,26 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
 
         return result > 0;
     }
-    
+
+    public async Task<bool> ClearUpgradesOnCharacter(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  update character
+                                                                                  set upgrades = null
+                                                                                  where id = @Id
+                                                                                  """, new
+                                                                                       {
+                                                                                          update.Character.Id
+                                                                                       }, cancellationToken: token));
+
+        transaction.Commit();
+
+        return result > 0;
+    }
+
     private async Task<int> UpdateCharacterUpdateUtcAsync(Guid characterId, IDbConnection connection, CancellationToken token)
     {
         return await connection.ExecuteAsyncWithRetry(new CommandDefinition("""

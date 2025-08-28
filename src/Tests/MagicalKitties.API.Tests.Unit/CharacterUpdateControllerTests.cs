@@ -22,7 +22,7 @@ public class CharacterUpdateControllerTests
     private readonly ICharacterService _characterService = Substitute.For<ICharacterService>();
     private readonly ICharacterUpdateService _characterUpdateService = Substitute.For<ICharacterUpdateService>();
     private readonly ICharacterUpgradeService _characterUpgradeService = Substitute.For<ICharacterUpgradeService>();
-    
+
     public CharacterUpdateController _sut;
 
     public CharacterUpdateControllerTests()
@@ -55,7 +55,7 @@ public class CharacterUpdateControllerTests
         Character character = Fakes.GenerateCharacter(account);
 
         _sut.ControllerContext = CreateControllerContext(account.Email);
-        
+
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpdateService.UpdateDescriptionAsync(Arg.Any<MKCtrApplicationCharacterUpdates.DescriptionOption>(), Arg.Any<MKCtrApplicationCharacterUpdates.DescriptionUpdate>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
@@ -78,7 +78,7 @@ public class CharacterUpdateControllerTests
         // Arrange
         Account account = Fakes.GenerateAccount();
         Account unauthorizedAccount = Fakes.GenerateAccount();
-        
+
         Character character = Fakes.GenerateCharacter(account);
 
         _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
@@ -98,16 +98,16 @@ public class CharacterUpdateControllerTests
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
     }
-    
+
     [Theory]
-    [MemberData(nameof(GetAttributeOptions))]
+    [MemberData(nameof(GetUpgradeOptions))]
     public async Task UpdateAttribute_ShouldReturnUnauthorized_WhenAccountIsNull(MKCtrCharacterRequests.AttributeOption option)
     {
         // Arrange
         MKCtrCharacterRequests.CharacterAttributeUpdateRequest request = new()
-                                                                           {
-                                                                               CharacterId = Guid.NewGuid()
-                                                                           };
+                                                                         {
+                                                                             CharacterId = Guid.NewGuid()
+                                                                         };
 
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.UpdateAttribute(option, request, CancellationToken.None);
@@ -115,7 +115,7 @@ public class CharacterUpdateControllerTests
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
     }
-    
+
     [Fact]
     public async Task UpdateAttribute_ShouldReturnNotFound_WhenCharacterIsNotFound()
     {
@@ -130,9 +130,9 @@ public class CharacterUpdateControllerTests
         _characterUpdateService.UpdateAttributeAsync(Arg.Any<MKCtrApplicationCharacterUpdates.AttributeOption>(), Arg.Any<MKCtrApplicationCharacterUpdates.AttributeUpdate>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         MKCtrCharacterRequests.CharacterAttributeUpdateRequest request = new()
-                                                                           {
-                                                                               CharacterId = character.Id
-                                                                           };
+                                                                         {
+                                                                             CharacterId = character.Id
+                                                                         };
 
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.UpdateAttribute(MKCtrCharacterRequests.AttributeOption.cunning, request, CancellationToken.None);
@@ -140,7 +140,7 @@ public class CharacterUpdateControllerTests
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
     }
-    
+
     [Fact]
     public async Task UpdateAttribute_ShouldReturnUnauthorized_WhenCharacterIsFoundButNotOwnedByAccessingAccount()
     {
@@ -173,7 +173,7 @@ public class CharacterUpdateControllerTests
         // Arrange
         _characterService.GetByIdAsync(Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the GetByIdAsync function."));
         _characterUpdateService.Reset(Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
-        
+
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.Reset(Guid.NewGuid(), CancellationToken.None);
 
@@ -189,11 +189,11 @@ public class CharacterUpdateControllerTests
         Character character = Fakes.GenerateCharacter(account);
 
         _sut.ControllerContext = CreateControllerContext(account.Email);
-        
+
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpdateService.Reset(Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
-        
+
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.Reset(character.Id, CancellationToken.None);
 
@@ -210,11 +210,11 @@ public class CharacterUpdateControllerTests
         Character character = Fakes.GenerateCharacter(account);
 
         _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
-        
+
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpdateService.Reset(Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
-        
+
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.Reset(character.Id, CancellationToken.None);
 
@@ -223,19 +223,18 @@ public class CharacterUpdateControllerTests
     }
 
     [Theory]
-    [MemberData(nameof(GetAttributeOptions))]
-    public async Task UpsertUpgrade_ShouldReturnUnauthorized_WhenAccountIsNotFound(MKCtrCharacterRequests.AttributeOption option)
+    [MemberData(nameof(GetUpgradeOptions))]
+    public async Task UpsertUpgrade_ShouldReturnUnauthorized_WhenAccountIsNotFound(MKCtrCharacterRequests.UpgradeOption option)
     {
         // Arrange
-        MKCtrCharacterRequests.UpgradeUpsertRequest request = new MKCtrCharacterRequests.UpgradeUpsertRequest()
+        MKCtrCharacterRequests.UpgradeUpsertRequest request = new()
                                                               {
-                                                                  AttributeOption = option,
-                                                                  Level = 2,
+                                                                  Block = 1,
                                                                   UpgradeId = Guid.NewGuid(),
-                                                                  UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
+                                                                  UpgradeOption = option,
                                                                   Value = "This doesn't matter"
                                                               };
-        
+
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.UpsertUpgrade(Guid.NewGuid(), request, CancellationToken.None);
 
@@ -249,11 +248,10 @@ public class CharacterUpdateControllerTests
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        
-        MKCtrCharacterRequests.UpgradeUpsertRequest request = new MKCtrCharacterRequests.UpgradeUpsertRequest()
+
+        MKCtrCharacterRequests.UpgradeUpsertRequest request = new()
                                                               {
-                                                                  AttributeOption = MKCtrCharacterRequests.AttributeOption.cute,
-                                                                  Level = 2,
+                                                                  Block = 1,
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This doesn't matter"
@@ -264,14 +262,14 @@ public class CharacterUpdateControllerTests
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpgradeService.UpsertUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
-        
+
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.UpsertUpgrade(character.Id, request, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
     }
-    
+
     [Fact]
     public async Task UpsertUpgrade_ShouldReturnUnauthorized_WhenCharacterIsFoundButNotOwnedByAccessingAccount()
     {
@@ -279,11 +277,10 @@ public class CharacterUpdateControllerTests
         Account account = Fakes.GenerateAccount();
         Account unauthorizedAccount = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        
-        MKCtrCharacterRequests.UpgradeUpsertRequest request = new MKCtrCharacterRequests.UpgradeUpsertRequest()
+
+        MKCtrCharacterRequests.UpgradeUpsertRequest request = new()
                                                               {
-                                                                  AttributeOption = MKCtrCharacterRequests.AttributeOption.cute,
-                                                                  Level = 2,
+                                                                  Block = 1,
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This doesn't matter"
@@ -294,7 +291,7 @@ public class CharacterUpdateControllerTests
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpgradeService.UpsertUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
-        
+
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.UpsertUpgrade(character.Id, request, CancellationToken.None);
 
@@ -306,47 +303,47 @@ public class CharacterUpdateControllerTests
     public async Task RemoveUpgrade_ShouldReturnUnauthorized_WhenAccountIsNotFound()
     {
         // Arrange
-        MKCtrCharacterRequests.UpgradeRemoveRequest request = new MKCtrCharacterRequests.UpgradeRemoveRequest()
+        MKCtrCharacterRequests.UpgradeRemoveRequest request = new()
                                                               {
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This isn't relevant"
                                                               };
-        
+
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.RemoveUpgrade(Guid.NewGuid(), request, CancellationToken.None);
-        
+
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
     }
-    
+
     [Fact]
     public async Task RemoveUpgrade_ShouldReturnNotFound_WhenCharacterIsNotFound()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        
-        MKCtrCharacterRequests.UpgradeRemoveRequest request = new MKCtrCharacterRequests.UpgradeRemoveRequest()
+
+        MKCtrCharacterRequests.UpgradeRemoveRequest request = new()
                                                               {
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This isn't relevant"
                                                               };
-        
+
         _sut.ControllerContext = CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpgradeService.RemoveUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
-        
+
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.RemoveUpgrade(character.Id, request, CancellationToken.None);
-        
+
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
     }
-    
+
     [Fact]
     public async Task RemoveUpgrade_ShouldReturnUnauthorized_WhenCharacterIsFoundButNotOwnedByAccessingAccount()
     {
@@ -354,23 +351,23 @@ public class CharacterUpdateControllerTests
         Account account = Fakes.GenerateAccount();
         Account unauthorizedAccount = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        
-        MKCtrCharacterRequests.UpgradeRemoveRequest request = new MKCtrCharacterRequests.UpgradeRemoveRequest()
+
+        MKCtrCharacterRequests.UpgradeRemoveRequest request = new()
                                                               {
                                                                   UpgradeId = Guid.NewGuid(),
                                                                   UpgradeOption = MKCtrCharacterRequests.UpgradeOption.attribute3,
                                                                   Value = "This isn't relevant"
                                                               };
-        
+
         _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpgradeService.RemoveUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
-        
+
         // Act
         UnauthorizedResult result = (UnauthorizedResult)await _sut.RemoveUpgrade(character.Id, request, CancellationToken.None);
-        
+
         // Assert
         result.StatusCode.Should().Be(StatusCodes.Status401Unauthorized);
     }
@@ -384,12 +381,12 @@ public class CharacterUpdateControllerTests
             yield return [descriptionOption];
         }
     }
-    
-    public static IEnumerable<object[]> GetAttributeOptions()
-    {
-        MKCtrCharacterRequests.AttributeOption[] values = Enum.GetValues<MKCtrCharacterRequests.AttributeOption>();
 
-        foreach (MKCtrCharacterRequests.AttributeOption descriptionOption in values)
+    public static IEnumerable<object[]> GetUpgradeOptions()
+    {
+        MKCtrCharacterRequests.UpgradeOption[] values = Enum.GetValues<MKCtrCharacterRequests.UpgradeOption>();
+
+        foreach (MKCtrCharacterRequests.UpgradeOption descriptionOption in values)
         {
             yield return [descriptionOption];
         }
@@ -397,7 +394,7 @@ public class CharacterUpdateControllerTests
 
     public static ControllerContext CreateControllerContext(string email)
     {
-        ControllerContext result = new ControllerContext
+        ControllerContext result = new()
                                    {
                                        HttpContext = new DefaultHttpContext
                                                      {

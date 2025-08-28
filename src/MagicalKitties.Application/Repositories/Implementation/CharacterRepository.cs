@@ -74,14 +74,20 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                      from flaw f
                                                                                                                                                                      inner join characterflaw cf on f.id = cf.flaw_id
                                                                                                                                                                      where character_id = @id) as flaw,
-                                                                                                                                                                    (select json_agg(t.*)
-                                                                                                                                                                    from talent t
+                                                                                                                                                                    (with talent_info as 
+                                                                                                                                                                        (select t.*, ct.is_primary from talent t
                                                                                                                                                                     inner join charactertalent ct on t.id = ct.talent_id
-                                                                                                                                                                    where character_id = @id) as talents,
-                                                                                                                                                                    (select json_agg(mp.*)
-                                                                                                                                                                     from magicalpower mp
-                                                                                                                                                                     inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
-                                                                                                                                                                     where character_id = @id) as magicalpowers,
+                                                                                                                                                                    where character_id = @id)
+                                                                                                                                                                    select json_agg(talent_info.*)
+                                                                                                                                                                    from talent_info
+                                                                                                                                                                    ) as talents,
+                                                                                                                                                                    (with mp_info as 
+                                                                                                                                                                        (select mp.*, cmp.is_primary from magicalpower mp
+                                                                                                                                                                    inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
+                                                                                                                                                                    where character_id = @id)
+                                                                                                                                                                    select json_agg(mp_info.*)
+                                                                                                                                                                    from mp_info
+                                                                                                                                                                     ) as magicalpowers,
                                                                                                                                                                     (select json_agg(
                                                                                                                                                                                      json_build_object(
                                                                                                                                                                                         'id', h.id,
@@ -278,13 +284,14 @@ public class CharacterRepository : ICharacterRepository
         foreach (Talent existingCharacterTalent in existingCharacter.Talents)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactertalent(id, character_id, talent_id)
-                                                                                  values (@Id, @CharacterId, @TalentId)
+                                                                                  insert into charactertalent(id, character_id, talent_id, is_primary)
+                                                                                  values (@Id, @CharacterId, @TalentId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = existingCharacter.Id,
-                                                                                           TalentId = existingCharacterTalent.Id
+                                                                                           TalentId = existingCharacterTalent.Id,
+                                                                                           existingCharacterTalent.IsPrimary
                                                                                        }, cancellationToken: token));
 
             if (result < 0)
@@ -296,13 +303,14 @@ public class CharacterRepository : ICharacterRepository
         foreach (MagicalPower existingCharacterMagicalPower in existingCharacter.MagicalPowers)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id)
-                                                                                  values (@Id, @CharacterId, @MagicalPowerId)
+                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id, is_primary)
+                                                                                  values (@Id, @CharacterId, @MagicalPowerId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = existingCharacter.Id,
-                                                                                           MagicalPowerId = existingCharacterMagicalPower.Id
+                                                                                           MagicalPowerId = existingCharacterMagicalPower.Id,
+                                                                                           existingCharacterMagicalPower.IsPrimary
                                                                                        }, cancellationToken: token));
 
             if (result < 0)

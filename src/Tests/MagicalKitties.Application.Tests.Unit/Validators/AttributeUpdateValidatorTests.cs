@@ -79,15 +79,38 @@ public class AttributeUpdateValidatorTests
     public async Task Validator_ShouldThrowAsync_WhenLevelIsInvalid(int? level, string exceptionMessage)
     {
         // Arrange
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(level: level, attributeOption: AttributeOption.level);
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, level: level, xp:0, attributeOption: AttributeOption.level);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
         result
-            .ShouldHaveValidationErrorFor(x => x.Update.Level)
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.Level))
             .WithErrorMessage(exceptionMessage)
+            .WithSeverity(Severity.Error);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(int.MinValue)]
+    [InlineData(int.MaxValue)]
+    public async Task Validator_ShouldThrowAsync_WhenXPIsInvalidOnLevelChange(int? xp)
+    {
+        // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        character.Level = 7;
+        
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, level: 5, xp:xp, attributeOption: AttributeOption.level);
+
+        // Act
+        TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(nameof(AttributeUpdate.XP))
+            .WithErrorMessage("XP has to be zero if level is changing.")
             .WithSeverity(Severity.Error);
     }
     
@@ -190,7 +213,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange flawChange = new()
                                      {
                                          NewId = newId,
-                                         PreviousId = previousId
+                                         PreviousId = previousId,
+                                         IsPrimary = true
                                      };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(flawChange: flawChange, attributeOption: AttributeOption.flaw);
@@ -235,7 +259,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange talentChange = new()
                                        {
                                            NewId = newId,
-                                           PreviousId = previousId
+                                           PreviousId = previousId,
+                                           IsPrimary = true
                                        };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
@@ -259,7 +284,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange talentChange = new()
                                        {
                                            NewId = 21,
-                                           PreviousId = 21
+                                           PreviousId = 21,
+                                           IsPrimary = true
                                        };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
@@ -284,7 +310,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange talentChange = new()
                                        {
                                            NewId = 21,
-                                           PreviousId = 21
+                                           PreviousId = 21,
+                                           IsPrimary = true
                                        };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
@@ -309,7 +336,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange talentChange = new()
                                        {
                                            NewId = 21,
-                                           PreviousId = 21
+                                           PreviousId = 21,
+                                           IsPrimary = true
                                        };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentChange, attributeOption: AttributeOption.talent);
@@ -357,7 +385,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange magicalPowerChange = new()
                                              {
                                                  NewId = newId,
-                                                 PreviousId = previousId
+                                                 PreviousId = previousId,
+                                                 IsPrimary = true
                                              };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
@@ -383,7 +412,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange magicalPowerChange = new()
                                              {
                                                  NewId = 21,
-                                                 PreviousId = 21
+                                                 PreviousId = 21,
+                                                 IsPrimary = true
                                              };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
@@ -415,7 +445,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange magicalPowerChange = new()
                                              {
                                                  NewId = 21,
-                                                 PreviousId = 21
+                                                 PreviousId = 21,
+                                                 IsPrimary = true
                                              };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
@@ -507,7 +538,7 @@ public class AttributeUpdateValidatorTests
     {
         // Arrange
         Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, level: 3, attributeOption: AttributeOption.level);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, level: 3, xp: 0, attributeOption: AttributeOption.level);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -552,7 +583,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange flawUpdate = new()
                                      {
                                          PreviousId = 31,
-                                         NewId = 31
+                                         NewId = 31,
+                                         IsPrimary = true
                                      };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, flawChange: flawUpdate, attributeOption: AttributeOption.flaw);
@@ -574,7 +606,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange talentUpdate = new()
                                        {
                                            PreviousId = 41,
-                                           NewId = 31
+                                           NewId = 31,
+                                           IsPrimary = true
                                        };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, talentChange: talentUpdate, attributeOption: AttributeOption.talent);
@@ -602,7 +635,8 @@ public class AttributeUpdateValidatorTests
         EndowmentChange magicalPowerUpdate = new()
                                              {
                                                  NewId = 31,
-                                                 PreviousId = 41
+                                                 PreviousId = 41,
+                                                 IsPrimary = true
                                              };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(character: character, magicalPowerChange: magicalPowerUpdate, attributeOption: AttributeOption.magicalpower);
