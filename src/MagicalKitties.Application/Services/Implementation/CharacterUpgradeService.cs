@@ -198,26 +198,30 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     
                     break;
                 case UpgradeOption.talent:
-                    GainTalentUpgrade talentUpdate = (GainTalentUpgrade)update.Upgrade.Choice!;
+                    GainTalentUpgrade? talentUpdate;
                     GainTalentUpgrade? existingTalent = null;
 
+                    try
+                    {
+                        talentUpdate = JsonSerializer.Deserialize<GainTalentUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new BadHttpRequestException("Talent upgrade payload was incorrect. Please verify and try again.");
+                    }
+
+                    if (talentUpdate is null)
+                    {
+                        throw new BadHttpRequestException("Bonus feature upgrade payload was incorrect. Please verify and try again.");
+                    }
+                    
                     if (existingUpgrade.Choice is not null)
                     {
-                        existingTalent = (GainTalentUpgrade)existingUpgrade.Choice;
+                        existingTalent = JsonSerializer.Deserialize<GainTalentUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
 
-                    if (existingTalent is null)
-                    {
-                        existingTalent = talentUpdate;
-                    }
-                    else
-                    {
-                        if (talentUpdate.TalentId == existingTalent.TalentId)
-                        {
-                            break; // nothing to see here, it's the same
-                        }
-                    }
-
+                    existingTalent ??= talentUpdate;
+                    
                     if (talents.FirstOrDefault(x => x.Id == existingTalent.TalentId) is null)
                     {
                         _logger.LogError("Saved Talent {TalentId} on Character {CharacterId} was not found", existingTalent.TalentId, character.Id);

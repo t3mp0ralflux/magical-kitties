@@ -484,10 +484,10 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
                                                   Block = 2,
-                                                  Choice = new GainTalentUpgrade
+                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                                            {
                                                                TalentId = 99
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -528,10 +528,10 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.talent, Block: 2 }).Id,
                                                   Block = 2,
-                                                  Choice = new GainTalentUpgrade
+                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                                            {
                                                                TalentId = 22
-                                                           }
+                                                           })
                                               }
                                 };
 
@@ -574,10 +574,10 @@ public class CharacterUpgradeServiceTests
                                               {
                                                   Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
                                                   Block = 2,
-                                                  Choice = new GainTalentUpgrade
+                                                  Choice = JsonSerializer.Serialize(new GainTalentUpgrade
                                                            {
                                                                TalentId = 43
-                                                           }
+                                                           })
                                               }
                                 };
 

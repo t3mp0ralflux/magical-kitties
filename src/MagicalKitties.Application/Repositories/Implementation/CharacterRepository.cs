@@ -284,13 +284,14 @@ public class CharacterRepository : ICharacterRepository
         foreach (Talent existingCharacterTalent in existingCharacter.Talents)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactertalent(id, character_id, talent_id)
-                                                                                  values (@Id, @CharacterId, @TalentId)
+                                                                                  insert into charactertalent(id, character_id, talent_id, is_primary)
+                                                                                  values (@Id, @CharacterId, @TalentId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = existingCharacter.Id,
-                                                                                           TalentId = existingCharacterTalent.Id
+                                                                                           TalentId = existingCharacterTalent.Id,
+                                                                                           existingCharacterTalent.IsPrimary
                                                                                        }, cancellationToken: token));
 
             if (result < 0)
@@ -302,13 +303,14 @@ public class CharacterRepository : ICharacterRepository
         foreach (MagicalPower existingCharacterMagicalPower in existingCharacter.MagicalPowers)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id)
-                                                                                  values (@Id, @CharacterId, @MagicalPowerId)
+                                                                                  insert into charactermagicalpower(id, character_id, magical_power_id, is_primary)
+                                                                                  values (@Id, @CharacterId, @MagicalPowerId, @IsPrimary)
                                                                                   """, new
                                                                                        {
                                                                                            Id = Guid.NewGuid(),
                                                                                            CharacterId = existingCharacter.Id,
-                                                                                           MagicalPowerId = existingCharacterMagicalPower.Id
+                                                                                           MagicalPowerId = existingCharacterMagicalPower.Id,
+                                                                                           existingCharacterMagicalPower.IsPrimary
                                                                                        }, cancellationToken: token));
 
             if (result < 0)
