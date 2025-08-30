@@ -1,8 +1,11 @@
-﻿using FluentAssertions;
+﻿using System.Text.Json;
+using FluentAssertions;
 using FluentValidation;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Characters.Updates;
+using MagicalKitties.Application.Models.Characters.Upgrades;
+using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
@@ -163,5 +166,49 @@ public class CharacterUpdateServiceTests
         await _characterUpdateRepository.DidNotReceive().UpdateDescriptionAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.DidNotReceive().UpdateHometownAsync(Arg.Any<DescriptionUpdate>());
         await _characterUpdateRepository.Received(1).UpdateXPAsync(Arg.Any<AttributeUpdate>());
+    }
+
+    [Fact]
+    public async Task UpdateAttributeAsync_ShouldUpdateTalentAndRemoveRelevantUpgrades_WhenTalentIsChanged()
+    {
+        // Arrange
+        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+
+        List<Talent> fakeTalents = Fakes.GenerateTalents();
+
+        Upgrade characterUpgrade = new Upgrade
+                                   {
+                                       Id = Guid.NewGuid(),
+                                       Block = 2,
+                                       Option = UpgradeOption.talent,
+                                       Choice = JsonSerializer.Serialize(new GainTalentUpgrade
+                                                                         {
+                                                                             TalentId = fakeTalents[0].Id
+                                                                         })
+                                   };
+
+        character.Talents.Add(fakeTalents[0]);
+        character.Upgrades.Add(characterUpgrade);
+
+        AttributeUpdate update = new AttributeUpdate
+                                 {
+                                     Character = character,
+                                     TalentChange = new EndowmentChange
+                                                    {
+                                                        NewId = fakeTalents[1].Id,
+                                                        PreviousId = fakeTalents[0].Id,
+                                                        IsPrimary = true
+                                                    }
+                                 };
+
+        _characterRepository.GetByIdAsync(character.Id).Returns(character);
+        _characterUpdateRepository.UpdateTalentAsync(Arg.Any<AttributeUpdate>()).Returns(true);
+        _upgradeRepository.UpsertUpgradesAsync(Arg.Any<Guid>(), Arg.Any<List<Upgrade>>(), Arg.Any<CancellationToken>()).Returns(true);
+        
+        // Act
+        await _sut.UpdateAttributeAsync(AttributeOption.talent, update);
+
+        // Assert
+        character.Upgrades[0].Choice.Should().BeNull();
     }
 }

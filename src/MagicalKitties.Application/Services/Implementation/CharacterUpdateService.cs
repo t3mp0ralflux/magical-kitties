@@ -119,24 +119,45 @@ public class CharacterUpdateService : ICharacterUpdateService
                     return await _characterUpdateRepository.CreateTalentAsync(update, token);
                 }
 
-                return await _characterUpdateRepository.UpdateTalentAsync(update, token);
+                bool talentUpdateSuccess =  await _characterUpdateRepository.UpdateTalentAsync(update, token);
+
+                if (!talentUpdateSuccess)
+                {
+                    return false;
+                }
+                
+                List<Upgrade> relevantTalentUpgrades = character.Upgrades.Where(x => x.Option == UpgradeOption.talent).ToList();
+                
+                foreach (Upgrade relevantUpgrade in relevantTalentUpgrades)
+                {
+                    if (relevantUpgrade.Choice is null)
+                    {
+                        continue;
+                    }
+                    
+                    relevantUpgrade.Choice = null;
+                    
+                    await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
+                }
+                
+                return true; 
             case AttributeOption.magicalpower:
                 if (character.MagicalPowers.Count == 0 || character.MagicalPowers.FirstOrDefault(x => x.Id == update.MagicalPowerChange!.PreviousId) is null)
                 {
                     return await _characterUpdateRepository.CreateMagicalPowerAsync(update, token);
                 }
                 
-                var removalSuccess = await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token);
+                bool magicPowerUpdateSuccess = await _characterUpdateRepository.UpdateMagicalPowerAsync(update, token);
 
-                if (!removalSuccess)
+                if (!magicPowerUpdateSuccess)
                 {
                     return false;
                 }
 
-                List<Upgrade> relevantUpgrades = character.Upgrades.Where(x => x.Option == UpgradeOption.bonusFeature).ToList();
+                List<Upgrade> relevantMagicPowerUpgrades = character.Upgrades.Where(x => x.Option == UpgradeOption.bonusFeature).ToList();
                 bool changesMade = false;
                 
-                foreach (Upgrade relevantUpgrade in relevantUpgrades)
+                foreach (Upgrade relevantUpgrade in relevantMagicPowerUpgrades)
                 {
                     if (relevantUpgrade.Choice is null)
                     {
