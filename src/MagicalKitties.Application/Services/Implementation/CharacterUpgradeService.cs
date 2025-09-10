@@ -311,9 +311,9 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     throw new ValidationException([new ValidationFailure("UpgradeOption", "Upgrade option was not valid.")]);
             }
 
-            var success = await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
+            await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
             
-            return success;
+            return true;
         }
 
         // adding new one
