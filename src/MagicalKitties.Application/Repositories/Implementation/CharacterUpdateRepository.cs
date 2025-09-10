@@ -320,6 +320,33 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
+    public async Task<bool> RemoveTalentAsync(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  delete from charactertalent 
+                                                                                  where character_id = @CharacterId
+                                                                                  and talent_id = @NewId
+                                                                                  and is_primary = @IsPrimary
+                                                                                  """, new
+                                                                                           {
+                                                                                               CharacterId = update.Character.Id,
+                                                                                               update.TalentChange!.NewId,
+                                                                                               update.TalentChange.IsPrimary
+                                                                                           }, cancellationToken: token));
+        
+        if (result > 0)
+        {
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
+        }
+
+        transaction.Commit();
+
+        return result > 0;
+    }
+
     public async Task<bool> CreateMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
@@ -362,6 +389,33 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
                                                                                            update.MagicalPowerChange!.NewId,
                                                                                            CharacterId = update.Character.Id,
                                                                                            update.MagicalPowerChange!.PreviousId,
+                                                                                           update.MagicalPowerChange.IsPrimary
+                                                                                       }, cancellationToken: token));
+
+        if (result > 0)
+        {
+            result = await UpdateCharacterUpdateUtcAsync(update.Character.Id, connection, token);
+        }
+
+        transaction.Commit();
+
+        return result > 0;
+    }
+
+    public async Task<bool> RemoveMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+        using IDbTransaction transaction = connection.BeginTransaction();
+
+        int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
+                                                                                  delete from charactermagicalpower
+                                                                                  where character_id = @CharacterId
+                                                                                  and magical_power_id = @NewId
+                                                                                  and is_primary = @IsPrimary
+                                                                                  """, new
+                                                                                       {
+                                                                                           update.MagicalPowerChange!.NewId,
+                                                                                           CharacterId = update.Character.Id,
                                                                                            update.MagicalPowerChange.IsPrimary
                                                                                        }, cancellationToken: token));
 

@@ -3,6 +3,7 @@ using FluentValidation;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Humans;
+using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
@@ -15,12 +16,14 @@ namespace MagicalKitties.Application.Tests.Unit.Services;
 public class CharacterServiceTests
 {
     private readonly ICharacterRepository _characterRepository = Substitute.For<ICharacterRepository>();
+    private readonly ITalentRepository _talentRepository = Substitute.For<ITalentRepository>();
+    private readonly IMagicalPowerRepository _magicalPowerRepository = Substitute.For<IMagicalPowerRepository>();
     private readonly IValidator<Character> _characterValidator = new CharacterValidator();
     private readonly IValidator<GetAllCharactersOptions> _optionsValidator = new GetAllCharactersOptionsValidator();
 
     public CharacterServiceTests()
     {
-        _sut = new CharacterService(_characterRepository, _characterValidator, _optionsValidator);
+        _sut = new CharacterService(_characterRepository, _characterValidator, _optionsValidator, _magicalPowerRepository, _talentRepository);
     }
 
     public CharacterService _sut { get; set; }
@@ -93,16 +96,44 @@ public class CharacterServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account);
-
+        List<UpgradeRule> upgradeRules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithUpgrades(upgradeRules);
+        MagicalPower magicalPowerUpgrade = new MagicalPower
+                                           {
+                                               Id = 69,
+                                               Name = "Test Power",
+                                               Description = "This is a test power",
+                                               IsCustom = false,
+                                               IsPrimary = false
+                                           };
+        Talent talentUpgrade = new Talent
+                               {
+                                   Id = 42,
+                                   Name = "Test Talent",
+                                   Description = "This is a test talent",
+                                   IsCustom = false,
+                                   IsPrimary = false
+                               };
+        
         _characterRepository.GetByIdAsync(character.Id).Returns(character);
-
+        _talentRepository.GetByIdAsync(talentUpgrade.Id).Returns(talentUpgrade);
+        _magicalPowerRepository.GetByIdAsync(magicalPowerUpgrade.Id).Returns(magicalPowerUpgrade);
+        
         // Act
         Character? result = await _sut.GetByIdAsync(character.Id);
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().BeEquivalentTo(character);
+        result.Should().BeEquivalentTo(character, options =>
+                                                       {
+                                                           options.Excluding(x => x.Id);
+                                                           options.Excluding(x => x.Name);
+                                                           options.Using<DateTime>(x=>x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>();
+                                                           
+                                                           return options;
+                                                       });
+        result.Talents.FirstOrDefault(x => x.Id == talentUpgrade.Id).Should().NotBeNull();
+        result.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpgrade.Id).Should().NotBeNull();
     }
 
     [Fact]

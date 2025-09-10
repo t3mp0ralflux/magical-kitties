@@ -248,8 +248,18 @@ public static class Fakes
                                             TalentId = 42
                                         })
                            };
+        Upgrade upgrade6 = new()
+                           {
+                               Id = upgradeRules.First(x => x is { UpgradeOption: UpgradeOption.magicalPower, Block: 3 }).Id,
+                               Block = 3,
+                               Option = UpgradeOption.magicalPower,
+                               Choice = JsonSerializer.Serialize(new NewMagicalPowerUpgrade()
+                                                                 {
+                                                                     MagicalPowerId = 69
+                                                                 })
+                           };
 
-        character.Upgrades = [upgrade2, upgrade3, upgrade4, upgrade5];
+        character.Upgrades = [upgrade2, upgrade3, upgrade4, upgrade5, upgrade6];
 
         return character;
     }
@@ -357,6 +367,13 @@ public static class Fakes
                 Block = 2,
                 Value = "Gain Talent", // rude much?
                 UpgradeOption = UpgradeOption.talent
+            },
+            new UpgradeRule
+            {
+                Id = Guid.NewGuid(),
+                Block = 3,
+                Value = "New Magical Power",
+                UpgradeOption = UpgradeOption.magicalPower
             }
         ];
     }
