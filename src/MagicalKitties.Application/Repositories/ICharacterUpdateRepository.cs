@@ -16,8 +16,10 @@ public interface ICharacterUpdateRepository
     Task<bool> UpdateFlawAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> CreateTalentAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateTalentAsync(AttributeUpdate update, CancellationToken token = default);
+    Task<bool> RemoveTalentAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> CreateMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default);
+    Task<bool> RemoveMagicalPowerAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateCurrentOwiesAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateCurrentTreatsAsync(AttributeUpdate update, CancellationToken token = default);
     Task<bool> UpdateCurrentInjuriesAsync(AttributeUpdate update, CancellationToken token = default);
