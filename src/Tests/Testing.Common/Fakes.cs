@@ -371,6 +371,13 @@ public static class Fakes
             new UpgradeRule
             {
                 Id = Guid.NewGuid(),
+                Block = 2,
+                Value = "Gain Bonus Feature", // rude much?
+                UpgradeOption = UpgradeOption.bonusFeature
+            },
+            new UpgradeRule
+            {
+                Id = Guid.NewGuid(),
                 Block = 3,
                 Value = "New Magical Power",
                 UpgradeOption = UpgradeOption.magicalPower
@@ -378,7 +385,7 @@ public static class Fakes
         ];
     }
 
-    public static List<MagicalPower> GenerateMagicalPowers(int id = 11)
+    public static List<MagicalPower> GenerateMagicalPower(int id = 11)
     {
         return
         [

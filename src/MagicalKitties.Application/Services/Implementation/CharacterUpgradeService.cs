@@ -17,10 +17,10 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 {
     private readonly IMemoryCache _cache;
     private readonly ICharacterRepository _characterRepository;
+    private readonly ILogger<CharacterUpgradeService> _logger;
     private readonly IMagicalPowerRepository _magicalPowerRepository;
     private readonly ITalentRepository _talentRepository;
     private readonly IUpgradeRepository _upgradeRepository;
-    private readonly ILogger<CharacterUpgradeService> _logger;
 
     public CharacterUpgradeService(ICharacterRepository characterRepository, IUpgradeRepository upgradeRepository, IMagicalPowerRepository magicalPowerRepository, ITalentRepository talentRepository, IMemoryCache cache, ILogger<CharacterUpgradeService> logger)
     {
@@ -45,17 +45,17 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
         if (update.Upgrade.Block > characterBlock)
         {
-            throw new ValidationException([new ValidationFailure("Upgrade","Cannot add upgrade. Upgrade is higher than the character's level.")]);
+            throw new ValidationException([new ValidationFailure("Upgrade", "Cannot add upgrade. Upgrade is higher than the character's level.")]);
         }
 
         Upgrade? existingUpgrade = character.Upgrades.FirstOrDefault(x => x.Block == update.Upgrade.Block && x.Id == update.Upgrade.Id);
 
-        // update
+        List<MagicalPower> magicalPowers = (await GetValuesCachedAsync("MagicPowers", async () => await _magicalPowerRepository.GetAllAsync(new GetAllMagicalPowersOptions { Page = 1, PageSize = 99 }, token))).ToList();
+        List<Talent> talents = (await GetValuesCachedAsync("Talents", async () => await _talentRepository.GetAllAsync(new GetAllTalentsOptions { Page = 1, PageSize = 99 }, token))).ToList();
+
         if (existingUpgrade is not null)
         {
-            List<MagicalPower> magicalPowers = (await GetValuesCachedAsync("MagicPowers", async () => await _magicalPowerRepository.GetAllAsync(new GetAllMagicalPowersOptions { Page = 1, PageSize = 99 }, token))).ToList();
-            List<Talent> talents = (await GetValuesCachedAsync("Talents", async () => await _talentRepository.GetAllAsync(new GetAllTalentsOptions { Page = 1, PageSize = 99 }, token))).ToList();
-
+            // update
             switch (update.UpgradeOption)
             {
                 // attributes have to check level rules and see if they can update to that value or not.
@@ -84,22 +84,22 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     }
 
                     existingAttributeImprovement ??= improveAttributeUpdate;
-                    
+
                     int maxPropertyValue = improveAttributeUpdate.AttributeOption switch
                     {
                         AttributeOption.cunning => character.Cunning,
                         AttributeOption.cute => character.Cute,
                         AttributeOption.fierce => character.Fierce,
-                        _ => throw new ValidationException([new ValidationFailure("UpgradeOption","Attribute upgrade option was not valid.")])
+                        _ => throw new ValidationException([new ValidationFailure("UpgradeOption", "Attribute upgrade option was not valid.")])
                     };
-                    
+
                     if (update.UpgradeOption == UpgradeOption.attribute3)
                     {
                         if (character.Level < 5)
                         {
                             if (maxPropertyValue + 1 > 3)
                             {
-                                throw new ValidationException([new ValidationFailure("AttributeMax3",$"Level {character.Level} characters cannot have any Attribute above 3.")]);
+                                throw new ValidationException([new ValidationFailure("AttributeMax3", $"Level {character.Level} characters cannot have any Attribute above 3.")]);
                             }
                         }
                     }
@@ -107,20 +107,19 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         if (character.Level < 5)
                         {
-                            throw new ValidationException([new ValidationFailure("CharacterLevel","This upgrade is invalid for characters less than level 5.")]);
+                            throw new ValidationException([new ValidationFailure("CharacterLevel", "This upgrade is invalid for characters less than level 5.")]);
                         }
-                    
+
                         if (maxPropertyValue + 1 > 4)
                         {
-                            throw new ValidationException([new ValidationFailure("AttributeMaxLevel",$"Level {character.Level} characters cannot have an Attribute above 3.")]);
+                            throw new ValidationException([new ValidationFailure("AttributeMaxLevel", $"Level {character.Level} characters cannot have an Attribute above 3.")]);
                         }
                     }
-                    
+
                     existingAttributeImprovement.AttributeOption = improveAttributeUpdate.AttributeOption;
-                    
+
                     existingUpgrade.Choice = existingAttributeImprovement;
                     break;
-
                 case UpgradeOption.bonusFeature:
                     BonusFeatureUpgrade? bonusFeatureUpdate;
                     BonusFeatureUpgrade? existingFeature = null;
@@ -129,9 +128,9 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         bonusFeatureUpdate = JsonSerializer.Deserialize<BonusFeatureUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
-                    catch (Exception ex)
+                    catch (Exception _)
                     {
-                       throw new BadHttpRequestException("Bonus feature upgrade payload was incorrect. Please verify and try again.");
+                        throw new BadHttpRequestException("Bonus feature upgrade payload was incorrect. Please verify and try again.");
                     }
 
                     if (bonusFeatureUpdate is null)
@@ -145,12 +144,12 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     }
 
                     existingFeature ??= bonusFeatureUpdate;
-                    
+
                     if (bonusFeatureUpdate.IsNested)
                     {
                         if (bonusFeatureUpdate.NestedMagicalPowerId != existingFeature.NestedMagicalPowerId)
                         {
-                            throw new ValidationException([new ValidationFailure("MagicalPower",$"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
+                            throw new ValidationException([new ValidationFailure("MagicalPower", $"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
                         }
 
                         if (bonusFeatureUpdate.BonusFeatureId == existingFeature.NestedBonusFeatureId)
@@ -167,7 +166,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                         if (!magicalPower.BonusFeatures.Exists(x => x.Id == bonusFeatureUpdate.NestedBonusFeatureId))
                         {
-                            throw new ValidationException([new ValidationFailure("BonusFeature",$"Bonus Feature '{bonusFeatureUpdate.NestedBonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
+                            throw new ValidationException([new ValidationFailure("BonusFeature", $"Bonus Feature '{bonusFeatureUpdate.NestedBonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
                         }
 
                         existingFeature.NestedBonusFeatureId = bonusFeatureUpdate.NestedBonusFeatureId;
@@ -176,7 +175,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         if (bonusFeatureUpdate.MagicalPowerId != existingFeature.MagicalPowerId)
                         {
-                            throw new ValidationException([new ValidationFailure("MagicalPower",$"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
+                            throw new ValidationException([new ValidationFailure("MagicalPower", $"Tried to update Magical Power '{bonusFeatureUpdate.MagicalPowerId}' but it was not found.")]);
                         }
 
                         MagicalPower? magicalPower = magicalPowers.FirstOrDefault(x => x.Id == existingFeature.MagicalPowerId);
@@ -188,14 +187,14 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                         if (bonusFeatureUpdate.BonusFeatureId.HasValue && !magicalPower.BonusFeatures.Exists(x => x.Id == bonusFeatureUpdate.BonusFeatureId))
                         {
-                            throw new ValidationException([new ValidationFailure("BonusFeature",$"Bonus Feature '{bonusFeatureUpdate.BonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
+                            throw new ValidationException([new ValidationFailure("BonusFeature", $"Bonus Feature '{bonusFeatureUpdate.BonusFeatureId}' does not exist on Magical Power '{magicalPower.Id}'")]);
                         }
 
                         existingFeature.BonusFeatureId = bonusFeatureUpdate.BonusFeatureId;
                     }
 
                     existingUpgrade.Choice = existingFeature;
-                    
+
                     break;
                 case UpgradeOption.talent:
                     GainTalentUpgrade? talentUpdate;
@@ -205,23 +204,23 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         talentUpdate = JsonSerializer.Deserialize<GainTalentUpgrade>(update.Upgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
-                    catch (Exception ex)
+                    catch (Exception _)
                     {
                         throw new BadHttpRequestException("Talent upgrade payload was incorrect. Please verify and try again.");
                     }
 
                     if (talentUpdate is null)
                     {
-                        throw new BadHttpRequestException("Bonus feature upgrade payload was incorrect. Please verify and try again.");
+                        throw new BadHttpRequestException("Talent upgrade payload was incorrect. Please verify and try again.");
                     }
-                    
+
                     if (existingUpgrade.Choice is not null)
                     {
                         existingTalent = JsonSerializer.Deserialize<GainTalentUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
                     }
 
                     existingTalent ??= talentUpdate;
-                    
+
                     if (talents.FirstOrDefault(x => x.Id == existingTalent.TalentId) is null)
                     {
                         _logger.LogError("Saved Talent {TalentId} on Character {CharacterId} was not found", existingTalent.TalentId, character.Id);
@@ -259,7 +258,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     {
                         throw new BadHttpRequestException("MagicalPower update payload was incorrect. Please verify and try again.");
                     }
-                    
+
                     if (existingUpgrade.Choice is not null)
                     {
                         existingMagicalPower = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(existingUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
@@ -275,7 +274,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
                     if (magicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpdate.MagicalPowerId) is null)
                     {
-                        throw new ValidationException([new ValidationFailure("MagicalPower",$"Magical Power '{magicalPowerUpdate.MagicalPowerId}' does not exist.")]);
+                        throw new ValidationException([new ValidationFailure("MagicalPower", $"Magical Power '{magicalPowerUpdate.MagicalPowerId}' does not exist.")]);
                     }
 
                     if (character.MagicalPowers.FirstOrDefault(x => x.Id == magicalPowerUpdate.MagicalPowerId) is not null
@@ -291,7 +290,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                         {
                             continue;
                         }
-                        
+
                         BonusFeatureUpgrade upgradePayload = JsonSerializer.Deserialize<BonusFeatureUpgrade>(affectedUpgrade.Choice.ToString(), JsonSerializerOptions.Web);
                         if (upgradePayload.MagicalPowerId == existingMagicalPower.MagicalPowerId || upgradePayload.NestedMagicalPowerId == existingMagicalPower.MagicalPowerId)
                         {
@@ -310,25 +309,106 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                 default:
                     throw new ValidationException([new ValidationFailure("UpgradeOption", "Upgrade option was not valid.")]);
             }
-
-            await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
-            
-            return true;
         }
-
-        // adding new one
-        List<UpgradeRule> upgradeRules = await GetValuesCachedAsync("Rules", () => _upgradeRepository.GetRulesAsync(token));
-        List<UpgradeRule> levelRules = upgradeRules.Where(x => x.Block <= update.Upgrade.Block).ToList();
-
-        if (levelRules.FirstOrDefault(x => x.Id == update.Upgrade.Id) is null)
+        else
         {
-            // out of range, throw hands
-            throw new ValidationException([new ValidationFailure("InvalidOption", "Option selected was outside the available options for this character.")]);
+            // adding new one
+            List<UpgradeRule> upgradeRules = await GetValuesCachedAsync("Rules", () => _upgradeRepository.GetRulesAsync(token));
+            List<UpgradeRule> levelRules = upgradeRules.Where(x => x.Block <= update.Upgrade.Block).ToList();
+
+            if (levelRules.FirstOrDefault(x => x.Id == update.Upgrade.Id) is null)
+            {
+                // out of range, throw hands
+                throw new ValidationException([new ValidationFailure("InvalidOption", "Option selected was outside the available options for this character.")]);
+            }
+
+            bool foundReference = false;
+            switch (update.UpgradeOption)
+            {
+                case UpgradeOption.bonusFeature:
+                    if (update.Upgrade.Choice is null)
+                    {
+                        break;
+                    }
+
+                    BonusFeatureUpgrade bonusFeatureUpdateChoice;
+
+                    try
+                    {
+                        bonusFeatureUpdateChoice = JsonSerializer.Deserialize<BonusFeatureUpgrade>(update.Upgrade.Choice!.ToString()!, JsonSerializerOptions.Web)!;
+                    }
+                    catch (Exception _)
+                    {
+                        throw new BadHttpRequestException("Bonus feature upgrade payload was formatted incorrectly. Please verify and try again.");
+                    }
+
+                    MagicalPower? foundMagicalPower = magicalPowers.FirstOrDefault(x => x.Id == bonusFeatureUpdateChoice!.MagicalPowerId);
+
+                    if (foundMagicalPower is null)
+                    {
+                        throw new ValidationException([new ValidationFailure("MagicalPower", $"Magical Power '{bonusFeatureUpdateChoice!.MagicalPowerId}' is invalid.")]);
+                    }
+
+                    if (foundMagicalPower.BonusFeatures.FirstOrDefault(x => x.Id == bonusFeatureUpdateChoice!.BonusFeatureId.GetValueOrDefault()) is null)
+                    {
+                        throw new ValidationException([new ValidationFailure("BonusFeature", $"Bonus Feature '{bonusFeatureUpdateChoice!.BonusFeatureId}' is invalid for Magical Power '{bonusFeatureUpdateChoice.MagicalPowerId}'.")]);
+                    }
+
+                    List<Upgrade> existingBonusFeatureUpgrades = character.Upgrades.Where(x => x.Option == UpgradeOption.bonusFeature).ToList();
+
+                    if (existingBonusFeatureUpgrades
+                        .Select(existingBonusFeatureUpgrade => JsonSerializer.Deserialize<BonusFeatureUpgrade>(existingBonusFeatureUpgrade.Choice!.ToString()!, JsonSerializerOptions.Web))
+                        .Any(existingChoice => existingChoice!.BonusFeatureId == bonusFeatureUpdateChoice!.BonusFeatureId && existingChoice.MagicalPowerId == bonusFeatureUpdateChoice.MagicalPowerId))
+                    {
+                        throw new ValidationException([new ValidationFailure("BonusFeature", $"Bonus Feature '{bonusFeatureUpdateChoice!.BonusFeatureId}' for Magical Power '{bonusFeatureUpdateChoice.MagicalPowerId}' was already present on Character.")]);
+                    }
+
+                    MagicalPower? primaryMagicalPower = character.MagicalPowers.FirstOrDefault();
+
+                    if (primaryMagicalPower is not null)
+                    {
+                        if (primaryMagicalPower.Id == bonusFeatureUpdateChoice!.MagicalPowerId)
+                        {
+                            foundReference = true;
+                        }
+                    }
+
+                    Upgrade? foundMagicalPowerUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == UpgradeOption.magicalPower);
+
+                    if (foundMagicalPowerUpgrade?.Choice is not null)
+                    {
+                        NewMagicalPowerUpgrade? magicalPowerChoice = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(foundMagicalPowerUpgrade.Choice.ToString()!, JsonSerializerOptions.Web);
+
+                        if (magicalPowerChoice!.MagicalPowerId == bonusFeatureUpdateChoice.MagicalPowerId)
+                        {
+                            foundReference = true;
+                        }
+                    }
+
+                    if (!foundReference)
+                    {
+                        throw new ValidationException([new ValidationFailure("MagicalPower", $"Magical Power '{bonusFeatureUpdateChoice.MagicalPowerId}' was not present on Character.")]);
+                    }
+
+                    break;
+                case UpgradeOption.talent:
+                    // check for existing Talent and throw hands if found
+                    break;
+                case UpgradeOption.magicalPower:
+                    // check for existing MP and throw hands if found
+                    break;
+                case UpgradeOption.treatsValue:
+                case UpgradeOption.attribute3:
+                case UpgradeOption.attribute4:
+                case UpgradeOption.owieLimit:
+                default:
+                    break;
+            }
+
+            existingUpgrade = update.Upgrade;
+
+            character.Upgrades.Add(existingUpgrade);
         }
-
-        existingUpgrade = update.Upgrade;
-
-        character.Upgrades.Add(existingUpgrade);
 
         return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
     }
@@ -345,10 +425,10 @@ public class CharacterUpgradeService : ICharacterUpgradeService
         }
 
         bool featureFound = false;
-        
+
         if (update.UpgradeOption == UpgradeOption.magicalPower && upgrade.Choice is not null)
         {
-            NewMagicalPowerUpgrade choice = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(upgrade.Choice!.ToString(), JsonSerializerOptions.Web);
+            NewMagicalPowerUpgrade choice = JsonSerializer.Deserialize<NewMagicalPowerUpgrade>(upgrade.Choice!.ToString()!, JsonSerializerOptions.Web)!;
             List<Upgrade> affectedUpgrades = character?.Upgrades.Where(x => x.Option == UpgradeOption.bonusFeature).ToList() ?? [];
 
             foreach (Upgrade affectedUpgrade in affectedUpgrades)
@@ -358,7 +438,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
                     continue;
                 }
 
-                BonusFeatureUpgrade upgradeInfo = JsonSerializer.Deserialize<BonusFeatureUpgrade>(affectedUpgrade.Choice!.ToString(), JsonSerializerOptions.Web);
+                BonusFeatureUpgrade upgradeInfo = JsonSerializer.Deserialize<BonusFeatureUpgrade>(affectedUpgrade.Choice!.ToString()!, JsonSerializerOptions.Web)!;
                 if (upgradeInfo!.MagicalPowerId == choice!.MagicalPowerId || (upgradeInfo.NestedMagicalPowerId.HasValue && upgradeInfo.NestedMagicalPowerId.Value == choice.MagicalPowerId))
                 {
                     featureFound = true;
@@ -368,9 +448,9 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
         if (featureFound)
         {
-            throw new ValidationException([new ValidationFailure("MagicalPowerExists","MagicalPower still exists on Character. Cannot remove upgrade.")]); // mostly for FE debugging and BE shenanigans
+            throw new ValidationException([new ValidationFailure("MagicalPowerExists", "MagicalPower still exists on Character. Cannot remove upgrade.")]); // mostly for FE debugging and BE shenanigans
         }
-        
+
         character!.Upgrades.Remove(upgrade);
 
         return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);

@@ -11,9 +11,11 @@ using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.Core;
 using Testing.Common;
 
 namespace MagicalKitties.Application.Tests.Unit.Services;
@@ -137,41 +139,7 @@ public class CharacterUpgradeServiceTests
         error.PropertyName.Should().Be("InvalidOption");
         error.ErrorMessage.Should().Be("Option selected was outside the available options for this character.");
     }
-
-    [Fact]
-    public async Task UpsertUpgrade_ShouldAddUpgrade_WhenUpgradeIsAdded()
-    {
-        // Arrange
-        Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateCharacter(account);
-        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
-        
-        character.Level = 5;
-
-        UpgradeRequest update = new()
-                                {
-                                    AccountId = account.Id,
-                                    CharacterId = character.Id,
-                                    UpgradeOption = UpgradeOption.talent,
-                                    Upgrade = new Upgrade
-                                              {
-                                                  Id = rules.First(x=>x.UpgradeOption == UpgradeOption.talent).Id,
-                                                  Block = 2,
-                                                  Option = UpgradeOption.talent
-                                              }
-                                };
-
-        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
-        _upgradeRepository.GetRulesAsync().Returns(rules);
-        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
-
-        // Act
-        bool result = await _sut.UpsertUpgradeAsync(update);
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
+    
     #region Attribute (Max3) Upgrade
 
     [Fact]
@@ -204,7 +172,7 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         // Act
@@ -251,7 +219,7 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         // Act
@@ -297,7 +265,8 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
+        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Do<List<Upgrade>>(arg => character.Upgrades = arg));
@@ -313,7 +282,7 @@ public class CharacterUpgradeServiceTests
     #endregion
 
     #region Bonus Feature
-
+    
     [Fact]
     public async Task UpsertUpgrade_ShouldThrowException_WhenBonusFeatureUpgradeExistsAndMagicalPowerNotFound()
     {
@@ -343,7 +312,7 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         // Act
@@ -390,7 +359,7 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         // Act
@@ -409,6 +378,53 @@ public class CharacterUpgradeServiceTests
     }
 
     [Fact]
+    public async Task UpsertUpgrade_ShouldThrowException_WhenMagicalPowerIsNotFoundOnCharacter()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
+        character.Level = 2;
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = 22,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower());
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("MagicalPower");
+        error.ErrorMessage.Should().Be("Tried to update Magical Power '22' but it was not found.");
+    }
+    
+    [Fact]
     public async Task UpsertUpgrade_ShouldUpdateBonusFeature_WhenBonusFeatureUpgradeExistsAndOptionIsValid()
     {
         // Arrange
@@ -417,7 +433,7 @@ public class CharacterUpgradeServiceTests
         Character character = Fakes.GenerateCharacter(account).WithBaselineData().WithUpgrades(rules);
         
         character.Level = 2;
-
+    
         UpgradeRequest update = new()
                                 {
                                     AccountId = account.Id,
@@ -435,21 +451,21 @@ public class CharacterUpgradeServiceTests
                                                            })
                                               }
                                 };
-
+    
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(rules);
         _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
         
         // Act
         bool result = await _sut.UpsertUpgradeAsync(update);
-
+    
         // Assert
         result.Should().BeTrue();
         Upgrade? updatedUpgrade = character.Upgrades.FirstOrDefault(x => x.Option == UpgradeOption.bonusFeature);
         updatedUpgrade.Should().NotBeNull();
-
+    
         try
         {
             ((BonusFeatureUpgrade)updatedUpgrade.Choice!).BonusFeatureId.Should().Be(2);
@@ -458,7 +474,460 @@ public class CharacterUpgradeServiceTests
         {
             Assert.Fail("Could not parse upgrade Choice for BonusFeatureUpgrade");
         }
+    }
+    
+    [Fact]
+    public async Task UpsertUpgrade_ShouldThrowException_WhenNewBonusFeatureIsFullyAddedWithInvalidPayload()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower();
+        character.Level = 2;
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = "{\"Id\" = 99,\"Name\"=\"Test\",\"Description\"=\"Test\",\"IsCustom\" = false}"
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        ExceptionAssertions<BadHttpRequestException>? errorResult = await action.Should().ThrowAsync<BadHttpRequestException>();
+
+        BadHttpRequestException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        exception.Message.Should().Be("Bonus feature upgrade payload was formatted incorrectly. Please verify and try again.");
+    }
+
+    [Fact]
+    public async Task UpsertUpgrade_ShouldThrowException_WhenNewBonusFeatureIsFullyAddedWithInvalidMagicalPower()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower();
+        character.Level = 2;
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = 22,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("MagicalPower");
+        error.ErrorMessage.Should().Be("Magical Power '22' is invalid.");
+    }
+    
+    [Fact]
+    public async Task UpsertUpgrade_ShouldThrowException_WhenNewBonusFeatureIsFullyAddedWithInvalidBonusFeature()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower();
+        character.Level = 2;
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = fakeMagicPowers[0].Id,
+                                                               BonusFeatureId = 9,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("BonusFeature");
+        error.ErrorMessage.Should().Be("Bonus Feature '9' is invalid for Magical Power '11'.");
+    }
+    
+    [Fact]
+    public async Task UpsertUpgrade_ShouldThrowException_WhenNewBonusFeatureIsFullyAddedWithMagicalPowerNotPresentOnCharacter()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower();
+        character.Level = 2;
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = fakeMagicPowers[0].Id,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("MagicalPower");
+        error.ErrorMessage.Should().Be("Magical Power '11' was not present on Character.");
+    }
+    
+    [Fact]
+    public async Task UpsertUpgrade_ShouldThrowException_WhenNewBonusFeatureIsFullyAddedWithBonusFeatureAlreadyPresentOnCharacter()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower();
+        character.Level = 5;
         
+        Upgrade bonusFeatureUpgrade = new Upgrade
+                                      {
+                                          Id = rules.First(x=> x is {UpgradeOption: UpgradeOption.bonusFeature, Block: 1}).Id,
+                                          Block = 1,
+                                          Option = UpgradeOption.bonusFeature,
+                                          Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                                            {
+                                                                                MagicalPowerId = fakeMagicPowers[0].Id,
+                                                                                BonusFeatureId = 1,
+                                                                                IsNested = false
+                                                                            })
+                                      };
+        
+        character.Upgrades.Add(bonusFeatureUpgrade);
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 2 }).Id,
+                                                  Block = 2,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = fakeMagicPowers[0].Id,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        Func<Task<bool>> action = async () => await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        ExceptionAssertions<ValidationException>? errorResult = await action.Should().ThrowAsync<ValidationException>();
+
+        ValidationException? exception = errorResult.Subject.FirstOrDefault();
+        exception.Should().NotBeNull();
+        exception.Errors.Should().NotBeEmpty();
+
+        ValidationFailure? error = exception.Errors.First();
+        error.PropertyName.Should().Be("BonusFeature");
+        error.ErrorMessage.Should().Be("Bonus Feature '1' for Magical Power '11' was already present on Character.");
+    }
+    
+    [Fact]
+    public async Task UpsertUpgrade_ShouldAddFullUpgrade_WhenNewBonusFeatureIsFullyAddedAndMagicalPowerIsThePrimary()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower(33);
+        character.Level = 2;
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = fakeMagicPowers[0].Id,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        bool result = await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        result.Should().BeTrue();
+        ICall? updateCall = _upgradeRepository.ReceivedCalls().FirstOrDefault(x=>x.GetMethodInfo().Name == nameof(_upgradeRepository.UpsertUpgradesAsync));
+        updateCall.Should().NotBeNull();
+
+        List<Upgrade> upgradePayload = (List<Upgrade>)updateCall.GetArguments()[1]!;
+        upgradePayload.Count.Should().Be(1);
+
+        Upgrade upgrade = upgradePayload.First();
+        upgrade.Option.Should().Be(update.UpgradeOption);
+        upgrade.Choice.Should().NotBeNull();
+
+        BonusFeatureUpgrade choice = JsonSerializer.Deserialize<BonusFeatureUpgrade>(upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+        choice.Should().NotBeNull();
+        choice.MagicalPowerId.Should().Be(fakeMagicPowers[0].Id);
+        choice.BonusFeatureId.Should().Be(1);
+    }
+    
+    [Fact]
+    public async Task UpsertUpgrade_ShouldAddFullUpgrade_WhenNewBonusFeatureIsFullyAddedAndMagicalPowerIsAnUpgrade()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower(69);
+        character.Level = 10;
+        
+        Upgrade magicalPowerUpgrade = new Upgrade
+                                      {
+                                          Id = rules.First(x=> x is {UpgradeOption: UpgradeOption.magicalPower, Block: 3}).Id,
+                                          Block = 3,
+                                          Option = UpgradeOption.magicalPower,
+                                          Choice = JsonSerializer.Serialize(new NewMagicalPowerUpgrade()
+                                                                            {
+                                                                                MagicalPowerId = 69
+                                                                            })
+                                      };
+        
+        character.Upgrades.Add(magicalPowerUpgrade);
+
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                                                  Block = 1,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = fakeMagicPowers[0].Id,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        bool result = await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        result.Should().BeTrue();
+        ICall? updateCall = _upgradeRepository.ReceivedCalls().FirstOrDefault(x=>x.GetMethodInfo().Name == nameof(_upgradeRepository.UpsertUpgradesAsync));
+        updateCall.Should().NotBeNull();
+
+        List<Upgrade> upgradePayload = (List<Upgrade>)updateCall.GetArguments()[1]!;
+        upgradePayload.Count.Should().Be(2);
+
+        Upgrade? upgrade = upgradePayload.FirstOrDefault(x=>x.Option == UpgradeOption.bonusFeature);
+        upgrade.Should().NotBeNull();
+        upgrade.Option.Should().Be(update.UpgradeOption);
+        upgrade.Choice.Should().NotBeNull();
+
+        BonusFeatureUpgrade choice = JsonSerializer.Deserialize<BonusFeatureUpgrade>(upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+        choice.Should().NotBeNull();
+        choice.MagicalPowerId.Should().Be(fakeMagicPowers[0].Id);
+        choice.BonusFeatureId.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task UpsertUpgrade_ShouldUpdateBonusFeatureUpgrade_WhenMagicalPowerIsChangedForBonusAndMagicalPowerIsAnUpgrade()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        List<UpgradeRule> rules = Fakes.GenerateUpgradeRules();
+        Character character = Fakes.GenerateCharacter(account).WithBaselineData();
+        List<MagicalPower> fakeMagicPowers = Fakes.GenerateMagicalPower(69);
+        character.Level = 10;
+        
+        Upgrade magicalPowerUpgrade = new Upgrade
+                                      {
+                                          Id = rules.First(x=> x is {UpgradeOption: UpgradeOption.magicalPower, Block: 3}).Id,
+                                          Block = 3,
+                                          Option = UpgradeOption.magicalPower,
+                                          Choice = JsonSerializer.Serialize(new NewMagicalPowerUpgrade()
+                                                                            {
+                                                                                MagicalPowerId = 69
+                                                                            })
+                                      };
+
+        Upgrade bonusFeatureUpgrade = new Upgrade
+                                      {
+                                          Id = rules.First(x => x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 2 }).Id,
+                                          Block = 2,
+                                          Option = UpgradeOption.bonusFeature,
+                                          Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                                            {
+                                                                                MagicalPowerId = 11,
+                                                                                BonusFeatureId = 1
+                                                                            })
+                                      };
+                                     
+
+        character.Upgrades.AddRange([magicalPowerUpgrade, bonusFeatureUpgrade]);
+
+        // change block 2's update to be pointed to 69, not the existing 11.
+        UpgradeRequest update = new()
+                                {
+                                    AccountId = account.Id,
+                                    CharacterId = character.Id,
+                                    UpgradeOption = UpgradeOption.bonusFeature,
+                                    Upgrade = new Upgrade
+                                              {
+                                                  Id = rules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 2}).Id,
+                                                  Block = 2,
+                                                  Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
+                                                           {
+                                                               MagicalPowerId = fakeMagicPowers[0].Id,
+                                                               BonusFeatureId = 1,
+                                                               IsNested = false
+                                                           })
+                                              }
+                                };
+
+        _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
+        _upgradeRepository.GetRulesAsync().Returns(rules);
+        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(fakeMagicPowers);
+        _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
+
+        // Act
+        bool result = await _sut.UpsertUpgradeAsync(update);
+
+        // Assert
+        result.Should().BeTrue();
+        ICall? updateCall = _upgradeRepository.ReceivedCalls().FirstOrDefault(x=>x.GetMethodInfo().Name == nameof(_upgradeRepository.UpsertUpgradesAsync));
+        updateCall.Should().NotBeNull();
+
+        List<Upgrade> upgradePayload = (List<Upgrade>)updateCall.GetArguments()[1]!;
+        upgradePayload.Count.Should().Be(2);
+
+        Upgrade? upgrade = upgradePayload.FirstOrDefault(x=>x.Option == UpgradeOption.bonusFeature);
+        upgrade.Should().NotBeNull();
+        upgrade.Option.Should().Be(update.UpgradeOption);
+        upgrade.Choice.Should().NotBeNull();
+
+        BonusFeatureUpgrade choice = JsonSerializer.Deserialize<BonusFeatureUpgrade>(upgrade.Choice.ToString(), JsonSerializerOptions.Web);
+        choice.Should().NotBeNull();
+        choice.MagicalPowerId.Should().Be(fakeMagicPowers[0].Id);
+        choice.BonusFeatureId.Should().Be(1);
     }
 
     #endregion
@@ -493,7 +962,7 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(rules);
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers());
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower());
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         // Act
@@ -537,7 +1006,7 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(Fakes.GenerateUpgradeRules());
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
 
         // Act
@@ -583,7 +1052,8 @@ public class CharacterUpgradeServiceTests
 
         _characterRepository.GetByIdAsync(update.CharacterId).Returns(character);
         _upgradeRepository.GetRulesAsync().Returns(rules);
-        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPowers(33));
+        _upgradeRepository.UpsertUpgradesAsync(character.Id, Arg.Any<List<Upgrade>>()).Returns(true);
+        _magicalPowerRepository.GetAllAsync(Arg.Any<GetAllMagicalPowersOptions>()).Returns(Fakes.GenerateMagicalPower(33));
         _talentRepository.GetAllAsync(Arg.Any<GetAllTalentsOptions>()).Returns(Fakes.GenerateTalents());
         
         // Act
