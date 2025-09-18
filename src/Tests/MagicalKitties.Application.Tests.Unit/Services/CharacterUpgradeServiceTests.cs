@@ -1081,7 +1081,7 @@ public class CharacterUpgradeServiceTests
 
         ValidationFailure? error = exception.Errors.First();
         error.PropertyName.Should().Be("Talent");
-        error.ErrorMessage.Should().Be("Talent '99' does not exist.");
+        error.ErrorMessage.Should().Be("Talent '99' is invalid.");
     }
 
     [Fact]
