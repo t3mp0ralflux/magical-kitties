@@ -372,7 +372,7 @@ public static class Fakes
             {
                 Id = Guid.NewGuid(),
                 Block = 2,
-                Value = "Gain Bonus Feature", // rude much?
+                Value = "Gain Bonus Feature",
                 UpgradeOption = UpgradeOption.bonusFeature
             },
             new UpgradeRule
