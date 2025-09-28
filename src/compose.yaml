@@ -1,5 +1,10 @@
 name: magical-kitties
-services: 
+networks:
+  my-network:
+    ipam:
+      config:
+        - subnet: 173.18.0.0/24
+services:
   db:
     image: postgres:latest
     restart: unless-stopped
@@ -8,6 +13,9 @@ services:
       - POSTGRES_USER=dm
       - POSTGRES_PASSWORD=magic
       - POSTGRES_DB=sql-db-magickitty-dev
+    networks:
+      my-network:
+        ipv4_address: 173.18.0.100
     ports:
       - '5432:5432'
   seq:
@@ -16,6 +24,9 @@ services:
     container_name: logs
     environment:
       - ACCEPT_EULA=Y
+    networks:
+      my-network:
+        ipv4_address: 173.18.0.101
     ports:
       - '5341:80'
   api:
@@ -23,14 +34,17 @@ services:
     container_name: API
     build:
       dockerfile: Dockerfile
+    networks:
+      my-network:
+        ipv4_address: 173.18.0.102
     ports:
       - '5001:5001'
     environment:
       - ASPNETCORE_HTTPS_PORTS=5001
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_Kestrel__Certificates__Default__Password="password"
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-      - ConnectionStrings:Database=Server=192.168.1.109;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
+      - ConnectionStrings:Database=Server=173.18.0.100;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
     depends_on:
       - "db"
     volumes:
