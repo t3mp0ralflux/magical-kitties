@@ -28,9 +28,9 @@ services:
     environment:
       - ASPNETCORE_HTTPS_PORTS=5001
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Password="password"
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-      - ConnectionStrings:Database=Server=192.168.1.110;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
+      - ConnectionStrings:Database=Server=192.168.1.109;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
     depends_on:
       - "db"
     volumes:
