@@ -25,10 +25,6 @@ public class GlobalExceptionHandler : IExceptionHandler
             case ValidationException validationException:
             {
                 httpContext.Response.StatusCode = 400;
-                // ValidationFailureResponse validationFailureResponse = new()
-                //                                                       {
-                //                                                           Errors = 
-                //                                                       };
                 
                 problemDetails = new ProblemDetails
                                  {
@@ -43,10 +39,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                                                                                                       PropertyName = x.PropertyName,
                                                                                                       Message = x.ErrorMessage
                                                                                                   }));
-                
-                //await httpContext.Response.WriteAsJsonAsync(validationFailureResponse, cancellationToken);
                 break;
-                //return true;
             }
             case PostgresException postgresException:
                 if (postgresException.Message.Contains("duplicate"))
@@ -67,6 +60,9 @@ public class GlobalExceptionHandler : IExceptionHandler
                     await httpContext.Response.WriteAsJsonAsync(result, cancellationToken);
                     return true;
                 }
+                
+                // something else went wrong, log that error!
+                _logger.LogError(exception, "DB structure exception: {Message}", exception.Message);
 
                 break;
             case TimeoutException:
@@ -94,7 +90,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-                _logger.LogError(exception, "Uncaught Exception Occurred: {Message}", exception.Message);
+                _logger.LogError(exception, "Uncaught exception occurred: {Message}", exception.Message);
                 break;
         }
 
