@@ -20,7 +20,7 @@ public static class ApiEndpoints
     {
         private const string Base = "auth";
         public const string Login = $"{Base}/login";
-        public const string Logout = $"{Base}/logout/{{accountId:guid}}";
+        public const string Logout = $"{Base}/logout/{{refreshToken}}";
         public const string LoginByToken = $"{Base}/login/token";
         public const string RefreshToken = $"{Base}/token/refresh";
         public const string PasswordReset = $"{Base}/passwordreset";
