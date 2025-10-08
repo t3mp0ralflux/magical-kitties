@@ -22,10 +22,16 @@ builder.Services.AddCors(options =>
                              options.AddPolicy("Default",
                                  policy =>
                                  {
-                                     policy.AllowAnyOrigin()
-                                           .AllowAnyHeader()
+                                     policy.WithOrigins(
+                                               "http://localhost:4200",
+                                               "http://0.0.0.0:4200",
+                                               "http://192.168.1.109:4200"
+                                               )
+                                           .SetIsOriginAllowed(origin => true) // debugging
                                            .AllowAnyMethod()
-                                           .WithExposedHeaders("location");
+                                           .AllowAnyHeader()
+                                           .WithExposedHeaders("location")
+                                           .AllowCredentials();
                                  });
                          });
 
@@ -214,12 +220,14 @@ if (app.Environment.IsDevelopment())
                                       .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
                                   options.Servers = [];
                               });
-    
-    
+}
+
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
 }
 
 app.UseCors("Default");
-app.UseHttpsRedirection();
 
 app.UseExceptionHandler();
 
