@@ -116,14 +116,14 @@ public class HumanService : IHumanService
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
     {
-        bool humanExists = await _humanRepository.ExistsByIdAsync(id, token);
+        Human? human = await _humanRepository.GetByIdAsync(id, token: token);
 
-        if (!humanExists)
+        if (human is null)
         {
             return false;
         }
 
-        return await _humanRepository.DeleteAsync(id, token);
+        return await _humanRepository.DeleteAsync(human.Id, token);
     }
 
     public async Task<bool> DeleteProblemAsync(Guid humanId, Guid problemId, CancellationToken token = default)

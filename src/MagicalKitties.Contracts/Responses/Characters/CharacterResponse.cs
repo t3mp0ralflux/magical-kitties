@@ -17,7 +17,7 @@ public class CharacterResponse
     public required List<TalentResponse> Talents { get; init; }
     public required List<MagicalPowerResponse> MagicalPowers { get; init; }
     public required string Hometown { get; init; }
-    public required List<HumanResponse> Human { get; init; }
+    public required List<HumanResponse> Humans { get; init; }
 
     public required int Level { get; init; } = 1;
     public required int CurrentXp { get; init; }

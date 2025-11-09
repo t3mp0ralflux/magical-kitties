@@ -10,7 +10,7 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class HumanRepository : IHumanRepository
 {
-    private const string HumanFields = "h.id, h.character_id, h.name, h.description";
+    private const string HumanFields = "h.id, h.character_id, h.name, h.description, h.deleted_utc";
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
@@ -74,7 +74,8 @@ public class HumanRepository : IHumanRepository
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and h.deleted_utc is null";
         IEnumerable<Human> result = await connection.QueryAsyncWithRetry<Human, List<Problem>>(new CommandDefinition($"""
                                                                                                                       select {HumanFields},
-                                                                                                                      (select json_agg(p.*)
+                                                                                                                      (select coalesce(
+                                                                                                                      json_agg(p.*), '[]'::json)
                                                                                                                       from problem p
                                                                                                                       where human_id = @id) as problems
                                                                                                                       from human h
@@ -211,7 +212,7 @@ public class HumanRepository : IHumanRepository
                                                                                        }, cancellationToken: token));
         }
 
-        if (result > 0)
+        if (result >= 0)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update character c

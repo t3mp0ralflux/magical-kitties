@@ -200,7 +200,7 @@ public static class ContractMapping
                    CurrentXp = character.CurrentXp,
                    Description = character.Description,
                    Hometown = character.Hometown,
-                   Human = character.Humans.Select(ToResponse).ToList(),
+                   Humans = character.Humans.Select(ToResponse).ToList(),
                    Level = character.Level,
                    Cunning = character.Cunning,
                    Cute = character.Cute,

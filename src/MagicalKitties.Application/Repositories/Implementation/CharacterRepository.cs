@@ -94,13 +94,12 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                                         'character_id', h.character_id,
                                                                                                                                                                                         'name', h.name,
                                                                                                                                                                                         'description', h.description,
-                                                                                                                                                                                        'characterId', h.character_id,
                                                                                                                                                                                         'deleted_utc', h.deleted_utc,
-                                                                                                                                                                                        'problems', problems
+                                                                                                                                                                                        'problems', coalesce(problems, '[]'::json)
                                                                                                                                                                                      )
                                                                                                                                                                             )
                                                                                                                                                                     from human h
-                                                                                                                                                                    join (
+                                                                                                                                                                    left join (
                                                                                                                                                                         select
                                                                                                                                                                             p.human_id,
                                                                                                                                                                             json_agg (

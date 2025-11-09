@@ -5,4 +5,5 @@ public enum DescriptionOption
     name,
     description,
     hometown,
+    xp
 }
