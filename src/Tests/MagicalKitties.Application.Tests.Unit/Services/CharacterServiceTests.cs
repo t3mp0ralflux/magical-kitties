@@ -82,10 +82,11 @@ public class CharacterServiceTests
     public async Task GetAsync_ShouldReturnNull_WhenCharacterIsNotFound()
     {
         // Arrange
-        _characterRepository.GetByIdAsync(Guid.NewGuid()).Returns((Character?)null);
+        Account account = Fakes.GenerateAccount();
+        _characterRepository.GetByIdAsync(account.Id, Arg.Any<Guid>()).Returns((Character?)null);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync(account.Id, Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -115,12 +116,12 @@ public class CharacterServiceTests
                                    IsPrimary = false
                                };
         
-        _characterRepository.GetByIdAsync(character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
         _talentRepository.GetByIdAsync(talentUpgrade.Id).Returns(talentUpgrade);
         _magicalPowerRepository.GetByIdAsync(magicalPowerUpgrade.Id).Returns(magicalPowerUpgrade);
         
         // Act
-        Character? result = await _sut.GetByIdAsync(character.Id);
+        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -232,10 +233,10 @@ public class CharacterServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterRepository.ExistsByIdAsync(character.Id).Returns(false);
+        _characterRepository.ExistsByIdAsync(account.Id, character.Id).Returns(false);
 
         // Act
-        bool result = await _sut.DeleteAsync(character.Id);
+        bool result = await _sut.DeleteAsync(account.Id, character.Id);
 
         // Assert
         result.Should().BeFalse();
@@ -248,11 +249,11 @@ public class CharacterServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
-        _characterRepository.DeleteAsync(character.Id).Returns(false);
+        _characterRepository.ExistsByIdAsync(account.Id, character.Id).Returns(true);
+        _characterRepository.DeleteAsync(account.Id, character.Id).Returns(false);
 
         // Act
-        bool result = await _sut.DeleteAsync(character.Id);
+        bool result = await _sut.DeleteAsync(account.Id, character.Id);
 
         // Assert
         result.Should().BeFalse();
@@ -265,11 +266,11 @@ public class CharacterServiceTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterRepository.ExistsByIdAsync(character.Id).Returns(true);
-        _characterRepository.DeleteAsync(character.Id).Returns(true);
+        _characterRepository.ExistsByIdAsync(account.Id, character.Id).Returns(true);
+        _characterRepository.DeleteAsync(account.Id, character.Id).Returns(true);
 
         // Act
-        bool result = await _sut.DeleteAsync(character.Id);
+        bool result = await _sut.DeleteAsync(account.Id, character.Id);
 
         // Assert
         result.Should().BeTrue();
@@ -285,11 +286,11 @@ public class CharacterServiceTests
                                    .WithHumanData()
                                    .WithUpgrades(Fakes.GenerateUpgradeRules());
 
-        _characterRepository.GetByIdAsync(character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
         _characterRepository.CopyAsync(Arg.Any<Character>()).Returns(true);
         
         // Act
-        Character result = await _sut.CopyAsync(character.Id);
+        Character result = await _sut.CopyAsync(account.Id, character.Id);
 
         // Assert
         result.Name.Should().Be($"{character.Name} - Copy");

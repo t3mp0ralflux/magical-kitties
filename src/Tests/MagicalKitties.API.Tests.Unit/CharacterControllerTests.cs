@@ -110,7 +110,7 @@ public class CharacterControllerTests
 
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterService.GetByIdAsync(character.Id).Returns(character);
+        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
 
         CharacterResponse expectedResponse = character.ToResponse();
 
@@ -239,9 +239,10 @@ public class CharacterControllerTests
     public async Task Delete_ShouldReturnNotFound_WhenCharacterIsNotFound()
     {
         // Arrange
-        _accountService.ExistsByEmailAsync(Arg.Any<string?>()).Returns(true);
+        Account account = Fakes.GenerateAccount();
+        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
 
-        _characterService.DeleteAsync(Guid.NewGuid()).Returns(false);
+        _characterService.DeleteAsync(account.Id, Guid.NewGuid()).Returns(false);
 
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.Delete(Guid.NewGuid(), CancellationToken.None);
@@ -254,12 +255,12 @@ public class CharacterControllerTests
     public async Task Delete_ShouldReturnNoContent_WhenCharacterIsDeleted()
     {
         // Arrange
-        // Arrange
-        _accountService.ExistsByEmailAsync(Arg.Any<string?>()).Returns(true);
+        Account account = Fakes.GenerateAccount();
+        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
 
         Guid characterId = Guid.NewGuid();
 
-        _characterService.DeleteAsync(characterId).Returns(true);
+        _characterService.DeleteAsync(account.Id, characterId).Returns(true);
 
         // Act
         NoContentResult result = (NoContentResult)await _sut.Delete(characterId, CancellationToken.None);

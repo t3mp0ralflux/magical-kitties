@@ -240,10 +240,11 @@ public static class ContractMapping
                };
     }
 
-    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, MKAppCharacters.Character character)
+    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, Guid accountId, MKAppCharacters.Character character)
     {
         return new AttributeUpdate
                {
+                   AccountId = accountId,
                    Character = character,
                    Cunning = request.Cunning,
                    Cute = request.Cute,
@@ -420,7 +421,8 @@ public static class ContractMapping
         return new MKAppHumans.Updates.DescriptionUpdate
                {
                    DescriptionOption = (DescriptionOption)description,
-                   HumanId = request.CharacterId,
+                   CharacterId = request.CharacterId,
+                   HumanId = request.HumanId,
                    Name = request.Name,
                    Description = request.Description
                };
@@ -431,6 +433,7 @@ public static class ContractMapping
         return new ProblemUpdate
                {
                    ProblemOption = (ProblemOption)problem,
+                   CharacterId = request.CharacterId,
                    HumanId = request.HumanId,
                    ProblemId = request.ProblemId,
                    Source = request.Source,

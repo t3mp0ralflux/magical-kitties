@@ -39,9 +39,9 @@ public class HumanService : IHumanService
         return human;
     }
 
-    public async Task<bool> CreateProblemAsync(Guid humanId, CancellationToken token = default)
+    public async Task<bool> CreateProblemAsync(Guid characterId, Guid humanId, CancellationToken token = default)
     {
-        Human? human = await _humanRepository.GetByIdAsync(humanId, token: token);
+        Human? human = await _humanRepository.GetByIdAsync(characterId, humanId, token: token);
 
         if (human is null)
         {
@@ -61,9 +61,9 @@ public class HumanService : IHumanService
         return await _problemRepository.CreateProblemAsync(problem, token);
     }
 
-    public async Task<Human?> GetByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<Human?> GetByIdAsync(Guid characterId, Guid humanId, CancellationToken token = default)
     {
-        return await _humanRepository.GetByIdAsync(id, token: token);
+        return await _humanRepository.GetByIdAsync(characterId, humanId, token: token);
     }
 
     public async Task<IEnumerable<Human>> GetAllAsync(GetAllHumansOptions options, CancellationToken token = default)
@@ -80,7 +80,7 @@ public class HumanService : IHumanService
 
     public async Task<bool> UpdateDescriptionAsync(DescriptionUpdate update, CancellationToken token = default)
     {
-        bool humanExists = await _humanRepository.ExistsByIdAsync(update.HumanId, token);
+        bool humanExists = await _humanRepository.ExistsByIdAsync(update.CharacterId, update.HumanId, token);
 
         if (!humanExists)
         {
@@ -97,7 +97,7 @@ public class HumanService : IHumanService
 
     public async Task<bool> UpdateProblemAsync(ProblemUpdate update, CancellationToken token = default)
     {
-        Human? human = await _humanRepository.GetByIdAsync(update.HumanId, token: token);
+        Human? human = await _humanRepository.GetByIdAsync(update.CharacterId, update.HumanId, token: token);
 
         if (human is null)
         {
@@ -114,9 +114,9 @@ public class HumanService : IHumanService
         };
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(Guid characterId, Guid humanId, CancellationToken token = default)
     {
-        Human? human = await _humanRepository.GetByIdAsync(id, token: token);
+        Human? human = await _humanRepository.GetByIdAsync(characterId, humanId, token: token);
 
         if (human is null)
         {
@@ -126,9 +126,9 @@ public class HumanService : IHumanService
         return await _humanRepository.DeleteAsync(human.Id, token);
     }
 
-    public async Task<bool> DeleteProblemAsync(Guid humanId, Guid problemId, CancellationToken token = default)
+    public async Task<bool> DeleteProblemAsync(Guid characterId, Guid humanId, Guid problemId, CancellationToken token = default)
     {
-        bool humanExists = await _humanRepository.ExistsByIdAsync(humanId, token);
+        bool humanExists = await _humanRepository.ExistsByIdAsync(characterId, humanId, token);
 
         if (!humanExists)
         {

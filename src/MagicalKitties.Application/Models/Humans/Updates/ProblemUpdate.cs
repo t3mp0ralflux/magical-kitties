@@ -3,6 +3,7 @@
 public class ProblemUpdate
 {
     public ProblemOption ProblemOption { get; init; }
+    public required Guid CharacterId { get; init; }
     public required Guid HumanId { get; init; }
     public required Guid ProblemId { get; init; }
     public required string? Source { get; init; }

@@ -80,11 +80,11 @@ public class HumanRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? updatedCharacter = await _characterRepository.GetByIdAsync(character.Id);
+        Character? updatedCharacter = await _characterRepository.GetByIdAsync(account.Id, character.Id);
         updatedCharacter.Should().NotBeNull();
         updatedCharacter.UpdatedUtc.Should().BeCloseTo(now, TimeSpan.FromSeconds(1));
 
-        Human? updatedHuman = await _sut.GetByIdAsync(human.Id, true);
+        Human? updatedHuman = await _sut.GetByIdAsync(character.Id, human.Id, true);
         updatedHuman.Should().NotBeNull();
         updatedHuman.DeletedUtc.Should().BeCloseTo(now, TimeSpan.FromSeconds(1));
         foreach (Problem updatedHumanProblem in updatedHuman.Problems)

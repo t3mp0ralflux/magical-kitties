@@ -2,6 +2,7 @@
 
 public class HumanProblemUpdateRequest
 {
+    public required Guid CharacterId { get; init; }
     public required Guid HumanId { get; init; }
     public required Guid ProblemId { get; init; }
     public string? Source { get; init; }

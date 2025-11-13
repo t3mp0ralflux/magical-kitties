@@ -56,18 +56,19 @@ public class HumanRepository : IHumanRepository
         return result > 0;
     }
     
-    public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> ExistsByIdAsync(Guid characterId, Guid humanId, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         return await connection.QuerySingleAsyncWithRetry<bool>(new CommandDefinition("""
                                                                                       select exists(select 1
                                                                                       from human
-                                                                                      where id = @id)
-                                                                                      """, new { id }, cancellationToken: token));
+                                                                                      where id = @humanId
+                                                                                      and character_id = @characterId)
+                                                                                      """, new { humanId, characterId }, cancellationToken: token));
     }
 
-    public async Task<Human?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken token = default)
+    public async Task<Human?> GetByIdAsync(Guid characterId, Guid humanId, bool includeDeleted = false, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
@@ -77,13 +78,15 @@ public class HumanRepository : IHumanRepository
                                                                                                                       (select coalesce(
                                                                                                                       json_agg(p.*), '[]'::json)
                                                                                                                       from problem p
-                                                                                                                      where human_id = @id) as problems
+                                                                                                                      where human_id = @humanId) as problems
                                                                                                                       from human h
-                                                                                                                      where h.id = @id
+                                                                                                                      where h.id = @humanId
+                                                                                                                      and h.character_id = @characterId
                                                                                                                       {shouldIncludeDeleted}
                                                                                                                       """, new
                                                                                                                            {
-                                                                                                                               id
+                                                                                                                               characterId,
+                                                                                                                               humanId
                                                                                                                            }, cancellationToken: token), (human, problems) =>
                                                                                                                                                          {
                                                                                                                                                              human.Problems = problems;

@@ -3,6 +3,7 @@
 public class HumanDescriptionUpdateRequest
 {
     public required Guid CharacterId { get; init; }
+    public required Guid HumanId { get; init; }
     public string? Name { get; init; }
     public string? Description { get; init; }
 }

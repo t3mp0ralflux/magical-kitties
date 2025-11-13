@@ -30,16 +30,11 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(request.CharacterId, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, request.CharacterId, token);
 
         if (character is null)
         {
             return NotFound();
-        }
-
-        if (character.AccountId != account.Id)
-        {
-            return Unauthorized();
         }
 
         MKCtrApplicationCharacterUpdates.DescriptionUpdate descriptionUpdate = request.ToUpdate(account.Id);
@@ -64,19 +59,14 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(request.CharacterId, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, request.CharacterId, token);
 
         if (character is null)
         {
             return NotFound();
         }
-
-        if (character.AccountId != account.Id)
-        {
-            return Unauthorized();
-        }
-
-        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(character);
+        
+        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(account.Id, character);
 
         // will throw validation errors
         bool success = await characterUpdateService.UpdateAttributeAsync((MKCtrApplicationCharacterUpdates.AttributeOption)attribute, attributeUpdate, token);
@@ -88,7 +78,7 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
     [ProducesResponseType<OkObjectResult>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Reset([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Reset([FromRoute] Guid characterId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -97,19 +87,14 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(id, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
 
         if (character is null)
         {
             return NotFound();
         }
-
-        if (character.AccountId != account.Id)
-        {
-            return Unauthorized();
-        }
-
-        await characterUpdateService.Reset(id, token);
+        
+        await characterUpdateService.Reset(account.Id, characterId, token);
 
         return Ok("Character reset successfully.");
     }
@@ -128,16 +113,11 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(characterId, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
 
         if (character is null)
         {
             return NotFound();
-        }
-
-        if (character.AccountId != account.Id)
-        {
-            return Unauthorized();
         }
 
         UpgradeRequest update = request.ToUpdate(account.Id, characterId);
@@ -166,18 +146,13 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(characterId, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
         
         if (character is null)
         {
             return NotFound();
         }
-
-        if (character.AccountId != account.Id)
-        {
-            return Unauthorized();
-        }
-
+        
         UpgradeRequest update = request.ToUpdate(account.Id, characterId);
 
         bool success = await characterUpgradeService.RemoveUpgradeAsync(update, token);

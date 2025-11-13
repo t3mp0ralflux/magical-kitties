@@ -275,10 +275,11 @@ public static class Fakes
         return fakeHuman;
     }
 
-    public static AttributeUpdate GenerateAttributeUpdate(Character character)
+    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Character character)
     {
         return new AttributeUpdate
                {
+                   AccountId = accountId,
                    Character = character,
                    Cunning = 3,
                    Cute = 2,
@@ -308,10 +309,11 @@ public static class Fakes
                };
     }
 
-    public static AttributeUpdateValidationContext GenerateValidationContext(Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
+    public static AttributeUpdateValidationContext GenerateValidationContext(Guid accountId, Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
     {
         AttributeUpdate update = new()
                                  {
+                                     AccountId = accountId,
                                      Character = character,
                                      Cunning = cunning,
                                      Cute = cute,

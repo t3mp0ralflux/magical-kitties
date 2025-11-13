@@ -32,12 +32,12 @@ public static class ApiEndpoints
     {
         private const string Base = $"{ApiBase}/characters";
         public const string Create = Base;
-        public const string Copy = $"{Base}/{{id:guid}}";
-        public const string Delete = $"{Base}/{{id:guid}}";
-        public const string Get = $"{Base}/{{id:guid}}";
+        public const string Copy = $"{Base}/{{characterId:guid}}";
+        public const string Delete = $"{Base}/{{characterId:guid}}";
+        public const string Get = $"{Base}/{{characterId:guid}}";
         public const string GetAll = Base;
         public const string RemoveUpgrade = $"{Base}/{{characterId:guid}}/upgrade/remove";
-        public const string Reset = $"{Base}/{{id:guid}}/reset";
+        public const string Reset = $"{Base}/{{characterId:guid}}/reset";
         public const string UpdateAttribute = $"{Base}/attributes/{{attribute}}";
         public const string UpdateDescription = $"{Base}/description/{{description}}";
         public const string UpsertUpgrade = $"{Base}/{{characterId:guid}}/upgrade/upsert";
@@ -57,10 +57,10 @@ public static class ApiEndpoints
     {
         private const string Base = $"{ApiBase}/humans";
         public const string Create = $"{Base}/{{characterId:guid}}";
-        public const string CreateProblem = $"{Base}/{{humanId:guid}}/problem";
-        public const string Delete = $"{Base}/{{id:guid}}";
-        public const string DeleteProblem = $"{Base}/{{humanId:guid}}/problem/{{problemId:guid}}";
-        public const string Get = $"{Base}/{{id:guid}}";
+        public const string CreateProblem = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}/problem";
+        public const string Delete = $"{Base}/{{characterID:guid}}/human/{{humanId:guid}}";
+        public const string DeleteProblem = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}/problem/{{problemId:guid}}";
+        public const string Get = $"{Base}/{{characterId:guid}}/human/{{id:guid}}";
         public const string GetAll = Base;
         public const string Update = $"{Base}/{{description}}";
         public const string UpdateProblem = $"{Base}/problem/{{problem}}";
