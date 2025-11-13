@@ -43,8 +43,9 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         CharacterResponse expectedResponse = new Character
                                              {
@@ -90,8 +91,9 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         // Act
         NotFoundResult result = (NotFoundResult)await _sut.Get(Guid.NewGuid(), CancellationToken.None);
@@ -105,8 +107,9 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         Character character = Fakes.GenerateCharacter(account);
 
@@ -146,8 +149,9 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         GetAllCharactersRequest request = new()
                                           {
@@ -176,8 +180,9 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         Character character = Fakes.GenerateCharacter(account);
 
@@ -240,7 +245,8 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         _characterService.DeleteAsync(account.Id, Guid.NewGuid()).Returns(false);
 
@@ -256,7 +262,8 @@ public class CharacterControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        _accountService.GetByEmailAsync(Arg.Any<string?>()).Returns(account);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
 
         Guid characterId = Guid.NewGuid();
 

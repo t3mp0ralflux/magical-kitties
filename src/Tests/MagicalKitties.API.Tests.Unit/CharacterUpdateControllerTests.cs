@@ -54,7 +54,7 @@ public class CharacterUpdateControllerTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _sut.ControllerContext = CreateControllerContext(account.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
@@ -81,7 +81,7 @@ public class CharacterUpdateControllerTests
 
         Character character = Fakes.GenerateCharacter(account);
 
-        _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
@@ -123,7 +123,7 @@ public class CharacterUpdateControllerTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _sut.ControllerContext = CreateControllerContext(account.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
@@ -149,7 +149,7 @@ public class CharacterUpdateControllerTests
         Account unauthorizedAccount = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
@@ -189,7 +189,7 @@ public class CharacterUpdateControllerTests
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _sut.ControllerContext = CreateControllerContext(account.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
@@ -210,7 +210,7 @@ public class CharacterUpdateControllerTests
         Account unauthorizedAccount = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
 
-        _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
@@ -258,7 +258,7 @@ public class CharacterUpdateControllerTests
                                                                   Value = "This doesn't matter"
                                                               };
 
-        _sut.ControllerContext = CreateControllerContext(account.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
@@ -287,7 +287,7 @@ public class CharacterUpdateControllerTests
                                                                   Value = "This doesn't matter"
                                                               };
 
-        _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
@@ -332,7 +332,7 @@ public class CharacterUpdateControllerTests
                                                                   Value = "This isn't relevant"
                                                               };
 
-        _sut.ControllerContext = CreateControllerContext(account.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
         _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
@@ -360,7 +360,7 @@ public class CharacterUpdateControllerTests
                                                                   Value = "This isn't relevant"
                                                               };
 
-        _sut.ControllerContext = CreateControllerContext(unauthorizedAccount.Email);
+        _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
         _characterService.GetByIdAsync(unauthorizedAccount.Id, character.Id).Returns((Character?)null);
@@ -391,20 +391,5 @@ public class CharacterUpdateControllerTests
         {
             yield return [descriptionOption];
         }
-    }
-
-    public static ControllerContext CreateControllerContext(string email)
-    {
-        ControllerContext result = new()
-                                   {
-                                       HttpContext = new DefaultHttpContext
-                                                     {
-                                                         User = new ClaimsPrincipal()
-                                                     }
-                                   };
-
-        result.HttpContext.User.AddIdentity(new ClaimsIdentity([new Claim(ClaimTypes.Email, email)]));
-
-        return result;
     }
 }

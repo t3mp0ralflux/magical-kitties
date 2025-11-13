@@ -39,13 +39,13 @@ public class HumanService : IHumanService
         return human;
     }
 
-    public async Task<bool> CreateProblemAsync(Guid characterId, Guid humanId, CancellationToken token = default)
+    public async Task<Problem> CreateProblemAsync(Guid characterId, Guid humanId, CancellationToken token = default)
     {
         Human? human = await _humanRepository.GetByIdAsync(characterId, humanId, token: token);
 
         if (human is null)
         {
-            return false;
+            throw new ValidationException([new ValidationFailure("Human", "No Human Found")]);
         }
 
         Problem problem = new()
@@ -58,7 +58,9 @@ public class HumanService : IHumanService
                               Source = ""
                           };
 
-        return await _problemRepository.CreateProblemAsync(problem, token);
+        bool success =  await _problemRepository.CreateProblemAsync(problem, token);
+
+        return success ? problem : throw new Exception("Failure creating Human Problem.");
     }
 
     public async Task<Human?> GetByIdAsync(Guid characterId, Guid humanId, CancellationToken token = default)

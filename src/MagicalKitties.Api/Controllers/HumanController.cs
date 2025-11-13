@@ -41,11 +41,11 @@ public class HumanController(IHumanService humanService, IAccountService account
 
         HumanResponse response = human.ToResponse();
 
-        return CreatedAtAction(nameof(Get), new { id = human.Id }, response);
+        return CreatedAtAction(nameof(Get), new { characterId, humanId = human.Id }, response);
     }
 
     [HttpPost(ApiEndpoints.Humans.CreateProblem)]
-    [ProducesResponseType<OkObjectResult>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ProblemResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CreateProblem([FromRoute] Guid characterId, [FromRoute] Guid humanId, CancellationToken token)
@@ -57,9 +57,11 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        bool result = await humanService.CreateProblemAsync(characterId, humanId, token);
+        Problem result = await humanService.CreateProblemAsync(characterId, humanId, token);
 
-        return result ? Ok("Problem created successfully") : NotFound("Human not found.");
+        ProblemResponse response = result.ToResponse();
+
+        return Created(string.Empty, response);
     }
 
     [HttpGet(ApiEndpoints.Humans.Get)]

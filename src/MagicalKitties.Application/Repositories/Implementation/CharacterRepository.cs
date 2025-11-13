@@ -67,7 +67,10 @@ public class CharacterRepository : ICharacterRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
-        string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
+        string deletedCharactersClause = includeDeleted ? string.Empty : "and c.deleted_utc is null";
+        string deletedHumansClause = includeDeleted ? string.Empty : "and h.deleted_utc is null";
+        string deletedHumanProblemsClause = includeDeleted ? string.Empty : "where p.deleted_utc is null";
+        
         IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>, List<MagicalPower>, List<Human>>(new CommandDefinition($"""
                                                                                                                                                                     select {CharacterFields}, {CharacterStatFields},
                                                                                                                                                                     (select to_json(f.*)
@@ -114,14 +117,16 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                                     )
                                                                                                                                                                             ) problems
                                                                                                                                                                         from problem p
+                                                                                                                                                                        {deletedHumanProblemsClause}
                                                                                                                                                                         group by p.human_id
                                                                                                                                                                     ) p on h.id = p.human_id
-                                                                                                                                                                    where h.character_id = @characterId and h.deleted_utc is null) humans
+                                                                                                                                                                    where h.character_id = @characterId 
+                                                                                                                                                                    {deletedHumansClause}) humans
                                                                                                                                                                     from character c
                                                                                                                                                                     inner join characterstat cs on c.id = cs.character_id
                                                                                                                                                                     where c.id = @characterId
                                                                                                                                                                     and c.account_id = @accountId
-                                                                                                                                                                    {shouldIncludeDeleted}
+                                                                                                                                                                    {deletedCharactersClause}
                                                                                                                                                                     """, new { accountId, characterId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
                                                                                                                                                                                                                                      {
                                                                                                                                                                                                                                          character.Flaw = string.IsNullOrWhiteSpace(flaw?.Name) ? null : flaw;

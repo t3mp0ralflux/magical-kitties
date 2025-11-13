@@ -58,9 +58,9 @@ public static class ApiEndpoints
         private const string Base = $"{ApiBase}/humans";
         public const string Create = $"{Base}/{{characterId:guid}}";
         public const string CreateProblem = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}/problem";
-        public const string Delete = $"{Base}/{{characterID:guid}}/human/{{humanId:guid}}";
+        public const string Delete = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}";
         public const string DeleteProblem = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}/problem/{{problemId:guid}}";
-        public const string Get = $"{Base}/{{characterId:guid}}/human/{{id:guid}}";
+        public const string Get = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}";
         public const string GetAll = Base;
         public const string Update = $"{Base}/{{description}}";
         public const string UpdateProblem = $"{Base}/problem/{{problem}}";
