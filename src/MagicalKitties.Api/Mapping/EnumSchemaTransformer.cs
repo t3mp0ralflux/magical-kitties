@@ -6,6 +6,8 @@ namespace MagicalKitties.Api.Mapping;
 
 public sealed class EnumSchemaTransformer() : IOpenApiSchemaTransformer
 {
+    // Found answer at https://github.com/dotnet/aspnetcore/issues/61303 to determine why Enums were just integers.
+    
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
     {
         Type type = context.JsonTypeInfo.Type;
