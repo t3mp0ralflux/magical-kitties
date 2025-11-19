@@ -3,6 +3,7 @@ using System.Text;
 using Asp.Versioning;
 using MagicalKitties.Api;
 using MagicalKitties.Api.Auth;
+using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,7 +65,10 @@ builder.Services.AddProblemDetails();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+                            {
+                                options.AddSchemaTransformer<EnumSchemaTransformer>();
+                            });
 
 builder.Services
        .AddAuthentication(x =>
