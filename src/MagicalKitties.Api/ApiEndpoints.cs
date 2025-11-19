@@ -63,7 +63,7 @@ public static class ApiEndpoints
         public const string Get = $"{Base}/{{characterId:guid}}/human/{{humanId:guid}}";
         public const string GetAll = Base;
         public const string Update = $"{Base}/{{description}}";
-        public const string UpdateProblem = $"{Base}/problem/{{problem}}";
+        public const string UpdateProblem = $"{Base}/problem/{{problemOption}}";
     }
 
     public static class Rules

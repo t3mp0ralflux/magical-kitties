@@ -144,7 +144,7 @@ public class HumanController(IHumanService humanService, IAccountService account
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateProblem([FromRoute] MKCtrHumanRequests.ProblemOption problem, [FromBody] MKCtrHumanRequests.HumanProblemUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> UpdateProblem([FromRoute] MKCtrHumanRequests.ProblemOption problemOption, [FromBody] MKCtrHumanRequests.HumanProblemUpdateRequest request, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -153,11 +153,11 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        ProblemUpdate problemUpdate = request.ToUpdate(problem);
+        ProblemUpdate problemUpdate = request.ToUpdate(problemOption);
 
         bool success = await humanService.UpdateProblemAsync(problemUpdate, token);
 
-        return success ? Ok($"{problem.ToString()} updated successfully.") : NotFound("Character not found.");
+        return success ? Ok($"{problemOption.ToString()} updated successfully.") : NotFound("Character not found.");
     }
 
     [HttpDelete(ApiEndpoints.Humans.Delete)]
