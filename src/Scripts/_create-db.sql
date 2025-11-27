@@ -153,3 +153,17 @@ create table if not exists globalsetting (
     name varchar not null,
     value varchar not null
 );
+
+create table if not exists problemsource (
+    id UUID primary key,
+    roll_value text not null,
+    source text not null,
+    custom_source text null
+);
+
+create table if not exists emotionsource (
+    id UUID primary key,
+    roll_value text not null,
+    source text not null,
+    custom_source text null
+);

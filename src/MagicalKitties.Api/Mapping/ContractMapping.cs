@@ -634,8 +634,8 @@ public static class ContractMapping
                    Talents = rules.Talents.Select(ToResponse),
                    MagicalPowers = rules.MagicalPowers.Select(ToResponse),
                    Upgrades = rules.Upgrades.Select(ToResponse),
-                   ProblemSource = rules.ProblemSource.Select(ToResponse),
-                   Emotion = rules.Emotion.Select(ToResponse),
+                   ProblemSource = rules.ProblemSources.Select(ToResponse),
+                   Emotion = rules.Emotions.Select(ToResponse),
                    DiceRules = rules.DiceRules,
                    DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
                    DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
@@ -660,24 +660,17 @@ public static class ContractMapping
                };
     }
 
-    public static ProblemSourceResponse ToResponse(this ProblemRule.Problem problem)
+    public static ProblemSourceResponse ToResponse(this ProblemRule problem)
     {
         return new ProblemSourceResponse
                {
+                   Id = problem.Id,
                    RollValue = problem.RollValue,
-                   ProblemSource = problem.ProblemSource
+                   Source = problem.Source,
+                   CustomSource = problem.CustomSource
                };
     }
-
-    public static EmotionResponse ToResponse(this ProblemRule.Emotion emotion)
-    {
-        return new EmotionResponse
-               {
-                   RollValue = emotion.RollValue,
-                   EmotionSource = emotion.EmotionSource
-               };
-    }
-
+    
     public static DiceDifficultyResponse ToResponse(this DiceRule.DiceDifficulty diceDifficulty)
     {
         return new DiceDifficultyResponse

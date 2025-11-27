@@ -18,7 +18,7 @@ public class GameRulesResponse
     public required IEnumerable<MagicalPowerResponse> MagicalPowers { get; set; }
     public required IEnumerable<UpgradeRuleResponse> Upgrades { get; set; } = [];
     public required IEnumerable<ProblemSourceResponse> ProblemSource { get; set; } = [];
-    public required IEnumerable<EmotionResponse> Emotion { get; set; } = [];
+    public required IEnumerable<ProblemSourceResponse> Emotion { get; set; } = [];
     public required IEnumerable<string> DiceRules { get; set; } = [];
     public required IEnumerable<DiceDifficultyResponse> DiceDifficulties { get; set; } = [];
     public required IEnumerable<DiceSuccessResponse> DiceSuccesses { get; set; } = [];

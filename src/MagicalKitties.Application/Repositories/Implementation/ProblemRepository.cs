@@ -3,6 +3,7 @@ using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
+using MagicalKitties.Application.Models.Rules;
 using MagicalKitties.Application.Services;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -151,5 +152,27 @@ public class ProblemRepository : IProblemRepository
         transaction.Commit();
 
         return result > 0;
+    }
+
+    public async Task<List<ProblemRule>> GetAllProblemSourcesAsync(CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+
+        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("""
+                                                                                                                              select id, id, roll_value, source, custom_source from problemsource
+                                                                                                                              """, cancellationToken: token));
+
+        return result.ToList();
+    }
+
+    public async Task<List<ProblemRule>> GetAllEmotionsAsync(CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+
+        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("""
+                                                                                                                  select id, id, roll_value, source, custom_source from emotionsource
+                                                                                                                  """, cancellationToken: token));
+
+        return result.ToList();
     }
 }

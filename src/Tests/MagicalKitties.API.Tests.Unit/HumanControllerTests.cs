@@ -39,7 +39,8 @@ public class HumanControllerTests
                                  Source = null,
                                  Emotion = null,
                                  Rank = 0,
-                                 Solved = false
+                                 Solved = false,
+                                 DeletedUtc = null
                              };
 
         _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
@@ -59,7 +60,8 @@ public class HumanControllerTests
                                                  Source = null,
                                                  Emotion = null,
                                                  Rank = 0,
-                                                 Solved = false
-                                             });
+                                                 Solved = false,
+                                                 DeletedUtc = null
+                                             }, options => options.Excluding(x=>x.DeletedUtc));
     }
 }

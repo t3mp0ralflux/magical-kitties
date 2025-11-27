@@ -18,8 +18,8 @@ public class GameRules
     public required IEnumerable<Talent> Talents { get; init; }
     public required IEnumerable<MagicalPower> MagicalPowers { get; init; }
     public required IEnumerable<UpgradeRule> Upgrades { get; init; } = [];
-    public required List<ProblemRule.Problem> ProblemSource { get; init; } = [];
-    public required List<ProblemRule.Emotion> Emotion { get; init; } = [];
+    public required List<ProblemRule> ProblemSources { get; init; } = [];
+    public required List<ProblemRule> Emotions { get; init; } = [];
     public required List<string> DiceRules { get; init; } = [];
     public required List<DiceRule.DiceDifficulty> DiceDifficulties { get; init; } = [];
     public required List<DiceRule.DiceSuccess> DiceSuccesses { get; init; } = [];

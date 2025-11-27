@@ -3,6 +3,7 @@ using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.MagicalPowers;
+using MagicalKitties.Application.Models.Rules;
 using MagicalKitties.Application.Models.Talents;
 
 namespace MagicalKitties.Application.Database;
@@ -28,7 +29,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         SqlMapper.AddTypeHandler(typeof(List<Upgrade>), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(object), new JsonTypeHandler());
         SqlMapper.AddTypeHandler(typeof(Flaw), new JsonTypeHandler());
-        //SqlMapper.AddTypeHandler(typeof(UpgradeRule), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(ProblemRule), new JsonTypeHandler());
 
         DefaultTypeMap.MatchNamesWithUnderscores = true;
     }

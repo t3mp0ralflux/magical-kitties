@@ -13,13 +13,15 @@ public class RuleService : IRuleService
     private readonly IMagicalPowerRepository _magicalPowerRepository;
     private readonly ITalentRepository _talentRepository;
     private readonly IUpgradeRepository _upgradeRepository;
+    private readonly IProblemRepository _problemRepository;
 
-    public RuleService(IUpgradeRepository upgradeRepository, IFlawRepository flawRepository, ITalentRepository talentRepository, IMagicalPowerRepository magicalPowerRepository)
+    public RuleService(IUpgradeRepository upgradeRepository, IFlawRepository flawRepository, ITalentRepository talentRepository, IMagicalPowerRepository magicalPowerRepository, IProblemRepository problemRepository)
     {
         _upgradeRepository = upgradeRepository;
         _flawRepository = flawRepository;
         _talentRepository = talentRepository;
         _magicalPowerRepository = magicalPowerRepository;
+        _problemRepository = problemRepository;
     }
 
     public async Task<GameRules> GetAll(CancellationToken token = default)
@@ -28,6 +30,8 @@ public class RuleService : IRuleService
         IEnumerable<Flaw> flaws = await _flawRepository.GetAllAsync(new GetAllFlawsOptions { Page = 1, PageSize = 99 }, token);
         IEnumerable<Talent> talents = await _talentRepository.GetAllAsync(new GetAllTalentsOptions { Page = 1, PageSize = 99 }, token);
         IEnumerable<MagicalPower> magicalPowers = await _magicalPowerRepository.GetAllAsync(new GetAllMagicalPowersOptions { Page = 1, PageSize = 99 }, token);
+        IEnumerable<ProblemRule> problemSources = await _problemRepository.GetAllProblemSourcesAsync(token);
+        IEnumerable<ProblemRule> emotions = await _problemRepository.GetAllEmotionsAsync(token);
 
         GameRules result = new()
                            {
@@ -42,8 +46,8 @@ public class RuleService : IRuleService
                                Talents = talents,
                                MagicalPowers = magicalPowers.OrderBy(x=>x.Id).ToList(),
                                Upgrades = upgrades,
-                               ProblemSource = ProblemRule.ProblemSources,
-                               Emotion = ProblemRule.EmotionSources,
+                               ProblemSources = problemSources.OrderBy(x=>x.RollValue).ToList(),
+                               Emotions = emotions.OrderBy(x=>x.RollValue).ToList(),
                                DiceRules = ["+1 to +4 dice for Cute, Cunning, or Fierce", "+1 die for your Talent", "+2 dice for your Magical Power", "+1 die for an earlier success bonus", "-1 die per injury"],
                                DiceDifficulties = DiceRule.DiceDifficulties,
                                DiceSuccesses = DiceRule.DiceSuccesses,
@@ -57,5 +61,7 @@ public class RuleService : IRuleService
                            };
 
         return result;
+        
+        // TODO: this has zero tests to ensure the end payload is correct...
     }
 }
