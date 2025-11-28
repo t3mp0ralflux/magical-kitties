@@ -11,9 +11,9 @@ public class RuleService : IRuleService
 {
     private readonly IFlawRepository _flawRepository;
     private readonly IMagicalPowerRepository _magicalPowerRepository;
+    private readonly IProblemRepository _problemRepository;
     private readonly ITalentRepository _talentRepository;
     private readonly IUpgradeRepository _upgradeRepository;
-    private readonly IProblemRepository _problemRepository;
 
     public RuleService(IUpgradeRepository upgradeRepository, IFlawRepository flawRepository, ITalentRepository talentRepository, IMagicalPowerRepository magicalPowerRepository, IProblemRepository problemRepository)
     {
@@ -44,10 +44,10 @@ public class RuleService : IRuleService
                                Attributes = ["Cunning, Cute, Fierce"],
                                Flaws = flaws,
                                Talents = talents,
-                               MagicalPowers = magicalPowers.OrderBy(x=>x.Id).ToList(),
+                               MagicalPowers = magicalPowers.OrderBy(x => x.Id).ToList(),
                                Upgrades = upgrades,
-                               ProblemSources = problemSources.OrderBy(x=>x.RollValue).ToList(),
-                               Emotions = emotions.OrderBy(x=>x.RollValue).ToList(),
+                               ProblemSources = problemSources.OrderBy(x => x.RollValue).ToList(),
+                               Emotions = emotions.OrderBy(x => x.RollValue).ToList(),
                                DiceRules = ["+1 to +4 dice for Cute, Cunning, or Fierce", "+1 die for your Talent", "+2 dice for your Magical Power", "+1 die for an earlier success bonus", "-1 die per injury"],
                                DiceDifficulties = DiceRule.DiceDifficulties,
                                DiceSuccesses = DiceRule.DiceSuccesses,
@@ -61,7 +61,5 @@ public class RuleService : IRuleService
                            };
 
         return result;
-        
-        // TODO: this has zero tests to ensure the end payload is correct...
     }
 }

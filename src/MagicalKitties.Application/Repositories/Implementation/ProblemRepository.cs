@@ -61,11 +61,12 @@ public class ProblemRepository : IProblemRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update problem
-                                                                                  set source = @Source
+                                                                                  set source = @Source, custom_source = @CustomSource
                                                                                   where id = @ProblemId
                                                                                   """, new
                                                                                        {
                                                                                            update.Source,
+                                                                                           update.CustomSource,
                                                                                            update.ProblemId
                                                                                        }, cancellationToken: token));
 
@@ -81,12 +82,13 @@ public class ProblemRepository : IProblemRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update problem
-                                                                                  set emotion = @Emotion
+                                                                                  set emotion = @Emotion, custom_emotion = @CustomSource
                                                                                   where id = @ProblemId
                                                                                   """, new
                                                                                        {
                                                                                            update.Emotion,
-                                                                                           update.ProblemId
+                                                                                           update.ProblemId,
+                                                                                           update.CustomSource
                                                                                        }, cancellationToken: token));
 
         transaction.Commit();
@@ -159,8 +161,8 @@ public class ProblemRepository : IProblemRepository
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("""
-                                                                                                                              select id, id, roll_value, source, custom_source from problemsource
-                                                                                                                              """, cancellationToken: token));
+                                                                                                                  select id, id, roll_value, source, custom_source from problemsource
+                                                                                                                  """, cancellationToken: token));
 
         return result.ToList();
     }

@@ -7,6 +7,7 @@ public class ProblemUpdate
     public required Guid HumanId { get; init; }
     public required Guid ProblemId { get; init; }
     public required string? Source { get; init; }
+    public required string? CustomSource { get; init; }
     public required string? Emotion { get; init; }
     public required int? Rank { get; init; }
     public required bool? Solved { get; init; }

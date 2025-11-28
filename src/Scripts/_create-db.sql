@@ -53,13 +53,13 @@ create table if not exists magicalpower(
 create table if not exists character(
     id UUID primary key,
     account_id UUID references account(id),
-    name text not null constraint max_description check (char_length(name) <= 100),
+    name text not null constraint max_name check (char_length(name) <= 100),
     username text not null,
     created_utc timestamp not null,
     updated_utc timestamp not null,
     deleted_utc timestamp null,
     description text not null constraint max_description check (char_length(description) <= 250),
-    hometown text not null constraint max_description check (char_length(hometown) <= 100),
+    hometown text not null constraint max_hometown check (char_length(hometown) <= 100),
     upgrades json null
 );
 
@@ -106,7 +106,9 @@ create table if not exists problem(
     id UUID primary key,
     human_id UUID references human(id),
     source text not null constraint max_source check (char_length(source) <= 50),
-    emotion text not null,
+    custom_source text not null constraint max_custom_source check(char_length(custom_source) <= 50),
+    emotion text not null constraint max_emotion check (char_length(source) <= 50),
+    custom_emotion text null constraint max_custom_emotion check (char_length(custom_emotion) <= 50),
     rank numeric not null,
     solved bool not null,
     deleted_utc timestamp null

@@ -157,7 +157,7 @@ public static class ContractMapping
                    RefreshToken = request.RefreshToken
                };
     }
-    
+
     #endregion
 
     #region Characters
@@ -174,7 +174,7 @@ public static class ContractMapping
                                                       Username = x.Username,
                                                       Level = x.Level,
                                                       HumanName = x.Humans.FirstOrDefault()?.Name,
-                                                      MagicalPowers = x.MagicalPowers.Select(y=>y.Name).ToList()
+                                                      MagicalPowers = x.MagicalPowers.Select(y => y.Name).ToList()
                                                   }),
                    Page = page,
                    PageSize = pageSize,
@@ -212,7 +212,7 @@ public static class ContractMapping
     public static MKAppCharacters.GetAllCharactersOptions ToOptions(this MKCtrCharacterRequests.GetAllCharactersRequest request, Guid accountId)
     {
         string? sortField = request.SortBy?.ToLowerInvariant().Trim('+', '-');
-        
+
         return new MKAppCharacters.GetAllCharactersOptions
                {
                    AccountId = accountId,
@@ -283,7 +283,7 @@ public static class ContractMapping
                                  Id = request.UpgradeId,
                                  Block = request.Block,
                                  Option = (UpgradeOption)request.UpgradeOption,
-                                 Choice = request.Value,
+                                 Choice = request.Value
                              }
                };
     }
@@ -437,6 +437,7 @@ public static class ContractMapping
                    HumanId = request.HumanId,
                    ProblemId = request.ProblemId,
                    Source = request.Source,
+                   CustomSource = request.CustomSource,
                    Emotion = request.Emotion,
                    Rank = request.Rank,
                    Solved = request.Solved
@@ -670,7 +671,7 @@ public static class ContractMapping
                    CustomSource = problem.CustomSource
                };
     }
-    
+
     public static DiceDifficultyResponse ToResponse(this DiceRule.DiceDifficulty diceDifficulty)
     {
         return new DiceDifficultyResponse
