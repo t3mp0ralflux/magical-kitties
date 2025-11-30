@@ -106,7 +106,7 @@ create table if not exists problem(
     id UUID primary key,
     human_id UUID references human(id),
     source text not null constraint max_source check (char_length(source) <= 50),
-    custom_source text not null constraint max_custom_source check(char_length(custom_source) <= 50),
+    custom_source text null constraint max_custom_source check(char_length(custom_source) <= 50),
     emotion text not null constraint max_emotion check (char_length(source) <= 50),
     custom_emotion text null constraint max_custom_emotion check (char_length(custom_emotion) <= 50),
     rank numeric not null,
@@ -159,13 +159,11 @@ create table if not exists globalsetting (
 create table if not exists problemsource (
     id UUID primary key,
     roll_value text not null,
-    source text not null,
-    custom_source text null
+    source text not null
 );
 
 create table if not exists emotionsource (
     id UUID primary key,
     roll_value text not null,
-    source text not null,
-    custom_source text null
+    source text not null
 );

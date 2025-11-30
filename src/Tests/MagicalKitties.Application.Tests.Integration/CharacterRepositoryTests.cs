@@ -168,9 +168,11 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                          HumanId = deletedHumanId,
                                          Rank = 1,
                                          Solved = false,
-                                         Source = "Your mom",
+                                         Source = "Custom",
+                                         CustomSource = "Your Mom",
                                          DeletedUtc = now.AddHours(-1),
-                                         Emotion = "Disappointed"
+                                         Emotion = "Custom",
+                                         CustomEmotion = "Very VERY Angsty"
                                      }
                                  ]
                              };
@@ -194,6 +196,11 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
                                                       options.For(x => x.Upgrades).Exclude(x => x.Choice);
                                                       return options;
                                                   });
+        
+        foreach (Human resultHuman in result.Humans)
+        {
+            resultHuman.Problems.Should().BeInAscendingOrder(x => x.Rank);
+        }
     }
 
     [SkipIfEnvironmentMissingTheory]

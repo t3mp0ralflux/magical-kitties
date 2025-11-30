@@ -25,14 +25,16 @@ public class ProblemRepository : IProblemRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
-                                                                                  values (@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, @DeletedUtc)
+                                                                                  insert into problem(id, human_id, source, custom_source, emotion, custom_emotion, rank, solved, deleted_utc)
+                                                                                  values (@Id, @HumanId, @Source, @CustomSource, @Emotion, @CustomEmotion, @Rank, @Solved, @DeletedUtc)
                                                                                   """, new
                                                                                        {
                                                                                            problem.Id,
                                                                                            problem.HumanId,
                                                                                            problem.Source,
+                                                                                           problem.CustomSource,
                                                                                            problem.Emotion,
+                                                                                           problem.CustomEmotion,
                                                                                            problem.Rank,
                                                                                            problem.Solved,
                                                                                            problem.DeletedUtc
@@ -160,9 +162,7 @@ public class ProblemRepository : IProblemRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("""
-                                                                                                                  select id, id, roll_value, source, custom_source from problemsource
-                                                                                                                  """, cancellationToken: token));
+        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("select id, roll_value, source from problemsource", cancellationToken: token));
 
         return result.ToList();
     }
@@ -171,9 +171,7 @@ public class ProblemRepository : IProblemRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("""
-                                                                                                                  select id, id, roll_value, source, custom_source from emotionsource
-                                                                                                                  """, cancellationToken: token));
+        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("select id, roll_value, source from emotionsource", cancellationToken: token));
 
         return result.ToList();
     }

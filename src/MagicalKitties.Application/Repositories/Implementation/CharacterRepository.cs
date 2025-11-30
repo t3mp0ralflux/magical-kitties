@@ -110,8 +110,10 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                                             'id', p.id,
                                                                                                                                                                                             'human_id', p.human_id,
                                                                                                                                                                                             'source', p.source,
+                                                                                                                                                                                            'custom_source', p.custom_source,
                                                                                                                                                                                             'solved', p.solved,
                                                                                                                                                                                             'emotion', p.emotion,
+                                                                                                                                                                                            'custom_emotion', p.custom_emotion,
                                                                                                                                                                                             'rank', p.rank,
                                                                                                                                                                                             'deleted_utc', p.deleted_utc
                                                                                                                                                                                     )

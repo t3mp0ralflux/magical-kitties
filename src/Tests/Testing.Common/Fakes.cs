@@ -198,7 +198,9 @@ public static class Fakes
                                           .RuleFor(x => x.HumanId, _ => human.Id)
                                           .RuleFor(x => x.Rank, f => f.Random.Int(1, 5))
                                           .RuleFor(x => x.Source, f => f.Lorem.Word())
-                                          .RuleFor(x => x.Emotion, f => f.Lorem.Word());
+                                          .RuleFor(x => x.Emotion, f => f.Lorem.Word())
+                                          .RuleFor(x=>x.CustomSource, f => f.Lorem.Word())
+                                          .RuleFor(x=>x.CustomEmotion, f=> f.Lorem.Word());
 
             human.Problems = problemFaker.Generate(3);
         }

@@ -36,8 +36,10 @@ public class HumanControllerTests
                              {
                                  Id = Guid.Empty,
                                  HumanId = human.Id,
-                                 Source = null,
-                                 Emotion = null,
+                                 Source = "",
+                                 CustomSource = null,
+                                 Emotion = "",
+                                 CustomEmotion = null,
                                  Rank = 0,
                                  Solved = false,
                                  DeletedUtc = null
@@ -57,8 +59,10 @@ public class HumanControllerTests
                                              {
                                                  Id = Guid.Empty,
                                                  HumanId = human.Id,
-                                                 Source = null,
-                                                 Emotion = null,
+                                                 Source = "",
+                                                 CustomSource = null,
+                                                 Emotion = "",
+                                                 CustomEmotion = null,
                                                  Rank = 0,
                                                  Solved = false,
                                                  DeletedUtc = null

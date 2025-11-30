@@ -410,7 +410,9 @@ public static class ContractMapping
                    Id = problem.Id,
                    HumanId = problem.HumanId,
                    Source = problem.Source,
+                   CustomSource = problem.CustomSource,
                    Emotion = problem.Emotion,
+                   CustomEmotion = problem.CustomEmotion,
                    Rank = problem.Rank,
                    Solved = problem.Solved
                };
@@ -665,10 +667,8 @@ public static class ContractMapping
     {
         return new ProblemSourceResponse
                {
-                   Id = problem.Id,
                    RollValue = problem.RollValue,
-                   Source = problem.Source,
-                   CustomSource = problem.CustomSource
+                   Source = problem.Source
                };
     }
 
