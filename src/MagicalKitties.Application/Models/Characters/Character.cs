@@ -20,7 +20,7 @@ public class Character
     public DateTime UpdatedUtc { get; init; } = DateTime.UtcNow;
 
     [Column("deleted_utc")]
-    public DateTime? DeletedUtc { get; set; }
+    public DateTime? DeletedUtc { get; init; }
 
     public string Description { get; init; } = "";
     public string Hometown { get; init; } = "";
@@ -49,7 +49,7 @@ public class Character
     [Column("current_injuries")]
     public int CurrentInjuries { get; set; }
 
-    public bool Incapacitated { get; set; }
+    public bool Incapacitated { get; init; }
     public int Cunning { get; set; }
     public int Cute { get; set; }
     public int Fierce { get; set; }
@@ -75,7 +75,9 @@ public class Character
                                                                           Id = Guid.NewGuid(),
                                                                           HumanId = newHumanId,
                                                                           Source = x.Source,
+                                                                          CustomSource = x.CustomSource,
                                                                           Emotion = x.Emotion,
+                                                                          CustomEmotion = x.CustomEmotion,
                                                                           Rank = x.Rank,
                                                                           Solved = x.Solved
                                                                       }).ToList()

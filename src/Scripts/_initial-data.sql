@@ -300,3 +300,55 @@ insert into upgraderule(id, block, upgrade_choice)
 values('34ba7894-b947-4764-8307-e21c729eacd0', '3', '490b8218-01a7-4949-b993-9ce73061e749');
 
 commit;
+
+-- problem sources
+begin transaction;
+
+insert into problemsource(id, roll_value, source)
+values ('876F1332-D5A2-49F7-BA2B-BD275AF2785F', '1', 'Money');
+insert into problemsource(id, roll_value, source)
+values ('5B572C8B-EF81-45EF-8465-3E905B78FE78', '2', 'Health');
+insert into problemsource(id, roll_value, source)
+values ('4EEAF62E-3251-40DE-927D-B4DA3EE9DFE1', '3', 'Family');
+insert into problemsource(id, roll_value, source)
+values ('EE786695-91E7-4FD7-867C-B99FC9A97553', '4', 'Friend/Enemy');
+insert into problemsource(id, roll_value, source)
+values ('5A12A896-4A56-41AC-AAD2-3B18D0EFF52D', '5', 'Work/School');
+insert into problemsource(id, roll_value, source)
+values ('01C53221-0FFA-4D01-AB18-BB5F7F5371FC', '6', 'Neighborhood');
+insert into problemsource(id, roll_value, source)
+values ('FC37C3C9-CD50-44F5-97F4-34A2D52355D8', '99', 'Custom');
+
+commit;
+
+-- emotion sources
+begin transaction;
+
+insert into emotionsource(id, roll_value, source)
+values ('2041959C-7BD4-4E50-BF66-1FE8C3B4412D', '11-13', 'Sad');
+insert into emotionsource(id, roll_value, source)
+values ('BDAA9B16-11E0-4B2E-83B6-BF074ED3F35A', '14-16', 'Angry');
+insert into emotionsource(id, roll_value, source)
+values ('E1FF8623-B6EC-438E-A4FD-F7B6E9523546', '21-23', 'Scared');
+insert into emotionsource(id, roll_value, source)
+values ('B21209F1-71D5-49D7-BA97-70E52D32E55B', '24-26', 'Disappointed');
+insert into emotionsource(id, roll_value, source)
+values ('F0C07921-B0C4-4407-B839-16BC22275EAC', '31-33', 'Guilty');
+insert into emotionsource(id, roll_value, source)
+values ('1F57204B-0119-4B51-BD19-EB231F86C6F5', '34-36', 'Anxious');
+insert into emotionsource(id, roll_value, source)
+values ('E6DCF4DE-375E-4142-96F3-F52B5718301F', '41-43', 'Apathetic');
+insert into emotionsource(id, roll_value, source)
+values ('63DCDAF3-BA6A-4B5D-886D-05A6E9C8ED87', '44-46', 'Ashamed');
+insert into emotionsource(id, roll_value, source)
+values ('64AAEEA5-643C-4511-9F54-4933F605B0A3', '51-53', 'Jealous');
+insert into emotionsource(id, roll_value, source)
+values ('749FC08E-4257-4AE2-BB13-CF4B419A9FC5', '54-56', 'Confused');
+insert into emotionsource(id, roll_value, source)
+values ('72197D7C-2942-4093-82E7-A79AF014B82B', '61-63', 'Frustrated');
+insert into emotionsource(id, roll_value, source)
+values ('7C729636-F091-46FA-9F7D-80F03C7C675B', '64-66', 'Depressed');
+insert into emotionsource(id, roll_value, source)
+values ('AD970719-39C0-4503-BB7E-CF2E785F7CD1', '99', 'Custom');
+
+commit;

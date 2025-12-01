@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Text;
 using System.Text.Json;
 using Dapper;
 using MagicalKitties.Application.Database;
@@ -63,74 +62,95 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken cancellationToken = default)
+    public async Task<Character?> GetByIdAsync(Guid accountId, Guid characterId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
-        string shouldIncludeDeleted = includeDeleted ? string.Empty : "and c.deleted_utc is null";
+        string deletedCharactersClause = includeDeleted ? string.Empty : "and c.deleted_utc is null";
+        string deletedHumansClause = includeDeleted ? string.Empty : "and h.deleted_utc is null";
+        string deletedHumanProblemsClause = includeDeleted ? string.Empty : "where p.deleted_utc is null";
+
         IEnumerable<Character> result = await connection.QueryAsyncWithRetry<Character, Flaw, List<Talent>, List<MagicalPower>, List<Human>>(new CommandDefinition($"""
                                                                                                                                                                     select {CharacterFields}, {CharacterStatFields},
-                                                                                                                                                                    (select to_json(f.*)
-                                                                                                                                                                     from flaw f
-                                                                                                                                                                     inner join characterflaw cf on f.id = cf.flaw_id
-                                                                                                                                                                     where character_id = @id) as flaw,
-                                                                                                                                                                    (with talent_info as 
-                                                                                                                                                                        (select t.*, ct.is_primary from talent t
-                                                                                                                                                                    inner join charactertalent ct on t.id = ct.talent_id
-                                                                                                                                                                    where character_id = @id)
-                                                                                                                                                                    select json_agg(talent_info.*)
-                                                                                                                                                                    from talent_info
-                                                                                                                                                                    ) as talents,
-                                                                                                                                                                    (with mp_info as 
-                                                                                                                                                                        (select mp.*, cmp.is_primary from magicalpower mp
-                                                                                                                                                                    inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
-                                                                                                                                                                    where character_id = @id)
-                                                                                                                                                                    select json_agg(mp_info.*)
-                                                                                                                                                                    from mp_info
-                                                                                                                                                                     ) as magicalpowers,
-                                                                                                                                                                    (select json_agg(
-                                                                                                                                                                                     json_build_object(
-                                                                                                                                                                                        'id', h.id,
-                                                                                                                                                                                        'character_id', h.character_id,
-                                                                                                                                                                                        'name', h.name,
-                                                                                                                                                                                        'description', h.description,
-                                                                                                                                                                                        'characterId', h.character_id,
-                                                                                                                                                                                        'deleted_utc', h.deleted_utc,
-                                                                                                                                                                                        'problems', problems
-                                                                                                                                                                                     )
+                                                                                                                                                                    (
+                                                                                                                                                                        select to_json(f.*)
+                                                                                                                                                                        from flaw f
+                                                                                                                                                                        inner join characterflaw cf on f.id = cf.flaw_id
+                                                                                                                                                                        where character_id = @characterId
+                                                                                                                                                                    ) as flaw,
+                                                                                                                                                                    (
+                                                                                                                                                                        with talent_info as (
+                                                                                                                                                                                select t.*, ct.is_primary from talent t
+                                                                                                                                                                                inner join charactertalent ct on t.id = ct.talent_id
+                                                                                                                                                                                where character_id = @characterId
                                                                                                                                                                             )
-                                                                                                                                                                    from human h
-                                                                                                                                                                    join (
-                                                                                                                                                                        select
+                                                                                                                                                                        select json_agg(talent_info.*)
+                                                                                                                                                                        from talent_info
+                                                                                                                                                                    ) as talents,
+                                                                                                                                                                    (
+                                                                                                                                                                        with mp_info as (
+                                                                                                                                                                            select mp.*, cmp.is_primary from magicalpower mp
+                                                                                                                                                                            inner join charactermagicalpower cmp on mp.id = cmp.magical_power_id
+                                                                                                                                                                            where character_id = @characterId
+                                                                                                                                                                        )
+                                                                                                                                                                        select json_agg(mp_info.*)
+                                                                                                                                                                        from mp_info
+                                                                                                                                                                    ) as magicalpowers,
+                                                                                                                                                                    (
+                                                                                                                                                                        select json_agg(
+                                                                                                                                                                            json_build_object(
+                                                                                                                                                                                'id', h.id,
+                                                                                                                                                                                'character_id', h.character_id,
+                                                                                                                                                                                'name', h.name,
+                                                                                                                                                                                'description', h.description,
+                                                                                                                                                                                'deleted_utc', h.deleted_utc,
+                                                                                                                                                                                'problems', coalesce(problems, '[]'::json)
+                                                                                                                                                                            )
+                                                                                                                                                                        )
+                                                                                                                                                                        from human h
+                                                                                                                                                                        left join (
+                                                                                                                                                                            select
                                                                                                                                                                             p.human_id,
                                                                                                                                                                             json_agg (
-                                                                                                                                                                                    json_build_object(
-                                                                                                                                                                                            'id', p.id,
-                                                                                                                                                                                            'human_id', p.human_id,
-                                                                                                                                                                                            'source', p.source,
-                                                                                                                                                                                            'solved', p.solved,
-                                                                                                                                                                                            'emotion', p.emotion,
-                                                                                                                                                                                            'rank', p.rank,
-                                                                                                                                                                                            'deleted_utc', p.deleted_utc
-                                                                                                                                                                                    )
+                                                                                                                                                                                json_build_object(
+                                                                                                                                                                                    'id', p.id,
+                                                                                                                                                                                    'human_id', p.human_id,
+                                                                                                                                                                                    'source', p.source,
+                                                                                                                                                                                    'custom_source', p.custom_source,
+                                                                                                                                                                                    'solved', p.solved,
+                                                                                                                                                                                    'emotion', p.emotion,
+                                                                                                                                                                                    'custom_emotion', p.custom_emotion,
+                                                                                                                                                                                    'rank', p.rank,
+                                                                                                                                                                                    'deleted_utc', p.deleted_utc
+                                                                                                                                                                                )
                                                                                                                                                                             ) problems
-                                                                                                                                                                        from problem p
-                                                                                                                                                                        group by p.human_id
-                                                                                                                                                                    ) p on h.id = p.human_id
-                                                                                                                                                                    where h.character_id = @id and h.deleted_utc is null) humans
+                                                                                                                                                                            from problem p
+                                                                                                                                                                            {deletedHumanProblemsClause}
+                                                                                                                                                                            group by p.human_id
+                                                                                                                                                                        ) p on h.id = p.human_id
+                                                                                                                                                                        where h.character_id = @characterId 
+                                                                                                                                                                        {deletedHumansClause}
+                                                                                                                                                                    ) humans
                                                                                                                                                                     from character c
                                                                                                                                                                     inner join characterstat cs on c.id = cs.character_id
-                                                                                                                                                                    where c.id = @id
-                                                                                                                                                                    {shouldIncludeDeleted}
-                                                                                                                                                                    """, new { id }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
-                                                                                                                                                                                                                                       {
-                                                                                                                                                                                                                                           character.Flaw = string.IsNullOrWhiteSpace(flaw?.Name) ? null : flaw;
-                                                                                                                                                                                                                                           character.Talents = talents;
-                                                                                                                                                                                                                                           character.MagicalPowers = magicalPowers;
-                                                                                                                                                                                                                                           character.Humans = humans;
+                                                                                                                                                                    where c.id = @characterId
+                                                                                                                                                                    and c.account_id = @accountId
+                                                                                                                                                                    {deletedCharactersClause}
+                                                                                                                                                                    """, new { accountId, characterId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
+                                                                                                                                                                                                                                                {
+                                                                                                                                                                                                                                                    character.Flaw = string.IsNullOrWhiteSpace(flaw?.Name) ? null : flaw;
+                                                                                                                                                                                                                                                    character.Talents = talents;
+                                                                                                                                                                                                                                                    character.MagicalPowers = magicalPowers;
+                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                    foreach (Human human in humans)
+                                                                                                                                                                                                                                                    {
+                                                                                                                                                                                                                                                        human.Problems = human.Problems.OrderBy(x => x.Rank).ToList();
+                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                    character.Humans = humans;
 
-                                                                                                                                                                                                                                           return character;
-                                                                                                                                                                                                                                       }, "flaw,talents,magicalpowers,humans");
+                                                                                                                                                                                                                                                    return character;
+                                                                                                                                                                                                                                                }, "flaw,talents,magicalpowers,humans");
         return result.FirstOrDefault();
     }
 
@@ -138,8 +158,8 @@ public class CharacterRepository : ICharacterRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        string orderClause = options.SortField is not null 
-            ? $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}" 
+        string orderClause = options.SortField is not null
+            ? $"order by {options.SortField} {(options.SortOrder == SortOrder.ascending ? "asc" : "desc")}"
             : "order by name asc";
 
         IEnumerable<Character> results = await connection.QueryAsyncWithRetry<Character>(new CommandDefinition($"""
@@ -181,20 +201,21 @@ public class CharacterRepository : ICharacterRepository
         return result;
     }
 
-    public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> ExistsByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
                                                                                            select count(id)
                                                                                            from character
-                                                                                           where id = @id
-                                                                                           """, new { id }, cancellationToken: token));
+                                                                                           where id = @characterId
+                                                                                           and account_id = @accountId
+                                                                                           """, new { accountId, characterId }, cancellationToken: token));
 
         return result > 0;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
@@ -202,11 +223,13 @@ public class CharacterRepository : ICharacterRepository
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update character
                                                                                   set deleted_utc = @DeletedUtc
-                                                                                  where id = @id
+                                                                                  where id = @characterId
+                                                                                  and account_id = @accountId
                                                                                   """, new
                                                                                        {
                                                                                            DeletedUtc = _dateTimeProvider.GetUtcNow(),
-                                                                                           id
+                                                                                           accountId,
+                                                                                           characterId
                                                                                        }, cancellationToken: token));
         transaction.Commit();
 
@@ -217,7 +240,7 @@ public class CharacterRepository : ICharacterRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
-        
+
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   insert into character(id, account_id, name, username, created_utc, updated_utc, deleted_utc, description, hometown, upgrades)
                                                                                   values(@Id, @AccountId, @Name, @Username, @CreatedUtc, @UpdatedUtc, null, @Description, @Hometown, @Upgrades)
@@ -231,14 +254,14 @@ public class CharacterRepository : ICharacterRepository
                                                                                            UpdatedUtc = _dateTimeProvider.GetUtcNow(),
                                                                                            existingCharacter.Description,
                                                                                            existingCharacter.Hometown,
-                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(existingCharacter.Upgrades)),
+                                                                                           Upgrades = new JsonParameter(JsonSerializer.Serialize(existingCharacter.Upgrades))
                                                                                        }, cancellationToken: token));
 
         if (result < 0)
         {
             return false;
         }
-        
+
         result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                               insert into characterstat(id, character_id, level, current_xp, max_owies, current_owies, starting_treats, current_treats, current_injuries, cute, cunning, fierce, incapacitated)
                                                                               values (@Id, @CharacterId, @Level, @CurrentXp, @MaxOwies, @CurrentOwies, @StartingTreats, @CurrentTreats, @CurrentInjuries, @Cute, @Cunning, @Fierce, @Incapacitated)
@@ -258,13 +281,13 @@ public class CharacterRepository : ICharacterRepository
                                                                                        existingCharacter.Fierce,
                                                                                        existingCharacter.Incapacitated
                                                                                    }, cancellationToken: token));
-        
+
         if (result < 0)
         {
             return false;
         }
-        
-        if(existingCharacter.Flaw is not null)
+
+        if (existingCharacter.Flaw is not null)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   insert into characterflaw(id, character_id, flaw_id)
@@ -280,7 +303,7 @@ public class CharacterRepository : ICharacterRepository
                 return false;
             }
         }
-        
+
         foreach (Talent existingCharacterTalent in existingCharacter.Talents)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
@@ -299,7 +322,7 @@ public class CharacterRepository : ICharacterRepository
                 return false;
             }
         }
-        
+
         foreach (MagicalPower existingCharacterMagicalPower in existingCharacter.MagicalPowers)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
@@ -318,7 +341,7 @@ public class CharacterRepository : ICharacterRepository
                 return false;
             }
         }
-        
+
         foreach (Human existingCharacterHuman in existingCharacter.Humans)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
@@ -332,12 +355,12 @@ public class CharacterRepository : ICharacterRepository
                                                                                            existingCharacterHuman.Description,
                                                                                            existingCharacterHuman.DeletedUtc
                                                                                        }, cancellationToken: token));
-            
+
             if (result < 0)
             {
                 return false;
             }
-            
+
             foreach (Problem problem in existingCharacterHuman.Problems)
             {
                 result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
@@ -353,14 +376,14 @@ public class CharacterRepository : ICharacterRepository
                                                                                                problem.Solved,
                                                                                                problem.DeletedUtc
                                                                                            }, cancellationToken: token));
-            
+
                 if (result < 0)
                 {
                     return false;
                 }
             }
         }
-        
+
         transaction.Commit();
 
         return result > 0;

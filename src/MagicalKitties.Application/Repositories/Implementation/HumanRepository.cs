@@ -10,7 +10,7 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 
 public class HumanRepository : IHumanRepository
 {
-    private const string HumanFields = "h.id, h.character_id, h.name, h.description";
+    private const string HumanFields = "h.id, h.character_id, h.name, h.description, h.deleted_utc";
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
@@ -56,33 +56,37 @@ public class HumanRepository : IHumanRepository
         return result > 0;
     }
     
-    public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> ExistsByIdAsync(Guid characterId, Guid humanId, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         return await connection.QuerySingleAsyncWithRetry<bool>(new CommandDefinition("""
                                                                                       select exists(select 1
                                                                                       from human
-                                                                                      where id = @id)
-                                                                                      """, new { id }, cancellationToken: token));
+                                                                                      where id = @humanId
+                                                                                      and character_id = @characterId)
+                                                                                      """, new { humanId, characterId }, cancellationToken: token));
     }
 
-    public async Task<Human?> GetByIdAsync(Guid id, bool includeDeleted = false, CancellationToken token = default)
+    public async Task<Human?> GetByIdAsync(Guid characterId, Guid humanId, bool includeDeleted = false, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
         string shouldIncludeDeleted = includeDeleted ? string.Empty : "and h.deleted_utc is null";
         IEnumerable<Human> result = await connection.QueryAsyncWithRetry<Human, List<Problem>>(new CommandDefinition($"""
                                                                                                                       select {HumanFields},
-                                                                                                                      (select json_agg(p.*)
+                                                                                                                      (select coalesce(
+                                                                                                                      json_agg(p.*), '[]'::json)
                                                                                                                       from problem p
-                                                                                                                      where human_id = @id) as problems
+                                                                                                                      where human_id = @humanId) as problems
                                                                                                                       from human h
-                                                                                                                      where h.id = @id
+                                                                                                                      where h.id = @humanId
+                                                                                                                      and h.character_id = @characterId
                                                                                                                       {shouldIncludeDeleted}
                                                                                                                       """, new
                                                                                                                            {
-                                                                                                                               id
+                                                                                                                               characterId,
+                                                                                                                               humanId
                                                                                                                            }, cancellationToken: token), (human, problems) =>
                                                                                                                                                          {
                                                                                                                                                              human.Problems = problems;
@@ -211,7 +215,7 @@ public class HumanRepository : IHumanRepository
                                                                                        }, cancellationToken: token));
         }
 
-        if (result > 0)
+        if (result >= 0)
         {
             result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update character c

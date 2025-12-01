@@ -3,6 +3,7 @@ using Dapper;
 using MagicalKitties.Application.Database;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
+using MagicalKitties.Application.Models.Rules;
 using MagicalKitties.Application.Services;
 
 namespace MagicalKitties.Application.Repositories.Implementation;
@@ -24,14 +25,16 @@ public class ProblemRepository : IProblemRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
-                                                                                  values (@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, @DeletedUtc)
+                                                                                  insert into problem(id, human_id, source, custom_source, emotion, custom_emotion, rank, solved, deleted_utc)
+                                                                                  values (@Id, @HumanId, @Source, @CustomSource, @Emotion, @CustomEmotion, @Rank, @Solved, @DeletedUtc)
                                                                                   """, new
                                                                                        {
                                                                                            problem.Id,
                                                                                            problem.HumanId,
                                                                                            problem.Source,
+                                                                                           problem.CustomSource,
                                                                                            problem.Emotion,
+                                                                                           problem.CustomEmotion,
                                                                                            problem.Rank,
                                                                                            problem.Solved,
                                                                                            problem.DeletedUtc
@@ -60,11 +63,12 @@ public class ProblemRepository : IProblemRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update problem
-                                                                                  set source = @Source
+                                                                                  set source = @Source, custom_source = @CustomSource
                                                                                   where id = @ProblemId
                                                                                   """, new
                                                                                        {
                                                                                            update.Source,
+                                                                                           update.CustomSource,
                                                                                            update.ProblemId
                                                                                        }, cancellationToken: token));
 
@@ -80,12 +84,13 @@ public class ProblemRepository : IProblemRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update problem
-                                                                                  set emotion = @Emotion
+                                                                                  set emotion = @Emotion, custom_emotion = @CustomSource
                                                                                   where id = @ProblemId
                                                                                   """, new
                                                                                        {
                                                                                            update.Emotion,
-                                                                                           update.ProblemId
+                                                                                           update.ProblemId,
+                                                                                           update.CustomSource
                                                                                        }, cancellationToken: token));
 
         transaction.Commit();
@@ -151,5 +156,23 @@ public class ProblemRepository : IProblemRepository
         transaction.Commit();
 
         return result > 0;
+    }
+
+    public async Task<List<ProblemRule>> GetAllProblemSourcesAsync(CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+
+        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("select id, roll_value, source from problemsource", cancellationToken: token));
+
+        return result.ToList();
+    }
+
+    public async Task<List<ProblemRule>> GetAllEmotionsAsync(CancellationToken token = default)
+    {
+        using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
+
+        IEnumerable<ProblemRule> result = await connection.QueryAsyncWithRetry<ProblemRule>(new CommandDefinition("select id, roll_value, source from emotionsource", cancellationToken: token));
+
+        return result.ToList();
     }
 }

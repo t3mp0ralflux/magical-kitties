@@ -157,7 +157,7 @@ public static class ContractMapping
                    RefreshToken = request.RefreshToken
                };
     }
-    
+
     #endregion
 
     #region Characters
@@ -174,7 +174,7 @@ public static class ContractMapping
                                                       Username = x.Username,
                                                       Level = x.Level,
                                                       HumanName = x.Humans.FirstOrDefault()?.Name,
-                                                      MagicalPowers = x.MagicalPowers.Select(y=>y.Name).ToList()
+                                                      MagicalPowers = x.MagicalPowers.Select(y => y.Name).ToList()
                                                   }),
                    Page = page,
                    PageSize = pageSize,
@@ -200,7 +200,7 @@ public static class ContractMapping
                    CurrentXp = character.CurrentXp,
                    Description = character.Description,
                    Hometown = character.Hometown,
-                   Human = character.Humans.Select(ToResponse).ToList(),
+                   Humans = character.Humans.Select(ToResponse).ToList(),
                    Level = character.Level,
                    Cunning = character.Cunning,
                    Cute = character.Cute,
@@ -212,7 +212,7 @@ public static class ContractMapping
     public static MKAppCharacters.GetAllCharactersOptions ToOptions(this MKCtrCharacterRequests.GetAllCharactersRequest request, Guid accountId)
     {
         string? sortField = request.SortBy?.ToLowerInvariant().Trim('+', '-');
-        
+
         return new MKAppCharacters.GetAllCharactersOptions
                {
                    AccountId = accountId,
@@ -240,10 +240,11 @@ public static class ContractMapping
                };
     }
 
-    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, MKAppCharacters.Character character)
+    public static AttributeUpdate ToUpdate(this MKCtrCharacterRequests.CharacterAttributeUpdateRequest request, Guid accountId, MKAppCharacters.Character character)
     {
         return new AttributeUpdate
                {
+                   AccountId = accountId,
                    Character = character,
                    Cunning = request.Cunning,
                    Cute = request.Cute,
@@ -282,7 +283,7 @@ public static class ContractMapping
                                  Id = request.UpgradeId,
                                  Block = request.Block,
                                  Option = (UpgradeOption)request.UpgradeOption,
-                                 Choice = request.Value,
+                                 Choice = request.Value
                              }
                };
     }
@@ -409,7 +410,9 @@ public static class ContractMapping
                    Id = problem.Id,
                    HumanId = problem.HumanId,
                    Source = problem.Source,
+                   CustomSource = problem.CustomSource,
                    Emotion = problem.Emotion,
+                   CustomEmotion = problem.CustomEmotion,
                    Rank = problem.Rank,
                    Solved = problem.Solved
                };
@@ -420,7 +423,8 @@ public static class ContractMapping
         return new MKAppHumans.Updates.DescriptionUpdate
                {
                    DescriptionOption = (DescriptionOption)description,
-                   HumanId = request.CharacterId,
+                   CharacterId = request.CharacterId,
+                   HumanId = request.HumanId,
                    Name = request.Name,
                    Description = request.Description
                };
@@ -431,9 +435,11 @@ public static class ContractMapping
         return new ProblemUpdate
                {
                    ProblemOption = (ProblemOption)problem,
+                   CharacterId = request.CharacterId,
                    HumanId = request.HumanId,
                    ProblemId = request.ProblemId,
                    Source = request.Source,
+                   CustomSource = request.CustomSource,
                    Emotion = request.Emotion,
                    Rank = request.Rank,
                    Solved = request.Solved
@@ -631,8 +637,8 @@ public static class ContractMapping
                    Talents = rules.Talents.Select(ToResponse),
                    MagicalPowers = rules.MagicalPowers.Select(ToResponse),
                    Upgrades = rules.Upgrades.Select(ToResponse),
-                   ProblemSource = rules.ProblemSource.Select(ToResponse),
-                   Emotion = rules.Emotion.Select(ToResponse),
+                   ProblemSource = rules.ProblemSources.Select(ToResponse),
+                   Emotion = rules.Emotions.Select(ToResponse),
                    DiceRules = rules.DiceRules,
                    DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
                    DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
@@ -657,21 +663,12 @@ public static class ContractMapping
                };
     }
 
-    public static ProblemSourceResponse ToResponse(this ProblemRule.Problem problem)
+    public static ProblemSourceResponse ToResponse(this ProblemRule problem)
     {
         return new ProblemSourceResponse
                {
                    RollValue = problem.RollValue,
-                   ProblemSource = problem.ProblemSource
-               };
-    }
-
-    public static EmotionResponse ToResponse(this ProblemRule.Emotion emotion)
-    {
-        return new EmotionResponse
-               {
-                   RollValue = emotion.RollValue,
-                   EmotionSource = emotion.EmotionSource
+                   Source = problem.Source
                };
     }
 

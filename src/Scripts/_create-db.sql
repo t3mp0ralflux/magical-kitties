@@ -53,13 +53,13 @@ create table if not exists magicalpower(
 create table if not exists character(
     id UUID primary key,
     account_id UUID references account(id),
-    name text not null,
+    name text not null constraint max_name check (char_length(name) <= 100),
     username text not null,
     created_utc timestamp not null,
     updated_utc timestamp not null,
     deleted_utc timestamp null,
-    description text not null,
-    hometown text not null,
+    description text not null constraint max_description check (char_length(description) <= 250),
+    hometown text not null constraint max_hometown check (char_length(hometown) <= 100),
     upgrades json null
 );
 
@@ -97,7 +97,7 @@ create table if not exists charactertalent(
 create table if not exists human(
     id UUID primary key,
     character_id UUID references character(id),
-    name text not null,
+    name text not null constraint max_name check (char_length(name) <= 100),
     description text not null,
     deleted_utc timestamp null
 );
@@ -105,8 +105,10 @@ create table if not exists human(
 create table if not exists problem(
     id UUID primary key,
     human_id UUID references human(id),
-    source text not null,
-    emotion text not null,
+    source text not null constraint max_source check (char_length(source) <= 50),
+    custom_source text null constraint max_custom_source check(char_length(custom_source) <= 50),
+    emotion text not null constraint max_emotion check (char_length(source) <= 50),
+    custom_emotion text null constraint max_custom_emotion check (char_length(custom_emotion) <= 50),
     rank numeric not null,
     solved bool not null,
     deleted_utc timestamp null
@@ -152,4 +154,16 @@ create table if not exists globalsetting (
     id UUID primary key,
     name varchar not null,
     value varchar not null
+);
+
+create table if not exists problemsource (
+    id UUID primary key,
+    roll_value text not null,
+    source text not null
+);
+
+create table if not exists emotionsource (
+    id UUID primary key,
+    roll_value text not null,
+    source text not null
 );

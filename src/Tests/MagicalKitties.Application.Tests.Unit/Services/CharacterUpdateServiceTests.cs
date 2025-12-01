@@ -50,15 +50,16 @@ public class CharacterUpdateServiceTests
     public async Task UpdateDescriptionAsync_ShouldThrowValidationException_WhenDescriptionOptionIsNotValid()
     {
         // Arrange
+        Account account = Fakes.GenerateAccount();
         Enum.TryParse(typeof(DescriptionOption), "-1", out object? o);
 
         DescriptionUpdate update = new()
                                    {
-                                       AccountId = Guid.NewGuid(),
+                                       AccountId = account.Id,
                                        CharacterId = Guid.NewGuid()
                                    };
 
-        _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
+        _characterRepository.ExistsByIdAsync(account.Id, update.CharacterId).Returns(true);
 
         // Act
         Func<Task<bool>> action = async () => await _sut.UpdateDescriptionAsync((DescriptionOption)o, update);
@@ -71,15 +72,16 @@ public class CharacterUpdateServiceTests
     public async Task UpdateDescriptionAsync_ShouldCallUpdateNameAndReturnTrue_WhenOptionIsSelected()
     {
         // Arrange
+        Account account = Fakes.GenerateAccount();
         DescriptionUpdate update = new()
                                    {
-                                       AccountId = Guid.NewGuid(),
+                                       AccountId = account.Id,
                                        CharacterId = Guid.NewGuid(),
                                        Name = "Test"
                                    };
 
         _characterUpdateRepository.UpdateNameAsync(Arg.Any<DescriptionUpdate>()).Returns(true);
-        _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
+        _characterRepository.ExistsByIdAsync(account.Id, update.CharacterId).Returns(true);
 
         // Act
         bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.name, update);
@@ -96,15 +98,16 @@ public class CharacterUpdateServiceTests
     public async Task UpdateDescriptionAsync_ShouldCallUpdateDescriptionAndReturnTrue_WhenOptionIsSelected()
     {
         // Arrange
+        Account account = Fakes.GenerateAccount();
         DescriptionUpdate update = new()
                                    {
-                                       AccountId = Guid.NewGuid(),
+                                       AccountId = account.Id,
                                        CharacterId = Guid.NewGuid(),
                                        Description = "Test"
                                    };
 
         _characterUpdateRepository.UpdateDescriptionAsync(Arg.Any<DescriptionUpdate>()).Returns(true);
-        _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
+        _characterRepository.ExistsByIdAsync(account.Id, update.CharacterId).Returns(true);
 
         // Act
         bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.description, update);
@@ -121,15 +124,16 @@ public class CharacterUpdateServiceTests
     public async Task UpdateDescriptionAsync_ShouldCallUpdateHometownAndReturnTrue_WhenOptionIsSelected()
     {
         // Arrange
+        Account account = Fakes.GenerateAccount();
         DescriptionUpdate update = new()
                                    {
-                                       AccountId = Guid.NewGuid(),
+                                       AccountId = account.Id,
                                        CharacterId = Guid.NewGuid(),
                                        Hometown = "Test"
                                    };
 
         _characterUpdateRepository.UpdateHometownAsync(Arg.Any<DescriptionUpdate>()).Returns(true);
-        _characterRepository.ExistsByIdAsync(update.CharacterId).Returns(true);
+        _characterRepository.ExistsByIdAsync(account.Id, update.CharacterId).Returns(true);
 
         // Act
         bool result = await _sut.UpdateDescriptionAsync(DescriptionOption.hometown, update);
@@ -146,15 +150,17 @@ public class CharacterUpdateServiceTests
     public async Task UpdateAttributeAsync_ShouldCallUpdateXPAndReturnTrue_WhenOptionIsSelected()
     {
         // Arrange
-        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
         AttributeUpdate update = new()
                                  {
+                                     AccountId = account.Id,
                                      Character = character,
                                      XP = 69
                                  };
 
         _characterUpdateRepository.UpdateXPAsync(Arg.Any<AttributeUpdate>()).Returns(true);
-        _characterRepository.GetByIdAsync(update.Character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(account.Id, update.Character.Id).Returns(character);
 
         // Act
         bool result = await _sut.UpdateAttributeAsync(AttributeOption.xp, update);
@@ -172,7 +178,8 @@ public class CharacterUpdateServiceTests
     public async Task UpdateAttributeAsync_ShouldUpdateTalentAndRemoveRelevantUpgrades_WhenTalentIsChanged()
     {
         // Arrange
-        Character character = Fakes.GenerateCharacter(Fakes.GenerateAccount());
+        Account account = Fakes.GenerateAccount();
+        Character character = Fakes.GenerateCharacter(account);
 
         List<Talent> fakeTalents = Fakes.GenerateTalents();
 
@@ -192,6 +199,7 @@ public class CharacterUpdateServiceTests
 
         AttributeUpdate update = new AttributeUpdate
                                  {
+                                     AccountId = account.Id,
                                      Character = character,
                                      TalentChange = new EndowmentChange
                                                     {
@@ -201,7 +209,7 @@ public class CharacterUpdateServiceTests
                                                     }
                                  };
 
-        _characterRepository.GetByIdAsync(character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
         _characterUpdateRepository.UpdateTalentAsync(Arg.Any<AttributeUpdate>()).Returns(true);
         _upgradeRepository.UpsertUpgradesAsync(Arg.Any<Guid>(), Arg.Any<List<Upgrade>>(), Arg.Any<CancellationToken>()).Returns(true);
         

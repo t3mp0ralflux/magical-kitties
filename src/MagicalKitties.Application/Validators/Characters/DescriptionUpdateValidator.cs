@@ -20,10 +20,23 @@ public class DescriptionUpdateValidator : AbstractValidator<DescriptionUpdateVal
                                                context.AddFailure(new ValidationFailure(nameof(update.Update.Name), "Name cannot be empty"));
                                            }
 
+                                           if (update.Update.Name?.Length > 100)
+                                           {
+                                               context.AddFailure(new ValidationFailure(nameof(update.Update.Name), "Name cannot be longer than 100 characters"));
+                                           }
+
                                            break;
                                        case DescriptionOption.description:
+                                           if (update.Update.Description?.Length > 250)
+                                           {
+                                               context.AddFailure(new ValidationFailure(nameof(update.Update.Description), "Description cannot be longer than 250 characters"));
+                                           }
+                                           break;
                                        case DescriptionOption.hometown:
-                                           // these can be empty, sure. leave em.
+                                           if (update.Update.Hometown?.Length > 100)
+                                           {
+                                               context.AddFailure(new ValidationFailure(nameof(update.Update.Hometown), "Hometown cannot be longer than 100 characters"));
+                                           }
                                            break;
                                        default:
                                            throw new ArgumentOutOfRangeException();

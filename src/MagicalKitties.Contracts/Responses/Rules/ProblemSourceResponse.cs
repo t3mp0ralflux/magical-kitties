@@ -2,6 +2,6 @@
 
 public class ProblemSourceResponse
 {
-    public required int RollValue { get; set; }
-    public required string ProblemSource { get; set; }
+    public required string RollValue { get; set; }
+    public required string Source { get; set; }
 }

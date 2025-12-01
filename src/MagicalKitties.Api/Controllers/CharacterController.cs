@@ -56,7 +56,7 @@ public class CharacterController(IAccountService accountService, ICharacterServi
     [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Copy([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Copy([FromRoute] Guid characterId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -65,25 +65,25 @@ public class CharacterController(IAccountService accountService, ICharacterServi
             return Unauthorized();
         }
 
-        bool characterExists = await characterService.ExistsByIdAsync(id, token);
+        bool characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
         if (!characterExists)
         {
             return NotFound();
         }
 
-        Character characterCopy = await characterService.CopyAsync(id, token);
+        Character characterCopy = await characterService.CopyAsync(account.Id, characterId, token);
         
         CharacterResponse response = characterCopy.ToResponse();
         
-        return CreatedAtAction(nameof(Get), new { id = characterCopy.Id }, response);
+        return CreatedAtAction(nameof(Get), new { characterId = characterCopy.Id }, response);
     }
 
     [HttpGet(ApiEndpoints.Characters.Get)]
     [ProducesResponseType<CharacterResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Get([FromRoute] Guid characterId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail()!, token);
 
@@ -92,7 +92,7 @@ public class CharacterController(IAccountService accountService, ICharacterServi
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(id, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
 
         if (character is null)
         {
@@ -130,16 +130,16 @@ public class CharacterController(IAccountService accountService, ICharacterServi
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Delete([FromRoute] Guid characterId, CancellationToken token)
     {
-        bool accountExists = await accountService.ExistsByEmailAsync(HttpContext.GetUserEmail(), token);
+        Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
-        if (!accountExists)
+        if (account is null)
         {
             return Unauthorized();
         }
 
-        bool result = await characterService.DeleteAsync(id, token);
+        bool result = await characterService.DeleteAsync(account.Id, characterId, token);
 
         if (!result)
         {

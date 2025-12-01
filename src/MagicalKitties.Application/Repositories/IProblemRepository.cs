@@ -1,5 +1,6 @@
 ﻿using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
+using MagicalKitties.Application.Models.Rules;
 
 namespace MagicalKitties.Application.Repositories;
 
@@ -12,4 +13,6 @@ public interface IProblemRepository
     Task<bool> UpdateRankAsync(ProblemUpdate update, CancellationToken token = default);
     Task<bool> UpdateSolvedAsync(ProblemUpdate update, CancellationToken token = default);
     Task<bool> DeleteAsync(Guid problemId, CancellationToken token = default);
+    Task<List<ProblemRule>> GetAllProblemSourcesAsync(CancellationToken token = default);
+    Task<List<ProblemRule>> GetAllEmotionsAsync(CancellationToken token = default);
 }

@@ -1,6 +1,7 @@
 ﻿using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Application.Models.Accounts;
+using MagicalKitties.Application.Models.Characters;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.Humans.Updates;
 using MagicalKitties.Application.Services;
@@ -29,7 +30,7 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        bool characterExists = await characterService.ExistsByIdAsync(characterId, token);
+        bool characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
         if (!characterExists)
         {
@@ -40,14 +41,14 @@ public class HumanController(IHumanService humanService, IAccountService account
 
         HumanResponse response = human.ToResponse();
 
-        return CreatedAtAction(nameof(Get), new { id = human.Id }, new { response });
+        return CreatedAtAction(nameof(Get), new { characterId, humanId = human.Id }, response);
     }
 
     [HttpPost(ApiEndpoints.Humans.CreateProblem)]
-    [ProducesResponseType<OkObjectResult>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ProblemResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateProblem([FromRoute] Guid humanId, CancellationToken token)
+    public async Task<IActionResult> CreateProblem([FromRoute] Guid characterId, [FromRoute] Guid humanId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -56,16 +57,18 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        bool result = await humanService.CreateProblemAsync(humanId, token);
+        Problem result = await humanService.CreateProblemAsync(characterId, humanId, token);
 
-        return result ? Ok("Problem created successfully") : NotFound("Human not found.");
+        ProblemResponse response = result.ToResponse();
+
+        return Created(string.Empty, response);
     }
 
     [HttpGet(ApiEndpoints.Humans.Get)]
     [ProducesResponseType<HumanResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Get([FromRoute] Guid characterId, [FromRoute] Guid humanId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -74,7 +77,14 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        Human? human = await humanService.GetByIdAsync(id, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+
+        if (character is null)
+        {
+            return NotFound("Character not found");
+        }
+
+        Human? human = await humanService.GetByIdAsync(characterId, humanId, token);
 
         if (human is null)
         {
@@ -134,7 +144,7 @@ public class HumanController(IHumanService humanService, IAccountService account
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ValidationFailureResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateProblem([FromRoute] MKCtrHumanRequests.ProblemOption problem, [FromBody] MKCtrHumanRequests.HumanProblemUpdateRequest request, CancellationToken token)
+    public async Task<IActionResult> UpdateProblem([FromRoute] MKCtrHumanRequests.ProblemOption problemOption, [FromBody] MKCtrHumanRequests.HumanProblemUpdateRequest request, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -143,18 +153,18 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        ProblemUpdate problemUpdate = request.ToUpdate(problem);
+        ProblemUpdate problemUpdate = request.ToUpdate(problemOption);
 
         bool success = await humanService.UpdateProblemAsync(problemUpdate, token);
 
-        return success ? Ok($"{problem.ToString()} updated successfully.") : NotFound("Character not found.");
+        return success ? Ok($"{problemOption.ToString()} updated successfully.") : NotFound("Character not found.");
     }
 
     [HttpDelete(ApiEndpoints.Humans.Delete)]
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken token)
+    public async Task<IActionResult> Delete([FromRoute] Guid characterId,[FromRoute] Guid humanId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -163,7 +173,14 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        bool result = await humanService.DeleteAsync(id, token);
+        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+
+        if (character is null)
+        {
+            return NotFound("Character not found");
+        }
+
+        bool result = await humanService.DeleteAsync(character.Id, humanId, token);
 
         if (!result)
         {
@@ -177,7 +194,7 @@ public class HumanController(IHumanService humanService, IAccountService account
     [ProducesResponseType<NoContentResult>(StatusCodes.Status204NoContent)]
     [ProducesResponseType<UnauthorizedResult>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<NotFoundResult>(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteProblem([FromRoute] Guid humanId, [FromRoute] Guid problemId, CancellationToken token)
+    public async Task<IActionResult> DeleteProblem([FromRoute] Guid characterId,[FromRoute] Guid humanId, [FromRoute] Guid problemId, CancellationToken token)
     {
         Account? account = await accountService.GetByEmailAsync(HttpContext.GetUserEmail(), token);
 
@@ -186,7 +203,7 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        bool result = await humanService.DeleteProblemAsync(humanId, problemId, token);
+        bool result = await humanService.DeleteProblemAsync(characterId, humanId, problemId, token);
 
         if (!result)
         {

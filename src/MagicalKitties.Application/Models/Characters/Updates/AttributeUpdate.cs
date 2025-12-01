@@ -2,6 +2,7 @@
 
 public class AttributeUpdate
 {
+    public required Guid AccountId { get; set; }
     public required Character Character { get; init; }
     public int? Cute { get; init; }
     public int? Cunning { get; init; }

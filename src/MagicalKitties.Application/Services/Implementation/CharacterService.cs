@@ -36,9 +36,9 @@ public class CharacterService : ICharacterService
         return result;
     }
 
-    public async Task<Character> CopyAsync(Guid id, CancellationToken token = default)
+    public async Task<Character> CopyAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        Character? existingCharacter = await _characterRepository.GetByIdAsync(id, false, token);
+        Character? existingCharacter = await _characterRepository.GetByIdAsync(accountId, characterId, false, token);
 
         Character copiedCharacter = existingCharacter!.CreateCopy();
 
@@ -47,14 +47,14 @@ public class CharacterService : ICharacterService
         return copiedCharacter;
     }
 
-    public Task<bool> ExistsByIdAsync(Guid characterId, CancellationToken token = default)
+    public Task<bool> ExistsByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        return _characterRepository.ExistsByIdAsync(characterId, token);
+        return _characterRepository.ExistsByIdAsync(accountId, characterId, token);
     }
 
-    public async Task<Character?> GetByIdAsync(Guid id, CancellationToken token = default)
+    public async Task<Character?> GetByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        Character? result = await _characterRepository.GetByIdAsync(id, cancellationToken: token);
+        Character? result = await _characterRepository.GetByIdAsync(accountId, characterId, cancellationToken: token);
 
         if (result is not null)
         {
@@ -112,15 +112,15 @@ public class CharacterService : ICharacterService
         return await _characterRepository.GetCountAsync(options, token);
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken token = default)
+    public async Task<bool> DeleteAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        bool exists = await _characterRepository.ExistsByIdAsync(id, token);
+        bool exists = await _characterRepository.ExistsByIdAsync(accountId, characterId, token);
 
         if (!exists)
         {
             return false; // not found
         }
 
-        return await _characterRepository.DeleteAsync(id, token);
+        return await _characterRepository.DeleteAsync(accountId, characterId, token);
     }
 }

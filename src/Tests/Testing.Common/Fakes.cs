@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Xml.XPath;
 using Bogus;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
@@ -9,6 +8,7 @@ using MagicalKitties.Application.Models.Flaws;
 using MagicalKitties.Application.Models.GlobalSettings;
 using MagicalKitties.Application.Models.Humans;
 using MagicalKitties.Application.Models.MagicalPowers;
+using MagicalKitties.Application.Models.Rules;
 using MagicalKitties.Application.Models.System;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Validators.Characters;
@@ -198,7 +198,9 @@ public static class Fakes
                                           .RuleFor(x => x.HumanId, _ => human.Id)
                                           .RuleFor(x => x.Rank, f => f.Random.Int(1, 5))
                                           .RuleFor(x => x.Source, f => f.Lorem.Word())
-                                          .RuleFor(x => x.Emotion, f => f.Lorem.Word());
+                                          .RuleFor(x => x.Emotion, f => f.Lorem.Word())
+                                          .RuleFor(x=>x.CustomSource, f => f.Lorem.Word())
+                                          .RuleFor(x=>x.CustomEmotion, f=> f.Lorem.Word());
 
             human.Problems = problemFaker.Generate(3);
         }
@@ -212,48 +214,48 @@ public static class Fakes
     {
         Upgrade upgrade2 = new()
                            {
-                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
+                               Id = upgradeRules.First(x => x is { UpgradeOption: UpgradeOption.attribute3, Block: 1 }).Id,
                                Block = 1,
                                Option = UpgradeOption.attribute3,
                                Choice = JsonSerializer.Serialize(new ImproveAttributeUpgrade
-                                        {
-                                            AttributeOption = AttributeOption.cute
-                                        })
+                                                                 {
+                                                                     AttributeOption = AttributeOption.cute
+                                                                 })
                            };
 
         Upgrade upgrade3 = new()
                            {
-                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.owieLimit, Block: 1 }).Id,
+                               Id = upgradeRules.First(x => x is { UpgradeOption: UpgradeOption.owieLimit, Block: 1 }).Id,
                                Block = 1,
                                Option = UpgradeOption.owieLimit
                            };
         Upgrade upgrade4 = new()
                            {
-                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
+                               Id = upgradeRules.First(x => x is { UpgradeOption: UpgradeOption.bonusFeature, Block: 1 }).Id,
                                Block = 1,
                                Option = UpgradeOption.bonusFeature,
                                Choice = JsonSerializer.Serialize(new BonusFeatureUpgrade
-                                        {
-                                            MagicalPowerId = 33,
-                                            BonusFeatureId = 1
-                                        })
+                                                                 {
+                                                                     MagicalPowerId = 33,
+                                                                     BonusFeatureId = 1
+                                                                 })
                            };
         Upgrade upgrade5 = new()
                            {
-                               Id = upgradeRules.First(x=>x is { UpgradeOption: UpgradeOption.talent, Block: 2 }).Id,
+                               Id = upgradeRules.First(x => x is { UpgradeOption: UpgradeOption.talent, Block: 2 }).Id,
                                Block = 2,
                                Option = UpgradeOption.talent,
                                Choice = JsonSerializer.Serialize(new GainTalentUpgrade
-                                        {
-                                            TalentId = 42
-                                        })
+                                                                 {
+                                                                     TalentId = 42
+                                                                 })
                            };
         Upgrade upgrade6 = new()
                            {
                                Id = upgradeRules.First(x => x is { UpgradeOption: UpgradeOption.magicalPower, Block: 3 }).Id,
                                Block = 3,
                                Option = UpgradeOption.magicalPower,
-                               Choice = JsonSerializer.Serialize(new NewMagicalPowerUpgrade()
+                               Choice = JsonSerializer.Serialize(new NewMagicalPowerUpgrade
                                                                  {
                                                                      MagicalPowerId = 69
                                                                  })
@@ -275,10 +277,11 @@ public static class Fakes
         return fakeHuman;
     }
 
-    public static AttributeUpdate GenerateAttributeUpdate(Character character)
+    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Character character)
     {
         return new AttributeUpdate
                {
+                   AccountId = accountId,
                    Character = character,
                    Cunning = 3,
                    Cute = 2,
@@ -308,10 +311,11 @@ public static class Fakes
                };
     }
 
-    public static AttributeUpdateValidationContext GenerateValidationContext(Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
+    public static AttributeUpdateValidationContext GenerateValidationContext(Guid accountId, Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
     {
         AttributeUpdate update = new()
                                  {
+                                     AccountId = accountId,
                                      Character = character,
                                      Cunning = cunning,
                                      Cute = cute,
@@ -440,6 +444,90 @@ public static class Fakes
                 Name = "This is a test one",
                 Description = "Eating stuff.",
                 IsCustom = false
+            }
+        ];
+    }
+
+    public static List<Flaw> GenerateFlaws()
+    {
+        return
+        [
+            new Flaw
+            {
+                Id = 11,
+                Name = "First Flaw",
+                Description = "This is the first Flaw",
+                IsCustom = false
+            },
+            new Flaw
+            {
+                Id = 22,
+                Name = "Second Flaw",
+                Description = "This is the second Flaw",
+                IsCustom = false
+            },
+            new Flaw
+            {
+                Id = 33,
+                Name = "Third Flaw",
+                Description = "This is the third Flaw",
+                IsCustom = false
+            }
+        ];
+    }
+
+    public static List<ProblemRule> GenerateProblemSources()
+    {
+        return
+        [
+            new ProblemRule
+            {
+                Id = new Guid("36358CB2-F0AE-4215-8F3B-92FE40B1DFE5"),
+                RollValue = "1",
+                Source = "Naming Things",
+                CustomSource = null
+            },
+            new ProblemRule
+            {
+                Id = new Guid("FDE5996C-E62C-4B7B-8B15-D992A43A534E"),
+                RollValue = "2",
+                Source = "People",
+                CustomSource = null
+            },
+            new ProblemRule
+            {
+                Id = new Guid("89C547ED-1CC6-4623-A2AD-4C9A58177F12"),
+                RollValue = "3",
+                Source = "The 1989 Denver Broncos",
+                CustomSource = null
+            }
+        ];
+    }
+
+    public static List<ProblemRule> GenerateEmotions()
+    {
+        return
+        [
+            new ProblemRule
+            {
+                Id = new Guid("0FDE2F36-C84E-4FD5-8224-68085F9E99EC"),
+                RollValue = "11-13",
+                Source = "Sad",
+                CustomSource = null
+            },
+            new ProblemRule
+            {
+                Id = new Guid("18374A37-DBF7-4134-B497-F1536B792D5A"),
+                RollValue = "14-16",
+                Source = "Gassy",
+                CustomSource = null
+            },
+            new ProblemRule
+            {
+                Id = new Guid("0DD3C425-BD4E-4A21-88FB-C99543875CBA"),
+                RollValue = "21-23",
+                Source = "Custom",
+                CustomSource = "Not great, not terrible"
             }
         ];
     }
