@@ -364,14 +364,16 @@ public class CharacterRepository : ICharacterRepository
             foreach (Problem problem in existingCharacterHuman.Problems)
             {
                 result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                      insert into problem(id, human_id, source, emotion, rank, solved, deleted_utc)
-                                                                                      values (@Id, @HumanId, @Source, @Emotion, @Rank, @Solved, @DeletedUtc)
+                                                                                      insert into problem(id,  human_id, source, custom_source, emotion, custom_emotion, rank, solved, deleted_utc)
+                                                                                      values (@Id, @HumanId, @Source, @CustomSource, @Emotion, @CustomEmotion, @Rank, @Solved, @DeletedUtc)
                                                                                       """, new
                                                                                            {
                                                                                                problem.Id,
                                                                                                problem.HumanId,
                                                                                                problem.Source,
+                                                                                               problem.CustomSource,
                                                                                                problem.Emotion,
+                                                                                               problem.CustomEmotion,
                                                                                                problem.Rank,
                                                                                                problem.Solved,
                                                                                                problem.DeletedUtc
