@@ -106,5 +106,9 @@ public class CharacterTests: IClassFixture<ApplicationApiFactory>, IDisposable
         response.Should().NotBeNull();
         response.AccountId.Should().Be(account.Id);
         response.Name.Should().Contain(account.Username);
+
+        CharacterResponse? getResult = await _httpClient.GetFromJsonAsync<CharacterResponse>(result.Headers.Location);
+
+        getResult.Should().NotBeNull();
     }
 }
