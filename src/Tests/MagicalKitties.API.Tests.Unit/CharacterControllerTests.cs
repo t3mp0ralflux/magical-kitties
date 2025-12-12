@@ -87,6 +87,26 @@ public class CharacterControllerTests
     }
 
     [Fact]
+    public async Task Get_ShouldReturnForbidden_WhenCharacterDoesNotBelongToAccount()
+    {
+        // Arrange
+        Account account = Fakes.GenerateAccount();
+        _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
+
+        _accountService.GetByEmailAsync(account.Email).Returns(account);
+
+        Guid characterId = Guid.NewGuid();
+
+        _characterService.ExistsByIdAsync(account.Id, characterId).Returns((bool?)null);
+
+        // Act
+        ForbidResult result = (ForbidResult)await _sut.Get(characterId, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task Get_ShouldReturnNotFound_WhenCharacterIsNotFound()
     {
         // Arrange
@@ -95,8 +115,12 @@ public class CharacterControllerTests
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
 
+        Guid characterId = Guid.NewGuid();
+
+        _characterService.ExistsByIdAsync(account.Id, characterId).Returns(false);
+
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Get(Guid.NewGuid(), CancellationToken.None);
+        NotFoundResult result = (NotFoundResult)await _sut.Get(characterId, CancellationToken.None);
 
         // Assert
         result.StatusCode.Should().Be(404);
@@ -113,7 +137,8 @@ public class CharacterControllerTests
 
         Character character = Fakes.GenerateCharacter(account);
 
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns(true);
+        _characterService.GetByIdAsync(character.Id).Returns(character);
 
         CharacterResponse expectedResponse = character.ToResponse();
 

@@ -62,7 +62,7 @@ public class CharacterRepository : ICharacterRepository
         return result > 0;
     }
 
-    public async Task<Character?> GetByIdAsync(Guid accountId, Guid characterId, bool includeDeleted = false, CancellationToken cancellationToken = default)
+    public async Task<Character?> GetByIdAsync(Guid characterId, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
@@ -134,9 +134,8 @@ public class CharacterRepository : ICharacterRepository
                                                                                                                                                                     from character c
                                                                                                                                                                     inner join characterstat cs on c.id = cs.character_id
                                                                                                                                                                     where c.id = @characterId
-                                                                                                                                                                    and c.account_id = @accountId
                                                                                                                                                                     {deletedCharactersClause}
-                                                                                                                                                                    """, new { accountId, characterId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
+                                                                                                                                                                    """, new { characterId }, cancellationToken: cancellationToken), (character, flaw, talents, magicalPowers, humans) =>
                                                                                                                                                                                                                                                 {
                                                                                                                                                                                                                                                     character.Flaw = string.IsNullOrWhiteSpace(flaw?.Name) ? null : flaw;
                                                                                                                                                                                                                                                     character.Talents = talents;
@@ -201,18 +200,26 @@ public class CharacterRepository : ICharacterRepository
         return result;
     }
 
-    public async Task<bool> ExistsByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
+    public async Task<bool?> ExistsByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        int result = await connection.QuerySingleAsyncWithRetry<int>(new CommandDefinition("""
-                                                                                           select count(id)
+        Character? result = await connection.QuerySingleOrDefaultAsyncWithRetry<Character?>(new CommandDefinition("""
+                                                                                           select id, account_id
                                                                                            from character
                                                                                            where id = @characterId
-                                                                                           and account_id = @accountId
-                                                                                           """, new { accountId, characterId }, cancellationToken: token));
+                                                                                           """, new { characterId }, cancellationToken: token));
+        if (result is null)
+        {
+            return false;
+        }
 
-        return result > 0;
+        if (result.AccountId != accountId)
+        {
+            return null;
+        }
+        
+        return true;
     }
 
     public async Task<bool> DeleteAsync(Guid accountId, Guid characterId, CancellationToken token = default)

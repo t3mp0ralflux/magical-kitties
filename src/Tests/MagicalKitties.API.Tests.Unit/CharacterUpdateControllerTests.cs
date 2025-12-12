@@ -57,7 +57,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns(false);
+        _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpdateService.UpdateDescriptionAsync(Arg.Any<MKCtrApplicationCharacterUpdates.DescriptionOption>(), Arg.Any<MKCtrApplicationCharacterUpdates.DescriptionUpdate>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         MKCtrCharacterRequests.CharacterDescriptionUpdateRequest request = new()
@@ -84,7 +85,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns((bool?)null);
+        _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpdateService.UpdateDescriptionAsync(Arg.Any<MKCtrApplicationCharacterUpdates.DescriptionOption>(), Arg.Any<MKCtrApplicationCharacterUpdates.DescriptionUpdate>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         MKCtrCharacterRequests.CharacterDescriptionUpdateRequest request = new()
@@ -93,10 +95,10 @@ public class CharacterUpdateControllerTests
                                                                            };
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.UpdateDescription(MKCtrCharacterRequests.DescriptionOption.name, request, CancellationToken.None);
+        ForbidResult result = (ForbidResult)await _sut.UpdateDescription(MKCtrCharacterRequests.DescriptionOption.name, request, CancellationToken.None);
 
         // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        result.Should().NotBe(null);
     }
 
     [Theory]
@@ -126,7 +128,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns(false);
+        _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpdateService.UpdateAttributeAsync(Arg.Any<MKCtrApplicationCharacterUpdates.AttributeOption>(), Arg.Any<MKCtrApplicationCharacterUpdates.AttributeUpdate>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         MKCtrCharacterRequests.CharacterAttributeUpdateRequest request = new()
@@ -142,7 +145,7 @@ public class CharacterUpdateControllerTests
     }
 
     [Fact]
-    public async Task UpdateAttribute_ShouldReturnUnauthorized_WhenCharacterIsFoundButNotOwnedByAccessingAccount()
+    public async Task UpdateAttribute_ShouldReturnForbidden_WhenCharacterIsFoundButNotOwnedByAccessingAccount()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -152,7 +155,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns((bool?)null);
+        _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpdateService.UpdateAttributeAsync(Arg.Any<MKCtrApplicationCharacterUpdates.AttributeOption>(), Arg.Any<MKCtrApplicationCharacterUpdates.AttributeUpdate>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         MKCtrCharacterRequests.CharacterAttributeUpdateRequest request = new()
@@ -161,10 +165,10 @@ public class CharacterUpdateControllerTests
                                                                          };
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.UpdateAttribute(MKCtrCharacterRequests.AttributeOption.cunning, request, CancellationToken.None);
+        ForbidResult result = (ForbidResult)await _sut.UpdateAttribute(MKCtrCharacterRequests.AttributeOption.cunning, request, CancellationToken.None);
 
         // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        result.Should().NotBe(null);
     }
 
     [Fact]
@@ -172,7 +176,7 @@ public class CharacterUpdateControllerTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        _characterService.GetByIdAsync(account.Id, Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the GetByIdAsync function."));
+        _characterService.GetByIdAsync(Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the GetByIdAsync function."));
         _characterUpdateService.Reset(account.Id, Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         // Act
@@ -192,7 +196,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns(false);
+        _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpdateService.Reset(account.Id, Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         // Act
@@ -203,7 +208,7 @@ public class CharacterUpdateControllerTests
     }
 
     [Fact]
-    public async Task Reset_ShouldReturnNotFound_WhenCharacterIsNotFoundByAccessingAccount()
+    public async Task Reset_ShouldReturnForbidden_WhenCharacterIsFoundByUnauthorizedAccount()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -213,14 +218,15 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns((bool?)null);
+        _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpdateService.Reset(account.Id, Arg.Any<Guid>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Update function."));
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.Reset(character.Id, CancellationToken.None);
+        ForbidResult result = (ForbidResult)await _sut.Reset(character.Id, CancellationToken.None);
 
         // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        result.Should().NotBe(null);
     }
 
     [Theory]
@@ -261,7 +267,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns(false);
+        _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpgradeService.UpsertUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
 
         // Act
@@ -272,7 +279,7 @@ public class CharacterUpdateControllerTests
     }
 
     [Fact]
-    public async Task UpsertUpgrade_ShouldReturnNotFound_WhenCharacterIsNotFoundByAccessingAccount()
+    public async Task UpsertUpgrade_ShouldReturnForbidden_WhenCharacterIsNotFoundByAccessingAccount()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -290,14 +297,15 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns((bool?)null);
+        _characterService.GetByIdAsync(character.Id).Returns(character);
         _characterUpgradeService.UpsertUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.UpsertUpgrade(character.Id, request, CancellationToken.None);
+        ForbidResult result = (ForbidResult)await _sut.UpsertUpgrade(character.Id, request, CancellationToken.None);
 
         // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        result.Should().NotBe(null);
     }
 
     [Fact]
@@ -335,7 +343,8 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(account.Email);
 
         _accountService.GetByEmailAsync(account.Email).Returns(account);
-        _characterService.GetByIdAsync(account.Id, character.Id).Returns((Character?)null);
+        _characterService.ExistsByIdAsync(account.Id, character.Id).Returns(false);
+        _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpgradeService.RemoveUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
 
         // Act
@@ -363,14 +372,14 @@ public class CharacterUpdateControllerTests
         _sut.ControllerContext = Utilities.CreateControllerContext(unauthorizedAccount.Email);
 
         _accountService.GetByEmailAsync(unauthorizedAccount.Email).Returns(unauthorizedAccount);
-        _characterService.GetByIdAsync(unauthorizedAccount.Id, character.Id).Returns((Character?)null);
+        _characterService.GetByIdAsync(character.Id).Returns((Character?)null);
         _characterUpgradeService.RemoveUpgradeAsync(Arg.Any<UpgradeRequest>(), Arg.Any<CancellationToken>()).ThrowsAsync(FailException.ForFailure("Test should not have reached the Upsert function."));
 
         // Act
-        NotFoundResult result = (NotFoundResult)await _sut.RemoveUpgrade(character.Id, request, CancellationToken.None);
+        ForbidResult result = (ForbidResult)await _sut.RemoveUpgrade(character.Id, request, CancellationToken.None);
 
         // Assert
-        result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        result.Should().NotBe(null);
     }
 
     public static IEnumerable<object[]> GetDescriptionOptions()

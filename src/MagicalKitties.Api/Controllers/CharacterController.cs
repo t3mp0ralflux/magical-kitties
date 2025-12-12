@@ -65,14 +65,19 @@ public class CharacterController(IAccountService accountService, ICharacterServi
             return Unauthorized();
         }
 
-        bool characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        if (!characterExists)
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
+        
+        if (!characterExists.Value)
         {
             return NotFound();
         }
 
-        Character characterCopy = await characterService.CopyAsync(account.Id, characterId, token);
+        Character characterCopy = await characterService.CopyAsync(characterId, token);
         
         CharacterResponse response = characterCopy.ToResponse();
         
@@ -91,15 +96,22 @@ public class CharacterController(IAccountService accountService, ICharacterServi
         {
             return Unauthorized();
         }
+        
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
 
-        if (character is null)
+        if (!characterExists.Value)
         {
             return NotFound();
         }
 
-        CharacterResponse response = character.ToResponse();
+        Character? character = await characterService.GetByIdAsync(characterId, token);
+        
+        CharacterResponse response = character!.ToResponse();
 
         return Ok(response);
     }
