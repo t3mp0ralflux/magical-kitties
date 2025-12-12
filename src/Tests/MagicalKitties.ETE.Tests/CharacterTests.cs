@@ -41,9 +41,6 @@ public class CharacterTests: IClassFixture<ApplicationApiFactory>, IDisposable
 {
     private readonly IDateTimeProvider _dateTimeProvider = Substitute.For<IDateTimeProvider>();
     private readonly IAccountRepository _accountRepository;
-    private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
-    private readonly IConfiguration _configuration = Substitute.For<IConfiguration>();
-    private readonly IAuthenticationHandler _authHandler = Substitute.For<IAuthenticationHandler>();
     private readonly HttpClient _httpClient;
 
     public CharacterTests(ApplicationApiFactory apiFactory)

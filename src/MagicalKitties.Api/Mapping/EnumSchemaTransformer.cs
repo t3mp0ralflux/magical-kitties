@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+﻿using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 
 namespace MagicalKitties.Api.Mapping;
 
@@ -14,13 +14,15 @@ public sealed class EnumSchemaTransformer() : IOpenApiSchemaTransformer
         
         if (type.IsEnum)
         {
-            schema.Type = "integer / string";
+            schema.Type = JsonSchemaType.Integer | JsonSchemaType.String;
+
+            schema.Enum ??= new List<JsonNode>();
             
             schema.Enum.Clear();
             
             foreach (string name in Enum.GetNames(type))
             {
-                schema.Enum.Add(new OpenApiString(name));
+                schema.Enum.Add(name);
             }
         }
 
