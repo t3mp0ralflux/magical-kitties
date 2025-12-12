@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
+using Xunit;
 
-namespace MagicalKitties.Application.Tests.Integration;
+namespace Testing.Common;
 
 public sealed class SkipIfEnvironmentMissingFact : FactAttribute
 {

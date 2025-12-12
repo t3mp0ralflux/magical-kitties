@@ -17,14 +17,14 @@ namespace Testing.Common;
 
 public static class Fakes
 {
-    public static Account GenerateAccount(AccountStatus? status = AccountStatus.active, AccountRole? role = AccountRole.admin, string? userName = null, bool isDeleted = false, bool isReset = false)
+    public static Account GenerateAccount(AccountStatus? status = AccountStatus.active, AccountRole? role = AccountRole.admin, string? userName = null, bool isDeleted = false, bool isReset = false, string? email = null)
     {
         Faker<Account> fakeAccount = new Faker<Account>()
                                      .RuleFor(x => x.Id, _ => Guid.NewGuid())
                                      .RuleFor(x => x.FirstName, f => f.Person.FirstName)
                                      .RuleFor(x => x.LastName, f => f.Person.LastName)
                                      .RuleFor(x => x.Username, f => string.IsNullOrWhiteSpace(userName) ? f.Internet.UserName() : userName)
-                                     .RuleFor(x => x.Email, f => f.Person.Email)
+                                     .RuleFor(x => x.Email, f => email ?? f.Person.Email)
                                      .RuleFor(x => x.Password, f => f.Internet.Password())
                                      .RuleFor(x => x.AccountStatus, _ => status)
                                      .RuleFor(x => x.AccountRole, _ => role)
@@ -199,8 +199,8 @@ public static class Fakes
                                           .RuleFor(x => x.Rank, f => f.Random.Int(1, 5))
                                           .RuleFor(x => x.Source, f => f.Lorem.Word())
                                           .RuleFor(x => x.Emotion, f => f.Lorem.Word())
-                                          .RuleFor(x=>x.CustomSource, f => f.Lorem.Word())
-                                          .RuleFor(x=>x.CustomEmotion, f=> f.Lorem.Word());
+                                          .RuleFor(x => x.CustomSource, f => f.Lorem.Word())
+                                          .RuleFor(x => x.CustomEmotion, f=> f.Lorem.Word());
 
             human.Problems = problemFaker.Generate(3);
         }

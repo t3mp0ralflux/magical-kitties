@@ -49,7 +49,7 @@ public class CharacterController(IAccountService accountService, ICharacterServi
 
         CharacterResponse response = character.ToResponse();
 
-        return CreatedAtAction(nameof(Get), new { id = character.Id }, response);
+        return CreatedAtAction(nameof(Get), new { characterId = character.Id }, response);
     }
 
     [HttpPost(ApiEndpoints.Characters.Copy)]
