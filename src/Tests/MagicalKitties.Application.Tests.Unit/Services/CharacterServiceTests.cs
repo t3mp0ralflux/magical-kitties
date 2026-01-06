@@ -83,10 +83,10 @@ public class CharacterServiceTests
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        _characterRepository.GetByIdAsync(account.Id, Arg.Any<Guid>()).Returns((Character?)null);
+        _characterRepository.GetByIdAsync(Arg.Any<Guid>()).Returns((Character?)null);
 
         // Act
-        Character? result = await _sut.GetByIdAsync(account.Id, Guid.NewGuid());
+        Character? result = await _sut.GetByIdAsync( Guid.NewGuid());
 
         // Assert
         result.Should().BeNull();
@@ -116,12 +116,12 @@ public class CharacterServiceTests
                                    IsPrimary = false
                                };
         
-        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(character.Id).Returns(character);
         _talentRepository.GetByIdAsync(talentUpgrade.Id).Returns(talentUpgrade);
         _magicalPowerRepository.GetByIdAsync(magicalPowerUpgrade.Id).Returns(magicalPowerUpgrade);
         
         // Act
-        Character? result = await _sut.GetByIdAsync(account.Id, character.Id);
+        Character? result = await _sut.GetByIdAsync(character.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -286,11 +286,11 @@ public class CharacterServiceTests
                                    .WithHumanData()
                                    .WithUpgrades(Fakes.GenerateUpgradeRules());
 
-        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(character.Id).Returns(character);
         _characterRepository.CopyAsync(Arg.Any<Character>()).Returns(true);
         
         // Act
-        Character result = await _sut.CopyAsync(account.Id, character.Id);
+        Character result = await _sut.CopyAsync(character.Id);
 
         // Assert
         result.Name.Should().Be($"{character.Name} - Copy");

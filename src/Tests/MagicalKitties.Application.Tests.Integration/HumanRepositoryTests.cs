@@ -80,7 +80,7 @@ public class HumanRepositoryTests : IClassFixture<ApplicationApiFactory>
         // Assert
         result.Should().BeTrue();
 
-        Character? updatedCharacter = await _characterRepository.GetByIdAsync(account.Id, character.Id);
+        Character? updatedCharacter = await _characterRepository.GetByIdAsync(character.Id);
         updatedCharacter.Should().NotBeNull();
         updatedCharacter.UpdatedUtc.Should().BeCloseTo(now, TimeSpan.FromSeconds(1));
 

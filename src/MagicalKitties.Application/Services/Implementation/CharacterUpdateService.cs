@@ -47,7 +47,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
     public async Task<bool> UpdateAttributeAsync(AttributeOption option, AttributeUpdate update, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.Character.Id, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(update.Character.Id, cancellationToken: token);
 
         if (character is null)
         {
@@ -221,7 +221,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
     public async Task<bool> Reset(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(accountId, characterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(characterId, cancellationToken: token);
 
         if (character is null)
         {

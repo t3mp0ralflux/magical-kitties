@@ -160,7 +160,7 @@ public class CharacterUpdateServiceTests
                                  };
 
         _characterUpdateRepository.UpdateXPAsync(Arg.Any<AttributeUpdate>()).Returns(true);
-        _characterRepository.GetByIdAsync(account.Id, update.Character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(update.Character.Id).Returns(character);
 
         // Act
         bool result = await _sut.UpdateAttributeAsync(AttributeOption.xp, update);
@@ -209,7 +209,7 @@ public class CharacterUpdateServiceTests
                                                     }
                                  };
 
-        _characterRepository.GetByIdAsync(account.Id, character.Id).Returns(character);
+        _characterRepository.GetByIdAsync(character.Id).Returns(character);
         _characterUpdateRepository.UpdateTalentAsync(Arg.Any<AttributeUpdate>()).Returns(true);
         _upgradeRepository.UpsertUpgradesAsync(Arg.Any<Guid>(), Arg.Any<List<Upgrade>>(), Arg.Any<CancellationToken>()).Returns(true);
         

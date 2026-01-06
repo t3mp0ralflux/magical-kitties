@@ -36,9 +36,9 @@ public class CharacterService : ICharacterService
         return result;
     }
 
-    public async Task<Character> CopyAsync(Guid accountId, Guid characterId, CancellationToken token = default)
+    public async Task<Character> CopyAsync(Guid characterId, CancellationToken token = default)
     {
-        Character? existingCharacter = await _characterRepository.GetByIdAsync(accountId, characterId, false, token);
+        Character? existingCharacter = await _characterRepository.GetByIdAsync(characterId, false, token);
 
         Character copiedCharacter = existingCharacter!.CreateCopy();
 
@@ -47,14 +47,14 @@ public class CharacterService : ICharacterService
         return copiedCharacter;
     }
 
-    public Task<bool> ExistsByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
+    public Task<bool?> ExistsByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
         return _characterRepository.ExistsByIdAsync(accountId, characterId, token);
     }
-
-    public async Task<Character?> GetByIdAsync(Guid accountId, Guid characterId, CancellationToken token = default)
+    
+    public async Task<Character?> GetByIdAsync(Guid characterId, CancellationToken token = default)
     {
-        Character? result = await _characterRepository.GetByIdAsync(accountId, characterId, cancellationToken: token);
+        Character? result = await _characterRepository.GetByIdAsync(characterId, cancellationToken: token);
 
         if (result is not null)
         {
@@ -114,9 +114,9 @@ public class CharacterService : ICharacterService
 
     public async Task<bool> DeleteAsync(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        bool exists = await _characterRepository.ExistsByIdAsync(accountId, characterId, token);
+        bool? exists = await _characterRepository.ExistsByIdAsync(accountId, characterId, token);
 
-        if (!exists)
+        if (exists is null or false)
         {
             return false; // not found
         }

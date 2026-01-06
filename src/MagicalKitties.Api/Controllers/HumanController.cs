@@ -29,14 +29,19 @@ public class HumanController(IHumanService humanService, IAccountService account
         {
             return Unauthorized();
         }
+        
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        bool characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
 
-        if (!characterExists)
+        if (!characterExists.Value)
         {
             return NotFound("Character not found.");
         }
-
+        
         Human human = await humanService.CreateAsync(characterId, token);
 
         HumanResponse response = human.ToResponse();
@@ -77,11 +82,16 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        if (character is null)
+        if (!characterExists.HasValue)
         {
-            return NotFound("Character not found");
+            return Forbid();
+        }
+
+        if (!characterExists.Value)
+        {
+            return NotFound("Character not found.");
         }
 
         Human? human = await humanService.GetByIdAsync(characterId, humanId, token);
@@ -173,14 +183,19 @@ public class HumanController(IHumanService humanService, IAccountService account
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        if (character is null)
+        if (!characterExists.HasValue)
         {
-            return NotFound("Character not found");
+            return Forbid();
         }
 
-        bool result = await humanService.DeleteAsync(character.Id, humanId, token);
+        if (!characterExists.Value)
+        {
+            return NotFound("Character not found.");
+        }
+
+        bool result = await humanService.DeleteAsync(characterId, humanId, token);
 
         if (!result)
         {

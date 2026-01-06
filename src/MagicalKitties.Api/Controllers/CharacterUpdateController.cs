@@ -30,13 +30,18 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(account.Id, request.CharacterId, token);
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, request.CharacterId, token);
 
-        if (character is null)
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
+
+        if (!characterExists.Value)
         {
             return NotFound();
         }
-
+        
         MKCtrApplicationCharacterUpdates.DescriptionUpdate descriptionUpdate = request.ToUpdate(account.Id);
 
         // will throw validation errors
@@ -59,14 +64,21 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
             return Unauthorized();
         }
 
-        Character? character = await characterService.GetByIdAsync(account.Id, request.CharacterId, token);
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, request.CharacterId, token);
 
-        if (character is null)
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
+
+        if (!characterExists.Value)
         {
             return NotFound();
         }
+
+        Character? character = await characterService.GetByIdAsync(request.CharacterId, token);
         
-        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(account.Id, character);
+        MKCtrApplicationCharacterUpdates.AttributeUpdate attributeUpdate = request.ToUpdate(account.Id, character!);
 
         // will throw validation errors
         bool success = await characterUpdateService.UpdateAttributeAsync((MKCtrApplicationCharacterUpdates.AttributeOption)attribute, attributeUpdate, token);
@@ -86,10 +98,15 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
         {
             return Unauthorized();
         }
+        
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
 
-        if (character is null)
+        if (!characterExists.Value)
         {
             return NotFound();
         }
@@ -112,10 +129,15 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
         {
             return Unauthorized();
         }
+        
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
 
-        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
 
-        if (character is null)
+        if (!characterExists.Value)
         {
             return NotFound();
         }
@@ -145,10 +167,15 @@ public class CharacterUpdateController(IAccountService accountService, ICharacte
         {
             return Unauthorized();
         }
-
-        Character? character = await characterService.GetByIdAsync(account.Id, characterId, token);
         
-        if (character is null)
+        bool? characterExists = await characterService.ExistsByIdAsync(account.Id, characterId, token);
+
+        if (!characterExists.HasValue)
+        {
+            return Forbid();
+        }
+
+        if (!characterExists.Value)
         {
             return NotFound();
         }

@@ -34,7 +34,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
     public async Task<bool> UpsertUpgradeAsync(UpgradeRequest update, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(update.CharacterId, cancellationToken: token);
 
         if (character is null)
         {
@@ -281,7 +281,7 @@ public class CharacterUpgradeService : ICharacterUpgradeService
 
     public async Task<bool> RemoveUpgradeAsync(UpgradeRequest update, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(update.AccountId, update.CharacterId, cancellationToken: token);
+        Character? character = await _characterRepository.GetByIdAsync(update.CharacterId, cancellationToken: token);
 
         Upgrade? upgrade = character?.Upgrades.FirstOrDefault(x => x.Id == update.Upgrade.Id);
 
