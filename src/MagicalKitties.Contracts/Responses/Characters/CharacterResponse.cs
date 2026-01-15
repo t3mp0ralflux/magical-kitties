@@ -29,5 +29,6 @@ public class CharacterResponse
     public required int StartingTreats { get; init; } = 2;
     public required int CurrentTreats { get; init; }
     public required int CurrentInjuries { get; init; }
+    public required bool Incapacitated { get; init; }
     public required List<Upgrade> Upgrades { get; init; }
 }

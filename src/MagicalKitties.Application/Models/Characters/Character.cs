@@ -48,7 +48,6 @@ public class Character
 
     [Column("current_injuries")]
     public int CurrentInjuries { get; set; }
-
     public bool Incapacitated { get; init; }
     public int Cunning { get; set; }
     public int Cute { get; set; }
