@@ -64,24 +64,8 @@ public static class Fakes
 
         return fakeSetting;
     }
-
-    public static Character GenerateNewCharacter(Account account)
-    {
-        Faker<Character> fakeCharacter = new Faker<Character>()
-                                         .RuleFor(x => x.Id, _ => Guid.NewGuid())
-                                         .RuleFor(x => x.AccountId, _ => account.Id)
-                                         .RuleFor(x => x.Username, _ => account.Username)
-                                         .RuleFor(x => x.Name, f => f.Person.FullName)
-                                         .RuleFor(x => x.MaxOwies, _ => 2)
-                                         .RuleFor(x => x.StartingTreats, _ => 2)
-                                         .RuleFor(x => x.Cunning, _ => 0)
-                                         .RuleFor(x => x.Cute, _ => 0)
-                                         .RuleFor(x => x.Fierce, _ => 0);
-
-        return fakeCharacter;
-    }
-
-    public static Character GenerateCharacter(Account account)
+    
+    public static Character GenerateCharacter(Account account, bool isIncapacitated = false)
     {
         Faker<Character> fakeCharacter = new Faker<Character>()
                                          .RuleFor(x => x.Id, _ => Guid.NewGuid())
@@ -95,7 +79,7 @@ public static class Fakes
                                          .RuleFor(x => x.Cunning, _ => 0)
                                          .RuleFor(x => x.Cute, _ => 0)
                                          .RuleFor(x => x.Fierce, _ => 0)
-                                         .RuleFor(x => x.Incapacitated, _ => false);
+                                         .RuleFor(x => x.Incapacitated, _ => isIncapacitated);
 
         return fakeCharacter;
     }
@@ -277,7 +261,7 @@ public static class Fakes
         return fakeHuman;
     }
 
-    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Character character)
+    public static AttributeUpdate GenerateAttributeUpdate(Guid accountId, Character character, bool isIncapacitated = false)
     {
         return new AttributeUpdate
                {
@@ -307,7 +291,8 @@ public static class Fakes
                                         },
                    CurrentOwies = 2,
                    CurrentTreats = 6,
-                   CurrentInjuries = 1
+                   CurrentInjuries = 1,
+                   Incapacitated = isIncapacitated
                };
     }
 
