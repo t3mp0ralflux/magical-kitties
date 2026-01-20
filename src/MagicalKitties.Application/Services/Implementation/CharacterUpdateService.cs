@@ -186,13 +186,13 @@ public class CharacterUpdateService : ICharacterUpdateService
                 }
 
                 return await _characterUpdateRepository.UpdateCurrentOwiesAsync(update, token);
-            case AttributeOption.currenttreats:
-                if (character.CurrentTreats == update.CurrentTreats)
+            case AttributeOption.usedtreats:
+                if (character.UsedTreats == update.UsedTreats)
                 {
                     return true; // no need to update
                 }
 
-                return await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
+                return await _characterUpdateRepository.UpdateUsedTreatsAsync(update, token);
             case AttributeOption.currentinjuries:
                 if (character.CurrentInjuries == update.CurrentInjuries)
                 {
@@ -234,7 +234,7 @@ public class CharacterUpdateService : ICharacterUpdateService
                                      Character = character,
                                      CurrentOwies = 0,
                                      CurrentInjuries = 0,
-                                     CurrentTreats = character.StartingTreats,
+                                     UsedTreats = character.StartingTreats,
                                      Incapacitated = false
                                  };
 
@@ -243,7 +243,7 @@ public class CharacterUpdateService : ICharacterUpdateService
 
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update, token);
 
-        await _characterUpdateRepository.UpdateCurrentTreatsAsync(update, token);
+        await _characterUpdateRepository.UpdateUsedTreatsAsync(update, token);
 
         await _characterUpdateRepository.UpdateIncapacitatedStatus(update, token);
 

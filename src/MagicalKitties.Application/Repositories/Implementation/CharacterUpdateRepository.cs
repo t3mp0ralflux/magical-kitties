@@ -454,18 +454,18 @@ public class CharacterUpdateRepository : ICharacterUpdateRepository
         return result > 0;
     }
 
-    public async Task<bool> UpdateCurrentTreatsAsync(AttributeUpdate update, CancellationToken token = default)
+    public async Task<bool> UpdateUsedTreatsAsync(AttributeUpdate update, CancellationToken token = default)
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update characterstat
-                                                                                  set current_treats = @CurrentTreats
+                                                                                  set used_treats = @UsedTreats
                                                                                   where character_id = @CharacterId
                                                                                   """, new
                                                                                        {
-                                                                                           update.CurrentTreats,
+                                                                                           update.UsedTreats,
                                                                                            CharacterId = update.Character.Id
                                                                                        }, cancellationToken: token));
 

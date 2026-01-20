@@ -27,7 +27,7 @@ public class CharacterResponse
     public required int MaxOwies { get; init; } = 2;
     public required int CurrentOwies { get; init; }
     public required int StartingTreats { get; init; } = 2;
-    public required int CurrentTreats { get; init; }
+    public required int UsedTreats { get; init; }
     public required int CurrentInjuries { get; init; }
     public required List<Upgrade> Upgrades { get; init; }
 }

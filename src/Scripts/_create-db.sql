@@ -71,7 +71,7 @@ create table if not exists characterstat(
     max_owies numeric not null default 2,
     current_owies numeric not null default 0,
     starting_treats numeric not null default 2,
-    current_treats numeric not null default 0,
+    used_treats numeric not null default 0,
     current_injuries numeric not null default 0,
     cute numeric not null default 0,
     cunning numeric not null default 0,

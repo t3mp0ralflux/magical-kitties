@@ -195,7 +195,7 @@ public static class ContractMapping
                    CurrentInjuries = character.CurrentInjuries,
                    CurrentOwies = character.CurrentOwies,
                    MaxOwies = character.MaxOwies,
-                   CurrentTreats = character.CurrentTreats,
+                   UsedTreats = character.UsedTreats,
                    StartingTreats = character.StartingTreats,
                    CurrentXp = character.CurrentXp,
                    Description = character.Description,
@@ -255,7 +255,7 @@ public static class ContractMapping
                    TalentChange = request.TalentChange?.ToUpdate(),
                    MagicalPowerChange = request.MagicalPowerChange?.ToUpdate(),
                    CurrentOwies = request.CurrentOwies,
-                   CurrentTreats = request.CurrentTreats,
+                   UsedTreats = request.UsedTreats,
                    CurrentInjuries = request.CurrentInjuries,
                    Incapacitated = request.Incapacitated
                };

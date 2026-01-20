@@ -13,7 +13,7 @@ public class CharacterAttributeUpdateRequest
     public EndowmentChangeRequest? MagicalPowerChange { get; init; }
 
     public int? CurrentOwies { get; init; }
-    public int? CurrentTreats { get; init; }
+    public int? UsedTreats { get; init; }
     public int? CurrentInjuries { get; init; }
     public bool? Incapacitated { get; init; }
 }
