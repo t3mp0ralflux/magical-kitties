@@ -195,6 +195,7 @@ public static class ContractMapping
                    CurrentInjuries = character.CurrentInjuries,
                    CurrentOwies = character.CurrentOwies,
                    MaxOwies = character.MaxOwies,
+                   Incapacitated = character.Incapacitated,
                    UsedTreats = character.UsedTreats,
                    StartingTreats = character.StartingTreats,
                    CurrentXp = character.CurrentXp,

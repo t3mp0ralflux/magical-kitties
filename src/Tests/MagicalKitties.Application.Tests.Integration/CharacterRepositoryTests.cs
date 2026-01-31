@@ -41,7 +41,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        Character character = Fakes.GenerateNewCharacter(account);
+        Character character = Fakes.GenerateCharacter(account);
 
         _dateTimeProvider.GetUtcNow().Returns(DateTime.UtcNow);
 
@@ -96,8 +96,10 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         result.Should().BeEquivalentTo(character, options => options.Using<DateTime>(x => x.Subject.Should().BeCloseTo(x.Expectation, TimeSpan.FromSeconds(1))).WhenTypeIs<DateTime>());
     }
 
-    [SkipIfEnvironmentMissingFact]
-    public async Task GetByIdAsync_ShouldReturnFullCharacterInformation_WhenIdIsFound()
+    [SkipIfEnvironmentMissingTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetByIdAsync_ShouldReturnFullCharacterInformation_WhenIdIsFound(bool isIncapacitated)
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
@@ -139,6 +141,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update);
         await _characterUpdateRepository.UpdateCurrentOwiesAsync(update);
         await _characterUpdateRepository.UpdateUsedTreatsAsync(update);
+        await _characterUpdateRepository.UpdateIncapacitatedStatus(update);
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
 

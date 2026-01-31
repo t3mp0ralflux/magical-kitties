@@ -15,7 +15,7 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 public class CharacterRepository : ICharacterRepository
 {
     private const string CharacterFields = "c.id, c.account_id, c.username, c.name, c.created_utc, c.updated_utc, c.deleted_utc, c.description, c.hometown, json(c.upgrades) as upgrades";
-    private const string CharacterStatFields = "cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.used_treats, cs.current_injuries, cs.cute, cs.cunning, cs.fierce";
+    private const string CharacterStatFields = "cs.level, cs.current_xp, cs.max_owies, cs.current_owies, cs.starting_treats, cs.current_treats, cs.current_injuries, cs.cute, cs.cunning, cs.fierce, cs.incapacitated";
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
