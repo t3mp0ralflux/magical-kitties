@@ -165,7 +165,7 @@ public static class Fakes
             }
         ];
         character.CurrentOwies = 2;
-        character.CurrentTreats = 6;
+        character.UsedTreats = 6;
         character.CurrentInjuries = 1;
 
         return character;
@@ -290,13 +290,13 @@ public static class Fakes
                                             IsPrimary = true
                                         },
                    CurrentOwies = 2,
-                   CurrentTreats = 6,
+                   UsedTreats = 6,
                    CurrentInjuries = 1,
                    Incapacitated = isIncapacitated
                };
     }
 
-    public static AttributeUpdateValidationContext GenerateValidationContext(Guid accountId, Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? currentTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
+    public static AttributeUpdateValidationContext GenerateValidationContext(Guid accountId, Character? character = null, int? cunning = null, int? cute = null, int? fierce = null, AttributeOption? attributeOption = null, EndowmentChange? magicalPowerChange = null, EndowmentChange? flawChange = null, EndowmentChange? talentChange = null, int? usedTreats = null, int? level = null, int? currentOwies = null, int? currentInjuries = null, int? xp = null)
     {
         AttributeUpdate update = new()
                                  {
@@ -305,7 +305,7 @@ public static class Fakes
                                      Cunning = cunning,
                                      Cute = cute,
                                      Fierce = fierce,
-                                     CurrentTreats = currentTreats,
+                                     UsedTreats = usedTreats,
                                      FlawChange = flawChange,
                                      Level = level,
                                      MagicalPowerChange = magicalPowerChange,

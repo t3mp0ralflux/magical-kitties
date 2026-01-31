@@ -43,8 +43,8 @@ public class Character
     [Column("starting_treats")]
     public int StartingTreats { get; init; }
 
-    [Column("current_treats")]
-    public int CurrentTreats { get; set; }
+    [Column("used_treats")]
+    public int UsedTreats { get; set; }
 
     [Column("current_injuries")]
     public int CurrentInjuries { get; set; }
@@ -92,7 +92,7 @@ public class Character
                    Incapacitated = false,
                    CurrentOwies = this.CurrentOwies,
                    StartingTreats = this.StartingTreats,
-                   CurrentTreats = this.CurrentTreats,
+                   UsedTreats = this.UsedTreats,
                    CurrentXp = this.CurrentXp,
                    MaxOwies = this.MaxOwies,
                    Cute = this.Cute,

@@ -161,18 +161,18 @@ public class AttributeUpdateValidatorTests
     }
 
     [Fact]
-    public async Task Validator_ShouldThrowAsync_WhenCurrentTreatsIsInvalid()
+    public async Task Validator_ShouldThrowAsync_WhenUsedTreatsIsInvalid()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(account.Id, currentTreats: -5, attributeOption: AttributeOption.currenttreats);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(account.Id, usedTreats: -5, attributeOption: AttributeOption.usedtreats);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
 
         // Assert
         result
-            .ShouldHaveValidationErrorFor(x => x.Update.CurrentTreats)
+            .ShouldHaveValidationErrorFor(x => x.Update.UsedTreats)
             .WithErrorMessage("Current Treats can't be negative.")
             .WithSeverity(Severity.Error);
     }
@@ -589,12 +589,12 @@ public class AttributeUpdateValidatorTests
     }
 
     [Fact]
-    public async Task Validator_ShouldNotThrowAsync_WhenCurrentTreatsInformationIsCorrect()
+    public async Task Validator_ShouldNotThrowAsync_WhenUsedTreatsInformationIsCorrect()
     {
         // Arrange
         Account account = Fakes.GenerateAccount();
         Character character = Fakes.GenerateCharacter(account);
-        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(account.Id, character: character, currentTreats: 3, attributeOption: AttributeOption.currenttreats);
+        AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(account.Id, character: character, usedTreats: 3, attributeOption: AttributeOption.usedtreats);
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);

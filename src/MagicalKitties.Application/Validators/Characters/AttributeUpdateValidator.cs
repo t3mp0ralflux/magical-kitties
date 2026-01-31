@@ -43,11 +43,11 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
             .WithMessage("Owies can only be between 0 and 5 inclusively.")
             .When(x => x.Option == AttributeOption.currentowies);
 
-        RuleFor(x => x.Update.CurrentTreats)
+        RuleFor(x => x.Update.UsedTreats)
             .NotNull()
             .GreaterThanOrEqualTo(0)
             .WithMessage("Current Treats can't be negative.")
-            .When(x => x.Option == AttributeOption.currenttreats);
+            .When(x => x.Option == AttributeOption.usedtreats);
 
         RuleFor(x => x.Update.CurrentInjuries)
             .NotNull()
@@ -271,7 +271,7 @@ public class AttributeUpdateValidator : AbstractValidator<AttributeUpdateValidat
             case AttributeOption.fierce:
             case AttributeOption.level:
             case AttributeOption.currentowies:
-            case AttributeOption.currenttreats:
+            case AttributeOption.usedtreats:
             case AttributeOption.currentinjuries:
             default:
                 return; // don't care, not us.

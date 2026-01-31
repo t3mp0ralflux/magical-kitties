@@ -8,6 +8,7 @@ using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
+using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 using Testing.Common;
 
@@ -322,21 +323,14 @@ public class CharacterServiceTests
                                                        });
 
             resultHuman.CharacterId.Should().Be(result.Id);
-            foreach (Problem resultHumanProblem in resultHuman.Problems)
-            {
-                Problem? problemMatch = humanMatch.Problems.FirstOrDefault(x => x.Emotion == resultHumanProblem.Emotion);
-                
-                problemMatch.Should().NotBeNull();
-                resultHumanProblem.Should().BeEquivalentTo(problemMatch, options =>
-                                                                         {
-                                                                             options.Excluding(x => x.Id);
-                                                                             options.Excluding(x => x.HumanId);
 
-                                                                             return options;
-                                                                         });
+            resultHuman.Problems.Should().BeEquivalentTo(humanMatch.Problems, options =>
+                                                                              {
+                                                                                  options.Excluding(x => x.Id);
+                                                                                  options.Excluding(x => x.HumanId);
 
-                resultHumanProblem.HumanId.Should().Be(resultHuman.Id);
-            }
+                                                                                  return options;
+                                                                              });
         }
     }
 }

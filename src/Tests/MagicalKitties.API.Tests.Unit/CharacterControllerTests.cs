@@ -55,7 +55,7 @@ public class CharacterControllerTests
                                                  Name = $"{account.Username}'s Unnamed Character",
                                                  CurrentOwies = 0,
                                                  CurrentInjuries = 0,
-                                                 CurrentTreats = 0,
+                                                 UsedTreats = 0,
                                                  MaxOwies = 2,
                                                  StartingTreats = 2,
                                                  Cunning = 0,

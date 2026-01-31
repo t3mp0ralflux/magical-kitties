@@ -140,7 +140,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update);
         await _characterUpdateRepository.UpdateCurrentOwiesAsync(update);
-        await _characterUpdateRepository.UpdateCurrentTreatsAsync(update);
+        await _characterUpdateRepository.UpdateUsedTreatsAsync(update);
         await _characterUpdateRepository.UpdateIncapacitatedStatus(update);
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
@@ -470,7 +470,7 @@ public class CharacterRepositoryTests : IClassFixture<ApplicationApiFactory>
 
         await _characterUpdateRepository.UpdateCurrentInjuriesAsync(update);
         await _characterUpdateRepository.UpdateCurrentOwiesAsync(update);
-        await _characterUpdateRepository.UpdateCurrentTreatsAsync(update);
+        await _characterUpdateRepository.UpdateUsedTreatsAsync(update);
 
         await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades);
 
