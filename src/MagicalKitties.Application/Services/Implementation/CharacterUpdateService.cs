@@ -221,20 +221,21 @@ public class CharacterUpdateService : ICharacterUpdateService
 
     public async Task<bool> Reset(Guid accountId, Guid characterId, CancellationToken token = default)
     {
-        Character? character = await _characterRepository.GetByIdAsync(characterId, cancellationToken: token);
-
-        if (character is null)
-        {
-            return false;
-        }
-
+        Character character = new Character
+                              {
+                                  Id = characterId,
+                                  AccountId = accountId,
+                                  Username = "unused",
+                                  Name = "unused"
+                              };
+        
         AttributeUpdate update = new()
                                  {
                                      AccountId = accountId,
                                      Character = character,
                                      CurrentOwies = 0,
                                      CurrentInjuries = 0,
-                                     UsedTreats = character.StartingTreats,
+                                     UsedTreats = 0,
                                      Incapacitated = false
                                  };
 

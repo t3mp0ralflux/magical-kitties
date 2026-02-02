@@ -10,6 +10,7 @@ using MagicalKitties.Application.Repositories;
 using MagicalKitties.Application.Services.Implementation;
 using MagicalKitties.Application.Validators.Characters;
 using NSubstitute;
+using NSubstitute.Core;
 using Testing.Common;
 
 namespace MagicalKitties.Application.Tests.Unit.Services;
@@ -218,5 +219,55 @@ public class CharacterUpdateServiceTests
 
         // Assert
         character.Upgrades[0].Choice.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Reset_ShouldSubmitCorrectResetInformation_WhenSubmitted()
+    {
+        // Arrange
+        Guid accountId = Guid.NewGuid();
+        Character character = new Character
+                              {
+                                  Id = Guid.NewGuid(),
+                                  AccountId = accountId,
+                                  Username = "unused",
+                                  Name = "unused",
+                                  StartingTreats = 2,
+                                  UsedTreats = 2,
+                                  MaxOwies = 2,
+                                  CurrentOwies = 3,
+                                  CurrentInjuries = 1
+                              };
+
+        AttributeUpdate expectedUpdatePayload = new AttributeUpdate
+                                         {
+                                             AccountId = accountId,
+                                             Character = character,
+                                             CurrentOwies = 0,
+                                             CurrentInjuries = 0,
+                                             UsedTreats = 0,
+                                             Incapacitated = false
+                                         };
+
+        // Act
+        bool result = await _sut.Reset(accountId, character.Id);
+
+        // Assert
+        result.Should().Be(true);
+        
+        // looks janky, but all the calls have the same payload, so it doesn't matter which one is grabbed.
+        ICall? anyCall = _characterUpdateRepository.ReceivedCalls().FirstOrDefault();
+        anyCall.Should().NotBeNull();
+
+        AttributeUpdate? updatePayload = (AttributeUpdate?)anyCall.GetArguments().FirstOrDefault();
+        updatePayload.Should().NotBeNull();
+
+        updatePayload.Should().BeEquivalentTo(expectedUpdatePayload, options =>
+                                                                     {
+                                                                         options.Excluding(x => x.Character);
+                                                                         options.Excluding(x => x.Character);
+                                                                         
+                                                                         return options;
+                                                                     });
     }
 }
