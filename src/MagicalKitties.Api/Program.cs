@@ -6,7 +6,6 @@ using MagicalKitties.Api.Auth;
 using MagicalKitties.Api.Mapping;
 using MagicalKitties.Api.Services;
 using MagicalKitties.Application;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -26,7 +25,8 @@ builder.Services.AddCors(options =>
                                      policy.WithOrigins(
                                                "http://localhost:4200",
                                                "http://0.0.0.0:4200",
-                                               "http://192.168.1.109:4200"
+                                               "http://192.168.1.109:4200",
+                                               "http://host.docker.internal:4200"
                                                )
                                            .SetIsOriginAllowed(origin => true) // debugging
                                            .AllowAnyMethod()

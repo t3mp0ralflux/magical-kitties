@@ -1,10 +1,33 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
 name: magical-kitties
-networks:
-  my-network:
-    ipam:
-      config:
-        - subnet: 173.18.0.0/24
 services:
+  api:
+    build:
+      context: .
+      target: final
+    ports:
+      - 5000:8080
+    environment:
+      - ASPNETCORE_HTTPS_PORTS=5001
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ConnectionStrings:Database=Server=host.docker.internal;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
+    depends_on:
+      - "db"
+    volumes:
+      - $APPDATA/microsoft/UserSecrets/:/home/app/.microsoft/usersecrets
+      - $USERPROFILE/.aspnet/https/:/https
+    stop_signal: SIGINT
+    stop_grace_period: 30s
   db:
     image: postgres:latest
     restart: unless-stopped
@@ -13,9 +36,6 @@ services:
       - POSTGRES_USER=dm
       - POSTGRES_PASSWORD=magic
       - POSTGRES_DB=sql-db-magickitty-dev
-    networks:
-      my-network:
-        ipv4_address: 173.18.0.100
     ports:
       - '5432:5432'
   seq:
@@ -24,31 +44,39 @@ services:
     container_name: logs
     environment:
       - ACCEPT_EULA=Y
-    networks:
-      my-network:
-        ipv4_address: 173.18.0.101
     ports:
       - '5341:80'
-  api:
-    image: dockerapp
-    container_name: API
-    build:
-      dockerfile: Dockerfile
-    networks:
-      my-network:
-        ipv4_address: 173.18.0.102
-    ports:
-      - '5001:5001'
-    environment:
-      - ASPNETCORE_HTTPS_PORTS=5001
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-      - ConnectionStrings:Database=Server=173.18.0.100;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
-    depends_on:
-      - "db"
-    volumes:
-      - $APPDATA/microsoft/UserSecrets/:/home/app/.microsoft/usersecrets
-      - $USERPROFILE/.aspnet/https/:/https
-    stop_signal: SIGINT
-    stop_grace_period: 30s
+
+# The commented out section below is an example of how to define a PostgreSQL
+# database that your application can use. `depends_on` tells Docker Compose to
+# start the database before your application. The `db-data` volume persists the
+# database data between container restarts. The `db-password` secret is used
+# to set the database password. You must create `db/password.txt` and add
+# a password of your choosing to it before running `docker compose up`.
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#   db:
+#     image: postgres
+#     restart: always
+#     user: postgres
+#     secrets:
+#       - db-password
+#     volumes:
+#       - db-data:/var/lib/postgresql/data
+#     environment:
+#       - POSTGRES_DB=example
+#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+#     expose:
+#       - 5432
+#     healthcheck:
+#       test: [ "CMD", "pg_isready" ]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+# volumes:
+#   db-data:
+# secrets:
+#   db-password:
+#     file: db/password.txt
+
