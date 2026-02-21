@@ -641,6 +641,7 @@ public static class ContractMapping
                    ProblemSource = rules.ProblemSources.Select(ToResponse),
                    Emotion = rules.Emotions.Select(ToResponse),
                    DiceRules = rules.DiceRules,
+                   RollInstructions = rules.RollInstructions,
                    DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
                    DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
                    RollComplications = rules.RollComplications,
