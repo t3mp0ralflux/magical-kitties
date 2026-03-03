@@ -64,6 +64,7 @@ public class RuleServiceTests
                                        ProblemSources = problemSources,
                                        Emotions = emotions,
                                        DiceRules = ["+1 to +4 dice for Cute, Cunning, or Fierce", "+1 die for your Talent", "+2 dice for your Magical Power", "+1 die for an earlier success bonus", "-1 die per injury"],
+                                       RollInstructions = ["If that equals 0 dice, you can't roll it. If Cute, Cunning, and Fierce are all at 0 dice, you're Incapacitated", "Ask the GM what the Difficulty is (Usually it's a 4)", "Roll your dice! Your successes = the number of dice that rolled >= the Difficulty. Decide if you want to use a Kitty Treat to reroll now"],
                                        DiceDifficulties = DiceRule.DiceDifficulties,
                                        DiceSuccesses = DiceRule.DiceSuccesses,
                                        RollComplications = ["Foe or Disaster uses their Reaction.", "You suffer an Owie.", "You get into a sticky situation.", "You are unable to act for some time.", "You have one fewer die in your next dice pool.", "The GM forces you to take action according to your Flaw. (A Lazy kitty takes a nap, a Snobby kitty insults somebody important, or a Big-Mouthed kitty reveals crucial information.)", "A new Disaster is created.", "Something else bad happens (needs GM approval)."],

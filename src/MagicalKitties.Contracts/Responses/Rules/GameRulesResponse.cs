@@ -20,6 +20,7 @@ public class GameRulesResponse
     public required IEnumerable<ProblemSourceResponse> ProblemSource { get; set; } = [];
     public required IEnumerable<ProblemSourceResponse> Emotion { get; set; } = [];
     public required IEnumerable<string> DiceRules { get; set; } = [];
+    public required IEnumerable<string> RollInstructions { get; set; } = [];
     public required IEnumerable<DiceDifficultyResponse> DiceDifficulties { get; set; } = [];
     public required IEnumerable<DiceSuccessResponse> DiceSuccesses { get; set; } = [];
     public required IEnumerable<string> RollComplications { get; set; } = [];
