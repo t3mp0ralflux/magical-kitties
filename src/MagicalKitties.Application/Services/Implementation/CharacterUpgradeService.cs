@@ -270,11 +270,8 @@ public class CharacterUpgradeService : ICharacterUpgradeService
             
             character.Upgrades.Add(existingUpgrade);
         }
-
-        if (finalizedChoice is not null)
-        {
-            existingUpgrade.Choice = finalizedChoice;
-        }
+        
+        existingUpgrade.Choice = finalizedChoice;
         
         return await _upgradeRepository.UpsertUpgradesAsync(character.Id, character.Upgrades, token);
     }
