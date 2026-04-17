@@ -20,7 +20,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_Kestrel__Certificates__Default__Password=password
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-      - ConnectionStrings:Database=Server=host.docker.internal;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
+      - ConnectionStrings:Database=Server=db;Port=5432;Database=sql-db-magickitty-dev;User ID=dm;Password=magic;
+      - Logging:Settings:Endpoint=http://seq:5341/ingest/otlp/v1/logs
     depends_on:
       - "db"
     volumes:
