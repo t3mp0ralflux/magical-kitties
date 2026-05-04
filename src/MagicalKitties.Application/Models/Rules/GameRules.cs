@@ -21,7 +21,8 @@ public class GameRules
     public required List<ProblemRule> ProblemSources { get; init; } = [];
     public required List<ProblemRule> Emotions { get; init; } = [];
     public required List<string> DiceRules { get; init; } = [];
-    public required List<string> RollInstructions { get; set; } = [];
+    public required List<string> RollInstructions { get; init; } = [];
+    public required List<CheckDifficulty> CheckDifficulties { get; init; } = [];
     public required List<DiceRule.DiceDifficulty> DiceDifficulties { get; init; } = [];
     public required List<DiceRule.DiceSuccess> DiceSuccesses { get; init; } = [];
     public required List<string> RollComplications { get; init; } = [];

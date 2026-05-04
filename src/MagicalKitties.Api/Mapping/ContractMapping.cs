@@ -642,6 +642,7 @@ public static class ContractMapping
                    Emotion = rules.Emotions.Select(ToResponse),
                    DiceRules = rules.DiceRules,
                    RollInstructions = rules.RollInstructions,
+                   CheckDifficulties = rules.CheckDifficulties.Select(ToResponse),
                    DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
                    DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
                    RollComplications = rules.RollComplications,
@@ -650,7 +651,7 @@ public static class ContractMapping
                    SpendingKittyTreats = rules.SpendingKittyTreats,
                    Healing = rules.Healing,
                    EndOfEpisodeInfo = rules.EndOfEpisodeInfo,
-                   EndEpisodeQuestions = rules.EndEpisodeQuestions
+                   EndEpisodeQuestions = rules.EndEpisodeQuestions,
                };
     }
 
@@ -693,6 +694,18 @@ public static class ContractMapping
                    Successes = diceSuccess.Successes,
                    Result = diceSuccess.Result,
                    Enhancements = diceSuccess.Enhancements
+               };
+    }
+
+    public static CheckDifficultyResponse ToResponse(this CheckDifficulty checkDifficulty)
+    {
+        return new CheckDifficultyResponse
+               {
+                   Difficulty = checkDifficulty.Difficulty,
+                   DifficultyDescription = checkDifficulty.DifficultyDescription,
+                   Cute = checkDifficulty.Cute,
+                   Cunning = checkDifficulty.Cunning,
+                   Fierce = checkDifficulty.Fierce
                };
     }
 

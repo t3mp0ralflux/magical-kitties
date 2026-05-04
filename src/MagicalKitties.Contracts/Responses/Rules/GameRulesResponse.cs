@@ -1,4 +1,5 @@
-﻿using MagicalKitties.Contracts.Responses.Flaws;
+﻿using MagicalKitties.Application.Models.Rules;
+using MagicalKitties.Contracts.Responses.Flaws;
 using MagicalKitties.Contracts.Responses.MagicalPowers;
 using MagicalKitties.Contracts.Responses.Talents;
 
@@ -21,6 +22,7 @@ public class GameRulesResponse
     public required IEnumerable<ProblemSourceResponse> Emotion { get; set; } = [];
     public required IEnumerable<string> DiceRules { get; set; } = [];
     public required IEnumerable<string> RollInstructions { get; set; } = [];
+    public required IEnumerable<CheckDifficultyResponse> CheckDifficulties { get; set; } = [];
     public required IEnumerable<DiceDifficultyResponse> DiceDifficulties { get; set; } = [];
     public required IEnumerable<DiceSuccessResponse> DiceSuccesses { get; set; } = [];
     public required IEnumerable<string> RollComplications { get; set; } = [];

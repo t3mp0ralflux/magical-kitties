@@ -74,7 +74,47 @@ public class RuleService : IRuleService
                                    "+1 die for an earlier success bonus",
                                    "-1 die per injury"
                                ],
-                               RollInstructions = ["If that equals 0 dice, you can't roll it. If Cute, Cunning, and Fierce are all at 0 dice, you're Incapacitated", "Ask the GM what the Difficulty is (Usually it's a 4)", "Roll your dice! Your successes = the number of dice that rolled >= the Difficulty. Decide if you want to use a Kitty Treat to reroll now"],
+                               RollInstructions = 
+                               [
+                                   "If that equals 0 dice, you can't roll it. If Cute, Cunning, and Fierce are all at 0 dice, you're Incapacitated", 
+                                   "Ask the GM what the Difficulty is (Usually it's a 4)", 
+                                   "Roll your dice! Your successes = the number of dice that rolled >= the Difficulty. Decide if you want to use a Kitty Treat to reroll now"
+                               ],
+                               CheckDifficulties = 
+                               [
+                                   new CheckDifficulty
+                                   {
+                                       Difficulty = 3,
+                                       DifficultyDescription = "(Easy)",
+                                       Cute = "Get a human to feed you,",
+                                       Cunning = "Open a human door,",
+                                       Fierce = "Catch a mouse."
+                                   },
+                                   new CheckDifficulty
+                                   {
+                                       Difficulty = 4,
+                                       DifficultyDescription = "(Typical)",
+                                       Cute = "Cheer up a sad kitty friend.",
+                                       Cunning = "Find a hidden compartment.",
+                                       Fierce = "Run through a door before it closes."
+                                   },
+                                   new CheckDifficulty
+                                   {
+                                       Difficulty = 5,
+                                       DifficultyDescription = "(Hard)",
+                                       Cute = "Befriend a worker-bot.",
+                                       Cunning = "Read a textbook.",
+                                       Fierce = "Fight off a guard dog."
+                                   },
+                                   new CheckDifficulty
+                                   {
+                                       Difficulty = 6,
+                                       DifficultyDescription = "Extreme",
+                                       Cute = "Herd cats.",
+                                       Cunning = "Solve the Riddle of the Sphinx.",
+                                       Fierce = "Fight off a dragon."
+                                   }
+                               ],
                                DiceDifficulties = DiceRule.DiceDifficulties,
                                DiceSuccesses = DiceRule.DiceSuccesses,
                                RollComplications =

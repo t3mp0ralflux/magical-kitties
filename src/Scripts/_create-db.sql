@@ -167,3 +167,9 @@ create table if not exists emotionsource (
     roll_value text not null,
     source text not null
 );
+
+create table if not exists characterinformation(
+    id numeric primary key,
+    name text not null,
+    description text not null
+);
