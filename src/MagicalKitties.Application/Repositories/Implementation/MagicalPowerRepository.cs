@@ -10,6 +10,7 @@ namespace MagicalKitties.Application.Repositories.Implementation;
 public class MagicalPowerRepository : IMagicalPowerRepository
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
+    private const string DbColumns = "id, name, description, short_description, is_custom, bonusfeatures";
 
     public MagicalPowerRepository(IDbConnectionFactory dbConnectionFactory)
     {
@@ -22,10 +23,11 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         using IDbTransaction transaction = connection.BeginTransaction();
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
-                                                                                  insert into magicalpower(id, name, description, is_custom, bonusfeatures)
+                                                                                  insert into magicalpower({DbColumns})
                                                                                   values (@Id, @Name, @Description, @IsCustom, @BonusFeatures)
                                                                                   """, new
                                                                                        {
+                                                                                           DbColumns,
                                                                                            magicalpower.Id,
                                                                                            magicalpower.Name,
                                                                                            magicalpower.Description,
@@ -42,8 +44,8 @@ public class MagicalPowerRepository : IMagicalPowerRepository
     {
         using IDbConnection connection = await _dbConnectionFactory.CreateConnectionAsync(token);
 
-        MagicalPower? result = await connection.QuerySingleOrDefaultAsyncWithRetry<MagicalPower>(new CommandDefinition("""
-                                                                                                                       select id, name, description, is_custom, bonusfeatures
+        MagicalPower? result = await connection.QuerySingleOrDefaultAsyncWithRetry<MagicalPower>(new CommandDefinition($"""
+                                                                                                                       select {DbColumns}
                                                                                                                        from magicalpower
                                                                                                                        where id = @id
                                                                                                                        """, new { id }, cancellationToken: token));
@@ -63,7 +65,7 @@ public class MagicalPowerRepository : IMagicalPowerRepository
         }
 
         IEnumerable<MagicalPower> results = await connection.QueryAsyncWithRetry<MagicalPower>(new CommandDefinition($"""
-                                                                                                                      select id, name, description, is_custom, bonusfeatures
+                                                                                                                      select {DbColumns}
                                                                                                                       from magicalpower
                                                                                                                       {orderClause}
                                                                                                                       """, new
@@ -118,12 +120,13 @@ public class MagicalPowerRepository : IMagicalPowerRepository
 
         int result = await connection.ExecuteAsyncWithRetry(new CommandDefinition("""
                                                                                   update magicalpower
-                                                                                  set name = @Name, description = @Description, bonusfeatures = @BonusFeatures
+                                                                                  set name = @Name, description = @Description, short_description = @ShortDescription, bonusfeatures = @BonusFeatures
                                                                                   where id = @Id
                                                                                   """, new
                                                                                        {
                                                                                            magicalPower.Name,
                                                                                            magicalPower.Description,
+                                                                                           magicalPower.ShortDescription,
                                                                                            magicalPower.Id,
                                                                                            BonusFeatures = new JsonParameter(JsonSerializer.Serialize(magicalPower.BonusFeatures))
                                                                                        }, cancellationToken: token));

@@ -1,7 +1,4 @@
-﻿using FluentAssertions;
-using FluentAssertions.Specialized;
-using FluentValidation;
-using FluentValidation.Results;
+﻿using FluentValidation;
 using FluentValidation.TestHelper;
 using MagicalKitties.Application.Models.Accounts;
 using MagicalKitties.Application.Models.Characters;
@@ -9,7 +6,6 @@ using MagicalKitties.Application.Models.Characters.Updates;
 using MagicalKitties.Application.Models.MagicalPowers;
 using MagicalKitties.Application.Models.Talents;
 using MagicalKitties.Application.Validators.Characters;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Testing.Common;
 
 namespace MagicalKitties.Application.Tests.Unit.Validators;
@@ -409,7 +405,7 @@ public class AttributeUpdateValidatorTests
                                              };
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(account.Id, character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
-        updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 66, Name = "test", Description = "test", IsCustom = false });
+        updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 66, Name = "test", Description = "test", ShortDescription = "test2",IsCustom = false });
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -440,11 +436,11 @@ public class AttributeUpdateValidatorTests
 
         if (isNestedPower)
         {
-            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 22, Description = "Test", Name = "Test", IsCustom = false, BonusFeatures = [new MagicalPower { Id = 21, Description = "Test", Name = "Test", IsCustom = false }] });
+            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 22, Description = "Test", ShortDescription ="Test", Name = "Test", IsCustom = false, BonusFeatures = [new MagicalPower { Id = 21, Description = "Test", ShortDescription = "Test", Name = "Test", IsCustom = false }] });
         }
         else
         {
-            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 21, Description = "Test", Name = "Test", IsCustom = false });
+            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 21, Description = "Test", ShortDescription = "Test", Name = "Test", IsCustom = false });
         }
 
         // Act
@@ -472,7 +468,7 @@ public class AttributeUpdateValidatorTests
 
         AttributeUpdateValidationContext updateContext = Fakes.GenerateValidationContext(account.Id, character: character, magicalPowerChange: magicalPowerChange, attributeOption: AttributeOption.magicalpower);
         updateContext.Character.Level = 7;
-        updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 22, Name = "Test", Description = "TestTest", IsCustom = false, BonusFeatures = [] });
+        updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 22, Name = "Test", Description = "TestTest", ShortDescription = "Test", IsCustom = false, BonusFeatures = [] });
 
         // Act
         TestValidationResult<AttributeUpdateValidationContext>? result = await _sut.TestValidateAsync(updateContext);
@@ -674,11 +670,11 @@ public class AttributeUpdateValidatorTests
 
         if (hasNested)
         {
-            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 21, Name = "Test", Description = "test", BonusFeatures = [new MagicalPower { Id = 41, Name = "Test", Description = "test", IsCustom = false }], IsCustom = false });
+            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 21, Name = "Test", Description = "test", ShortDescription = "Test", BonusFeatures = [new MagicalPower { Id = 41, Name = "Test", Description = "test", ShortDescription = "Test", IsCustom = false }], IsCustom = false });
         }
         else
         {
-            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 41, Name = "Test", Description = "Test", IsCustom = false, BonusFeatures = [] });
+            updateContext.Character.MagicalPowers.Add(new MagicalPower { Id = 41, Name = "Test", Description = "Test", ShortDescription = "Test", IsCustom = false, BonusFeatures = [] });
         }
 
         // Act

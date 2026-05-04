@@ -122,6 +122,7 @@ public static class Fakes
                 Id = 33,
                 Name = "Invisibility",
                 Description = "You can turn invisible. Nobody can see you, but they can still hear, smell, and touch you. Objects you wear or carry are still visible.",
+                ShortDescription = "Nobody can see you, but they can still hear, smell, and touch you. Objects you wear or carry are still visible.",
                 IsCustom = false,
                 IsPrimary = true,
                 BonusFeatures =
@@ -383,6 +384,7 @@ public static class Fakes
                 Id = id,
                 Name = "Test",
                 Description = "This is a test",
+                ShortDescription = "This is a test",
                 BonusFeatures =
                 [
                     new MagicalPower

@@ -46,6 +46,7 @@ create table if not exists magicalpower(
     id numeric primary key,
     name text not null,
     description text not null,
+    short_description text not null,
     is_custom bool not null,
     bonusfeatures json not null
 );

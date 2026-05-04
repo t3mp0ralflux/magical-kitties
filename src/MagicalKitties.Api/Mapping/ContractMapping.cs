@@ -518,6 +518,7 @@ public static class ContractMapping
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
+                   ShortDescription = request.ShortDescription,
                    IsCustom = request.IsCustom,
                    BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList()
                };
@@ -530,6 +531,7 @@ public static class ContractMapping
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
+                   ShortDescription = request.ShortDescription,
                    IsCustom = request.IsCustom,
                    BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList(),
                    IsPrimary = request.IsPrimary
@@ -543,6 +545,7 @@ public static class ContractMapping
                    Id = magicalPower.Id,
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
+                   ShortDescription = magicalPower.ShortDescription,
                    IsCustom = magicalPower.IsCustom,
                    BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList(),
                    IsPrimary = magicalPower.IsPrimary
@@ -642,7 +645,6 @@ public static class ContractMapping
                    Emotion = rules.Emotions.Select(ToResponse),
                    DiceRules = rules.DiceRules,
                    RollInstructions = rules.RollInstructions,
-                   CheckDifficulties = rules.CheckDifficulties.Select(ToResponse),
                    DiceDifficulties = rules.DiceDifficulties.Select(ToResponse),
                    DiceSuccesses = rules.DiceSuccesses.Select(ToResponse),
                    RollComplications = rules.RollComplications,
