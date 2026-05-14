@@ -74,7 +74,12 @@ public class RuleService : IRuleService
                                    "+1 die for an earlier success bonus",
                                    "-1 die per injury"
                                ],
-                               RollInstructions = ["If that equals 0 dice, you can't roll it. If Cute, Cunning, and Fierce are all at 0 dice, you're Incapacitated", "Ask the GM what the Difficulty is (Usually it's a 4)", "Roll your dice! Your successes = the number of dice that rolled >= the Difficulty. Decide if you want to use a Kitty Treat to reroll now"],
+                               RollInstructions = 
+                               [
+                                   "If that equals 0 dice, you can't roll it. If Cute, Cunning, and Fierce are all at 0 dice, you're Incapacitated", 
+                                   "Ask the GM what the Difficulty is (Usually it's a 4)", 
+                                   "Roll your dice! Your successes = the number of dice that rolled >= the Difficulty. Decide if you want to use a Kitty Treat to reroll now"
+                               ],
                                DiceDifficulties = DiceRule.DiceDifficulties,
                                DiceSuccesses = DiceRule.DiceSuccesses,
                                RollComplications =

@@ -518,6 +518,7 @@ public static class ContractMapping
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
+                   ShortDescription = request.ShortDescription,
                    IsCustom = request.IsCustom,
                    BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList()
                };
@@ -530,6 +531,7 @@ public static class ContractMapping
                    Id = request.Id,
                    Name = request.Name,
                    Description = request.Description,
+                   ShortDescription = request.ShortDescription,
                    IsCustom = request.IsCustom,
                    BonusFeatures = request.BonusFeatures.Select(ToMagicalPower).ToList(),
                    IsPrimary = request.IsPrimary
@@ -543,6 +545,7 @@ public static class ContractMapping
                    Id = magicalPower.Id,
                    Name = magicalPower.Name,
                    Description = magicalPower.Description,
+                   ShortDescription = magicalPower.ShortDescription,
                    IsCustom = magicalPower.IsCustom,
                    BonusFeatures = magicalPower.BonusFeatures.Select(ToResponse).ToList(),
                    IsPrimary = magicalPower.IsPrimary
@@ -650,7 +653,7 @@ public static class ContractMapping
                    SpendingKittyTreats = rules.SpendingKittyTreats,
                    Healing = rules.Healing,
                    EndOfEpisodeInfo = rules.EndOfEpisodeInfo,
-                   EndEpisodeQuestions = rules.EndEpisodeQuestions
+                   EndEpisodeQuestions = rules.EndEpisodeQuestions,
                };
     }
 
@@ -693,6 +696,18 @@ public static class ContractMapping
                    Successes = diceSuccess.Successes,
                    Result = diceSuccess.Result,
                    Enhancements = diceSuccess.Enhancements
+               };
+    }
+
+    public static CheckDifficultyResponse ToResponse(this CheckDifficulty checkDifficulty)
+    {
+        return new CheckDifficultyResponse
+               {
+                   Difficulty = checkDifficulty.Difficulty,
+                   DifficultyDescription = checkDifficulty.DifficultyDescription,
+                   Cute = checkDifficulty.Cute,
+                   Cunning = checkDifficulty.Cunning,
+                   Fierce = checkDifficulty.Fierce
                };
     }
 

@@ -46,6 +46,7 @@ create table if not exists magicalpower(
     id numeric primary key,
     name text not null,
     description text not null,
+    short_description text not null,
     is_custom bool not null,
     bonusfeatures json not null
 );
@@ -166,4 +167,10 @@ create table if not exists emotionsource (
     id UUID primary key,
     roll_value text not null,
     source text not null
+);
+
+create table if not exists characterinformation(
+    id numeric primary key,
+    name text not null,
+    description text not null
 );

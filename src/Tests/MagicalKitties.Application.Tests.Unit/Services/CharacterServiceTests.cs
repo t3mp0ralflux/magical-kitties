@@ -105,6 +105,7 @@ public class CharacterServiceTests
                                                Id = 69,
                                                Name = "Test Power",
                                                Description = "This is a test power",
+                                               ShortDescription = "This is a test power",
                                                IsCustom = false,
                                                IsPrimary = false
                                            };
